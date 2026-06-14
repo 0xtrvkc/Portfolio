@@ -2,7 +2,7 @@
 
 single-file portfolio page. no framework, no build step, no node_modules folder I have to remember to gitignore.
 
-live: https://0xtrvkc.github.io
+live: [https://0xtrvkc.github.io](https://0xtrvkc.github.io/Portfolio/)
 
 ---
 
@@ -101,4 +101,4 @@ none that bother me enough to fix right now. the particle canvas resets on resiz
 
 ## license
 
-do whatever you want with the code. the links obviously go to my stuff so don't copy those.
+do whatever you want with the code. the links obviously go to my stuff so don't copy those. (just kidding, do what you want 😛)
