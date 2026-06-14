@@ -13,33 +13,37 @@
        DESIGN TOKENS
     ───────────────────────────────────────────── */
     :root {
-      --bg:          #0d0d0d;
-      --surface:     #111411;
-      --card-bg:     #131813;
+      --bg:       #0d0d0d;
+      --surface:  #111411;
+      --card-bg:  #131813;
 
-      --green:       #00ff41;
-      --pink:        #ff2d78;
-      --blue:        #00cfff;
-      --yellow:      #ffe400;
-      --purple:      #c77dff;
-      --orange:      #ff7b00;
+      --green:    #00ff41;
+      --pink:     #ff2d78;
+      --blue:     #00cfff;
+      --yellow:   #ffe400;
+      --purple:   #c77dff;
+      --orange:   #ff7b00;
 
-      --text:        #e8ffe0;
-      --dim:         #5a7a5a;
+      --text:     #e8ffe0;
+      --dim:      #5a7a5a;
 
-      --pixel:  'Press Start 2P', monospace;
+      --pixel:    'Press Start 2P', monospace;
       --terminal: 'VT323', monospace;
-      --cozy:    'Nunito', sans-serif;
+      --cozy:     'Nunito', sans-serif;
 
-      --radius:  4px;
-      --border:  2px;
+      --radius:   4px;
+      --border:   2px;
+
+      /* ── BREATHING ENGINE ──────────────────────
+         JS writes --spd every frame (range 0.5–1.5).
+         All animation-duration values are expressed
+         as calc(BASE / var(--spd)) so the whole page
+         speeds up and slows down together.
+      ─────────────────────────────────────────── */
+      --spd: 1;
     }
 
-    /* ─────────────────────────────────────────────
-       RESET + BASE
-    ───────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -118,9 +122,9 @@
       border-radius: 50%;
       display: inline-block;
     }
-    .dot-r { background: var(--pink); box-shadow: 0 0 6px var(--pink); }
+    .dot-r { background: var(--pink);   box-shadow: 0 0 6px var(--pink); }
     .dot-y { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
-    .dot-g { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-g { background: var(--green);  box-shadow: 0 0 6px var(--green); }
     .terminal-bar .path {
       font-family: var(--terminal);
       font-size: 1rem;
@@ -148,22 +152,22 @@
       font-size: 7rem;
       line-height: 1;
       display: block;
-      animation: float 6s ease-in-out infinite;
-      filter: drop-shadow(0 0 24px rgba(0,207,255,0.6)) drop-shadow(0 0 8px rgba(255,45,120,0.4));
+      animation: float calc(6s / var(--spd)) ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(0,207,255,0.6))
+              drop-shadow(0 0 8px rgba(255,45,120,0.4));
       cursor: default;
       user-select: none;
     }
     .profile-emoji:hover {
-      animation: wiggle 1s ease-in-out;
+      animation: wiggle calc(0.7s / var(--spd)) ease-in-out;
     }
 
-    /* ring of pixel dots around emoji */
     .profile-ring {
       position: absolute;
       inset: -10px;
       border-radius: 50%;
       border: 3px dashed var(--purple);
-      animation: spin-slow 24s linear infinite;
+      animation: spin-slow calc(24s / var(--spd)) linear infinite;
       opacity: 0.5;
     }
     .profile-ring::after {
@@ -190,7 +194,7 @@
       background: var(--green);
       vertical-align: middle;
       margin-left: 3px;
-      animation: blink 2s step-end infinite;
+      animation: blink calc(1.4s / var(--spd)) step-end infinite;
     }
 
     .tagline {
@@ -228,8 +232,7 @@
       background: currentColor;
       opacity: 0.25;
     }
-
-    .label-tools { color: var(--blue); }
+    .label-tools    { color: var(--blue); }
     .label-creative { color: var(--pink); }
 
     /* ─────────────────────────────────────────────
@@ -250,64 +253,41 @@
       display: block;
       overflow: hidden;
     }
-
-    /* chunky pixel corner accents */
     .card::before, .card::after {
       content: '';
       position: absolute;
       width: 10px; height: 10px;
       border-color: inherit;
     }
-    .card::before {
-      top: -2px; left: -2px;
-      border-top: 3px solid; border-left: 3px solid;
-    }
-    .card::after {
-      bottom: -2px; right: -2px;
-      border-bottom: 3px solid; border-right: 3px solid;
-    }
+    .card::before { top: -2px; left: -2px; border-top: 3px solid; border-left: 3px solid; }
+    .card::after  { bottom: -2px; right: -2px; border-bottom: 3px solid; border-right: 3px solid; }
+    .card:hover   { transform: translateY(-4px) rotate(-0.8deg); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
 
-    .card:hover {
-      transform: translateY(-4px) rotate(-0.8deg);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-
-    /* colour variants */
-    .card-green  { border-color: var(--green);  box-shadow: 0 0 0 1px rgba(0,255,65,0.1), inset 0 0 40px rgba(0,255,65,0.03); }
-    .card-blue   { border-color: var(--blue);   box-shadow: 0 0 0 1px rgba(0,207,255,0.1), inset 0 0 40px rgba(0,207,255,0.03); }
+    .card-green  { border-color: var(--green);  box-shadow: 0 0 0 1px rgba(0,255,65,0.1),   inset 0 0 40px rgba(0,255,65,0.03); }
+    .card-blue   { border-color: var(--blue);   box-shadow: 0 0 0 1px rgba(0,207,255,0.1),  inset 0 0 40px rgba(0,207,255,0.03); }
     .card-pink   { border-color: var(--pink);   box-shadow: 0 0 0 1px rgba(255,45,120,0.1), inset 0 0 40px rgba(255,45,120,0.03); }
-    .card-yellow { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255,228,0,0.1), inset 0 0 40px rgba(255,228,0,0.03); }
-    .card-purple { border-color: var(--purple); box-shadow: 0 0 0 1px rgba(199,125,255,0.1), inset 0 0 40px rgba(199,125,255,0.03); }
-    .card-orange { border-color: var(--orange); box-shadow: 0 0 0 1px rgba(255,123,0,0.1), inset 0 0 40px rgba(255,123,0,0.03); }
+    .card-yellow { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255,228,0,0.1),  inset 0 0 40px rgba(255,228,0,0.03); }
+    .card-purple { border-color: var(--purple); box-shadow: 0 0 0 1px rgba(199,125,255,0.1),inset 0 0 40px rgba(199,125,255,0.03); }
+    .card-orange { border-color: var(--orange); box-shadow: 0 0 0 1px rgba(255,123,0,0.1),  inset 0 0 40px rgba(255,123,0,0.03); }
 
-    .card:hover.card-green  { box-shadow: 0 8px 32px rgba(0,255,65,0.2);  }
+    .card:hover.card-green  { box-shadow: 0 8px 32px rgba(0,255,65,0.2); }
     .card:hover.card-blue   { box-shadow: 0 8px 32px rgba(0,207,255,0.2); }
     .card:hover.card-pink   { box-shadow: 0 8px 32px rgba(255,45,120,0.2); }
     .card:hover.card-yellow { box-shadow: 0 8px 32px rgba(255,228,0,0.2); }
     .card:hover.card-purple { box-shadow: 0 8px 32px rgba(199,125,255,0.2); }
     .card:hover.card-orange { box-shadow: 0 8px 32px rgba(255,123,0,0.2); }
 
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
+    .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
 
     .card-icon {
       font-size: 1.8rem;
       line-height: 1;
       flex-shrink: 0;
       filter: drop-shadow(0 0 4px currentColor);
-      animation: bobble 4s ease-in-out infinite;
+      animation: bobble calc(4s / var(--spd)) ease-in-out infinite;
     }
 
-    .card-title {
-      font-family: var(--terminal);
-      font-size: 1.35rem;
-      line-height: 1.15;
-      letter-spacing: 0.03em;
-    }
+    .card-title { font-family: var(--terminal); font-size: 1.35rem; line-height: 1.15; letter-spacing: 0.03em; }
     .card-green  .card-title { color: var(--green);  text-shadow: 0 0 8px rgba(0,255,65,0.5); }
     .card-blue   .card-title { color: var(--blue);   text-shadow: 0 0 8px rgba(0,207,255,0.5); }
     .card-pink   .card-title { color: var(--pink);   text-shadow: 0 0 8px rgba(255,45,120,0.5); }
@@ -315,13 +295,7 @@
     .card-purple .card-title { color: var(--purple); text-shadow: 0 0 8px rgba(199,125,255,0.5); }
     .card-orange .card-title { color: var(--orange); text-shadow: 0 0 8px rgba(255,123,0,0.5); }
 
-    .card-desc {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #6a8f70;
-      line-height: 1.5;
-      margin-top: 2px;
-    }
+    .card-desc { font-size: 0.78rem; font-weight: 600; color: #6a8f70; line-height: 1.5; margin-top: 2px; }
 
     .card-tag {
       display: inline-block;
@@ -332,30 +306,24 @@
       border-radius: 2px;
       margin-top: 10px;
     }
-    .card-green  .card-tag { background: rgba(0,255,65,0.12); color: var(--green); }
-    .card-blue   .card-tag { background: rgba(0,207,255,0.12); color: var(--blue); }
+    .card-green  .card-tag { background: rgba(0,255,65,0.12);   color: var(--green); }
+    .card-blue   .card-tag { background: rgba(0,207,255,0.12);  color: var(--blue); }
     .card-pink   .card-tag { background: rgba(255,45,120,0.12); color: var(--pink); }
-    .card-yellow .card-tag { background: rgba(255,228,0,0.12); color: var(--yellow); }
-    .card-purple .card-tag { background: rgba(199,125,255,0.12); color: var(--purple); }
-    .card-orange .card-tag { background: rgba(255,123,0,0.12); color: var(--orange); }
+    .card-yellow .card-tag { background: rgba(255,228,0,0.12);  color: var(--yellow); }
+    .card-purple .card-tag { background: rgba(199,125,255,0.12);color: var(--purple); }
+    .card-orange .card-tag { background: rgba(255,123,0,0.12);  color: var(--orange); }
 
     .card-arrow {
-      position: absolute;
-      top: 14px; right: 14px;
-      font-size: 0.9rem;
-      opacity: 0.35;
+      position: absolute; top: 14px; right: 14px;
+      font-size: 0.9rem; opacity: 0.35;
       transition: opacity 0.2s, transform 0.2s;
     }
     .card:hover .card-arrow { opacity: 1; transform: translate(2px, -2px); }
 
     /* ─────────────────────────────────────────────
-       CREATIVE SECTION (fixed, no template)
+       CREATIVE SECTION
     ───────────────────────────────────────────── */
-    .creative-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .creative-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .creative-card {
       background: var(--card-bg);
@@ -370,42 +338,26 @@
     }
     .creative-card:hover { transform: translateY(-5px) rotate(1deg); }
 
-    .creative-card.vid {
-      border: 2px solid var(--orange);
-      box-shadow: 0 0 0 1px rgba(255,123,0,0.1), inset 0 0 30px rgba(255,123,0,0.04);
-    }
-    .creative-card.vid:hover { box-shadow: 0 8px 28px rgba(255,123,0,0.25); }
-
-    .creative-card.loop {
-      border: 2px solid var(--purple);
-      box-shadow: 0 0 0 1px rgba(199,125,255,0.1), inset 0 0 30px rgba(199,125,255,0.04);
-    }
+    .creative-card.vid  { border: 2px solid var(--orange); box-shadow: 0 0 0 1px rgba(255,123,0,0.1),   inset 0 0 30px rgba(255,123,0,0.04); }
+    .creative-card.loop { border: 2px solid var(--purple); box-shadow: 0 0 0 1px rgba(199,125,255,0.1), inset 0 0 30px rgba(199,125,255,0.04); }
+    .creative-card.vid:hover  { box-shadow: 0 8px 28px rgba(255,123,0,0.25); }
     .creative-card.loop:hover { box-shadow: 0 8px 28px rgba(199,125,255,0.25); }
 
     .creative-icon {
       font-size: 2.5rem;
       display: block;
       margin-bottom: 10px;
-      animation: bobble 6s ease-in-out infinite;
+      animation: bobble calc(6s / var(--spd)) ease-in-out infinite;
     }
     .creative-card.loop .creative-icon {
-      animation: spin-slow 12s linear infinite;
+      animation: spin-slow calc(12s / var(--spd)) linear infinite;
     }
 
-    .creative-title {
-      font-family: var(--terminal);
-      font-size: 1.1rem;
-      margin-bottom: 5px;
-    }
+    .creative-title { font-family: var(--terminal); font-size: 1.1rem; margin-bottom: 5px; }
     .creative-card.vid  .creative-title { color: var(--orange); text-shadow: 0 0 8px rgba(255,123,0,0.5); }
     .creative-card.loop .creative-title { color: var(--purple); text-shadow: 0 0 8px rgba(199,125,255,0.5); }
 
-    .creative-sub {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #5a6a5a;
-      letter-spacing: 0.03em;
-    }
+    .creative-sub { font-size: 0.7rem; font-weight: 700; color: #5a6a5a; letter-spacing: 0.03em; }
 
     .ig-badge {
       font-family: var(--pixel);
@@ -416,7 +368,7 @@
       display: inline-block;
       margin-top: 8px;
     }
-    .creative-card.vid  .ig-badge { background: rgba(255,123,0,0.15); color: var(--orange); }
+    .creative-card.vid  .ig-badge { background: rgba(255,123,0,0.15);   color: var(--orange); }
     .creative-card.loop .ig-badge { background: rgba(199,125,255,0.15); color: var(--purple); }
 
     /* ─────────────────────────────────────────────
@@ -433,7 +385,7 @@
     .footer span { color: var(--pink); }
 
     /* ─────────────────────────────────────────────
-       ANIMATIONS
+       KEYFRAMES
     ───────────────────────────────────────────── */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -442,9 +394,9 @@
     @keyframes wiggle {
       0%   { transform: rotate(0deg); }
       20%  { transform: rotate(-15deg) scale(1.15); }
-      40%  { transform: rotate(15deg) scale(1.15); }
-      60%  { transform: rotate(-8deg) scale(1.08); }
-      80%  { transform: rotate(8deg) scale(1.08); }
+      40%  { transform: rotate(15deg)  scale(1.15); }
+      60%  { transform: rotate(-8deg)  scale(1.08); }
+      80%  { transform: rotate(8deg)   scale(1.08); }
       100% { transform: rotate(0deg); }
     }
     @keyframes blink {
@@ -475,22 +427,21 @@
       opacity: 0;
       animation: fadeInUp 0.45s ease forwards;
     }
-    .card:nth-child(1)  { animation-delay: 0.08s; }
-    .card:nth-child(2)  { animation-delay: 0.16s; }
-    .card:nth-child(3)  { animation-delay: 0.24s; }
-    .card:nth-child(4)  { animation-delay: 0.32s; }
-    .card:nth-child(5)  { animation-delay: 0.40s; }
-    /* ── TEMPLATE CARDS (add more delays here) ── */
-    .card:nth-child(6)  { animation-delay: 0.48s; }
-    .card:nth-child(7)  { animation-delay: 0.56s; }
-    .card:nth-child(8)  { animation-delay: 0.64s; }
+    .card:nth-child(1) { animation-delay: 0.08s; }
+    .card:nth-child(2) { animation-delay: 0.16s; }
+    .card:nth-child(3) { animation-delay: 0.24s; }
+    .card:nth-child(4) { animation-delay: 0.32s; }
+    .card:nth-child(5) { animation-delay: 0.40s; }
+    /* ── TEMPLATE: add more delays below ── */
+    .card:nth-child(6) { animation-delay: 0.48s; }
+    .card:nth-child(7) { animation-delay: 0.56s; }
+    .card:nth-child(8) { animation-delay: 0.64s; }
 
     .creative-card:nth-child(1) { animation-delay: 0.50s; }
     .creative-card:nth-child(2) { animation-delay: 0.60s; }
 
     .hero { animation: pop-in 0.6s cubic-bezier(.34,1.56,.64,1) both; }
 
-    /* reduced motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
@@ -498,11 +449,8 @@
 </head>
 
 <body>
-
-  <!-- ambient sparkle canvas -->
   <canvas id="sparkle-canvas"></canvas>
 
-  <!-- ──────────── TOP TERMINAL BAR ──────────── -->
   <div class="terminal-bar">
     <div class="dots">
       <span class="dot dot-r"></span>
@@ -512,22 +460,19 @@
     <span class="path">~/0xtrvkc/portfolio</span>
   </div>
 
-  <!-- ──────────── MAIN CONTENT ──────────── -->
   <div class="wrapper">
 
-    <!-- HERO -->
     <header class="hero">
       <div class="profile-emoji-wrap">
         <div class="profile-ring"></div>
         <span class="profile-emoji" title="tap me!">🤓</span>
       </div>
-      <div class="handle">trvkc<span class="cursor"></span></div>
+      <div class="handle">0xtrvkc<span class="cursor"></span></div>
       <div class="tagline">
-        Solving my own pain points by building tools.<br>Hope these apps help others too.
+        Fixing my pain points by creating tools,<br>hope these app helps
       </div>
     </header>
 
-    <!-- ──── TOOLS SECTION ──── -->
     <div class="section-label label-tools">⚙ tools</div>
 
     <div class="cards" id="tools-list">
@@ -630,14 +575,12 @@
       </a>
       -->
 
-    </div><!-- /cards -->
+    </div>
 
-    <!-- ──── CREATIVE SECTION (fixed) ──── -->
     <div class="section-label label-creative">✦ creative</div>
 
     <div class="creative-grid">
 
-      <!-- Videography -->
       <a class="creative-card vid"
          href="https://instagram.com/expsr.v"
          target="_blank" rel="noopener">
@@ -647,7 +590,6 @@
         <span class="ig-badge">INSTAGRAM</span>
       </a>
 
-      <!-- Loop animation -->
       <a class="creative-card loop"
          href="https://instagram.com/contrvkc"
          target="_blank" rel="noopener">
@@ -659,19 +601,39 @@
 
     </div>
 
-    <!-- FOOTER -->
     <footer class="footer">
       <p>made with <span>♥</span> + too much coffee</p>
     </footer>
 
-  </div><!-- /wrapper -->
+  </div>
 
-  <!-- ──────────── SPARKLE SCRIPT ──────────── -->
   <script>
     (function () {
-      const canvas = document.getElementById('sparkle-canvas');
-      const ctx = canvas.getContext('2d');
+      /* ─────────────────────────────────────────
+         BREATHING ENGINE
+         Writes --spd to :root on every tick.
+         Range: 0.6 (slow) → 1.4 (fast) → 0.6
+         Full cycle: ~20 seconds.
+         All CSS animation-duration values are
+         calc(BASE / var(--spd)), so everything
+         speeds up and slows down together.
+      ───────────────────────────────────────── */
+      const root = document.documentElement;
+      const BREATH_PERIOD = 20000; // ms for one full slow→fast→slow cycle
 
+      function updateBreath(timestamp) {
+        // sine goes -1 → 1 → -1 over BREATH_PERIOD
+        const phase = (timestamp % BREATH_PERIOD) / BREATH_PERIOD * Math.PI * 2;
+        // map to 0.6–1.4
+        const spd = 1 + 0.4 * Math.sin(phase);
+        root.style.setProperty('--spd', spd.toFixed(4));
+      }
+
+      /* ─────────────────────────────────────────
+         SPARKLE CANVAS
+      ───────────────────────────────────────── */
+      const canvas = document.getElementById('sparkle-canvas');
+      const ctx    = canvas.getContext('2d');
       const COLORS = ['#00ff41','#ff2d78','#00cfff','#ffe400','#c77dff','#ff7b00'];
 
       function resize() {
@@ -683,34 +645,31 @@
 
       class Star {
         constructor() { this.reset(true); }
-
         reset(initial) {
-          this.x  = Math.random() * canvas.width;
-          this.y  = initial ? Math.random() * canvas.height : -8;
-          this.r  = Math.random() * 1.6 + 0.3;
-          this.vy = Math.random() * 0.4 + 0.1;
-          this.vx = (Math.random() - 0.5) * 0.25;
-          this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-          this.alpha = Math.random() * 0.6 + 0.2;
+          this.x            = Math.random() * canvas.width;
+          this.y            = initial ? Math.random() * canvas.height : -8;
+          this.r            = Math.random() * 1.6 + 0.3;
+          this.vy           = Math.random() * 0.4 + 0.1;
+          this.vx           = (Math.random() - 0.5) * 0.25;
+          this.color        = COLORS[Math.floor(Math.random() * COLORS.length)];
+          this.alpha        = Math.random() * 0.6 + 0.2;
           this.twinkleSpeed = Math.random() * 0.02 + 0.008;
-          this.twinkleOff = Math.random() * Math.PI * 2;
-          this.shape = Math.random() < 0.3 ? 'diamond' : 'circle';
+          this.twinkleOff   = Math.random() * Math.PI * 2;
+          this.shape        = Math.random() < 0.3 ? 'diamond' : 'circle';
         }
-
-        update(t) {
-  const speed = 0.5 + Math.sin(t * 0.008 + this.twinkleOff) * 0.45;
-  this.y += this.vy * speed;
-  this.x += this.vx * speed;
-  if (this.y > canvas.height + 8) this.reset(false);
-}
-
+        update(t, spd) {
+          // particle speed also breathes with the global rhythm
+          this.y += this.vy * spd;
+          this.x += this.vx * spd;
+          if (this.y > canvas.height + 8) this.reset(false);
+        }
         draw(t) {
           const a = this.alpha * (0.6 + 0.4 * Math.sin(t * this.twinkleSpeed + this.twinkleOff));
           ctx.save();
           ctx.globalAlpha = a;
-          ctx.fillStyle = this.color;
+          ctx.fillStyle   = this.color;
           ctx.shadowColor = this.color;
-          ctx.shadowBlur = this.r * 4;
+          ctx.shadowBlur  = this.r * 4;
           if (this.shape === 'diamond') {
             ctx.translate(this.x, this.y);
             ctx.rotate(Math.PI / 4);
@@ -724,7 +683,6 @@
         }
       }
 
-      // burst on click
       class Burst {
         constructor(x, y) {
           this.particles = Array.from({length: 12}, () => ({
@@ -748,9 +706,9 @@
           this.particles.forEach(p => {
             ctx.save();
             ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
+            ctx.fillStyle   = p.color;
             ctx.shadowColor = p.color;
-            ctx.shadowBlur = p.r * 3;
+            ctx.shadowBlur  = p.r * 3;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
@@ -760,43 +718,48 @@
         get done() { return this.particles.length === 0; }
       }
 
-      const stars = Array.from({length: 80}, () => new Star());
+      const stars  = Array.from({length: 80}, () => new Star());
       const bursts = [];
 
       document.addEventListener('click', e => {
         bursts.push(new Burst(e.clientX, e.clientY));
       });
 
-      // emoji wiggle on tap
       const emojiEl = document.querySelector('.profile-emoji');
       emojiEl.addEventListener('click', () => {
         emojiEl.style.animation = 'none';
         void emojiEl.offsetWidth;
-        emojiEl.style.animation = 'wiggle 1s ease-in-out, float 6s ease-in-out 1s infinite';
+        emojiEl.style.animation = 'wiggle calc(0.7s / var(--spd)) ease-in-out, float calc(6s / var(--spd)) ease-in-out 0.7s infinite';
       });
 
-      let t = 0;
-let lastTime = 0;
-const TARGET = 1000 / 60;
+      /* ─────────────────────────────────────────
+         MAIN LOOP — 60fps cap
+      ───────────────────────────────────────── */
+      let t        = 0;
+      let lastTime = 0;
+      const TARGET = 1000 / 60;
 
-function loop(timestamp) {
-  const delta = timestamp - lastTime;
-  if (delta < TARGET) {
-    requestAnimationFrame(loop);
-    return;
-  }
-  lastTime = timestamp - (delta % TARGET);
+      function loop(timestamp) {
+        const delta = timestamp - lastTime;
+        if (delta < TARGET) { requestAnimationFrame(loop); return; }
+        lastTime = timestamp - (delta % TARGET);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  t++;
-  stars.forEach(s => { s.update(t); s.draw(t); });
-  for (let i = bursts.length - 1; i >= 0; i--) {
-    bursts[i].update(); bursts[i].draw();
-    if (bursts[i].done) bursts.splice(i, 1);
-  }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
+        // update breathing — read current spd back out for particle use
+        updateBreath(timestamp);
+        const spd = parseFloat(root.style.getPropertyValue('--spd')) || 1;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        t++;
+        stars.forEach(s => { s.update(t, spd); s.draw(t); });
+        for (let i = bursts.length - 1; i >= 0; i--) {
+          bursts[i].update(); bursts[i].draw();
+          if (bursts[i].done) bursts.splice(i, 1);
+        }
+
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+
     })();
   </script>
 
