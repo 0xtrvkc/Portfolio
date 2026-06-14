@@ -283,6 +283,27 @@
       100% { opacity: 1; transform: scale(1) rotate(0deg); }
     }
 
+    /* ── CARD FLIP ── */
+    /* cards container needs perspective for 3D children */
+    #tools-list { perspective: 800px; }
+
+    @keyframes card-flip-out {
+      0%   { transform: rotateY(0deg);    opacity: 1; }
+      100% { transform: rotateY(90deg);   opacity: 0; }
+    }
+    @keyframes card-flip-in {
+      0%   { transform: rotateY(-90deg);  opacity: 0; }
+      100% { transform: rotateY(0deg);    opacity: 1; }
+    }
+    .card-flipping-out {
+      animation: card-flip-out 0.22s ease-in forwards !important;
+      pointer-events: none;
+    }
+    .card-flipping-in {
+      animation: card-flip-in 0.22s ease-out forwards !important;
+      pointer-events: none;
+    }
+
     .card, .creative-card { opacity: 0; animation: fadeInUp 0.45s ease forwards; }
     .card:nth-child(1) { animation-delay: 0.08s; }
     .card:nth-child(2) { animation-delay: 0.16s; }
@@ -499,6 +520,21 @@
       '😉','😊','😋','😎','😍','😘','🥰','😗',
     ];
 
+    /* ─── rage mode — triggered by clicking pfp ─────────
+       RAGE_EMOJIS      the angry set shown during rage
+       RAGE_INTERVAL    seconds between swaps in rage mode
+                        (fixed, not breath-scaled — always fast)
+       RAGE_DURATION    how many seconds rage mode lasts
+    ───────────────────────────────────────────────────── */
+    const RAGE_EMOJIS   = ['👿','😠','😡','💀','😈'];
+    const RAGE_INTERVAL = 0.25;   // seconds between swaps (always fast)
+    const RAGE_DURATION = 4.0;    // seconds before returning to normal
+
+    let rageMode      = false;
+    let rageTimer     = 0;   // counts down from RAGE_DURATION
+    let rageEmojiIdx  = 0;
+    let rageSwapTimer = 0;   // counts up to RAGE_INTERVAL
+
     /* ─────────────────────────────────────────────────────
        BREATHING ENGINE
     ───────────────────────────────────────────────────── */
@@ -541,7 +577,8 @@
       runX            += runDir * pxPerSec * dt;
 
       // bounce — flip direction at edges
-      const pad  = RUNNER_SIZE;
+      const activeSize = rageMode ? RUNNER_SIZE * 1.5 : RUNNER_SIZE;
+      const pad  = activeSize;
       const maxX = rc.width - pad;
       if (runDir === 1 && runX >= maxX) {
         runX   = maxX;
@@ -551,30 +588,48 @@
         runDir = 1;
       }
 
-      // emoji swap — interval scales with breath speed
-      const interval = EMOJI_BASE_INTERVAL / speedScale;
-      emojiTimer += dt;
-      if (emojiTimer >= interval) {
-        emojiTimer = 0;
-        emojiIdx   = (emojiIdx + 1) % EMOJIS.length;
+      if (rageMode) {
+        // rage: tick down duration, swap at fixed 0.25s
+        rageTimer     -= dt;
+        rageSwapTimer += dt;
+        if (rageSwapTimer >= RAGE_INTERVAL) {
+          rageSwapTimer = 0;
+          rageEmojiIdx  = (rageEmojiIdx + 1) % RAGE_EMOJIS.length;
+        }
+        if (rageTimer <= 0) {
+          rageMode  = false;
+          rageTimer = 0;
+          // restore normal emoji interval timer so it doesn't instantly skip
+          emojiTimer = 0;
+        }
+      } else {
+        // normal: swap interval scales with breath speed
+        const interval = EMOJI_BASE_INTERVAL / speedScale;
+        emojiTimer += dt;
+        if (emojiTimer >= interval) {
+          emojiTimer = 0;
+          emojiIdx   = (emojiIdx + 1) % EMOJIS.length;
+        }
       }
     }
 
     function drawRunner() {
       rctx.clearRect(0, 0, rc.width, rc.height);
-      const y = rc.height / 2 + RUNNER_SIZE * 0.35;
+
+      const drawSize = rageMode ? RUNNER_SIZE * 1.5 : RUNNER_SIZE;
+      const emoji    = rageMode ? RAGE_EMOJIS[rageEmojiIdx] : EMOJIS[emojiIdx];
+      const y        = rc.height / 2 + drawSize * 0.35;
 
       rctx.save();
-      rctx.font = `${RUNNER_SIZE}px serif`;
+      rctx.font = `${drawSize}px serif`;
       rctx.textBaseline = 'alphabetic';
 
       if (runDir === -1) {
-        // flip horizontally around the emoji's centre
-        rctx.translate(Math.round(runX) + RUNNER_SIZE * 0.5, 0);
+        rctx.translate(Math.round(runX) + drawSize * 0.5, 0);
         rctx.scale(-1, 1);
-        rctx.fillText(EMOJIS[emojiIdx], -RUNNER_SIZE * 0.5, y);
+        rctx.fillText(emoji, -drawSize * 0.5, y);
       } else {
-        rctx.fillText(EMOJIS[emojiIdx], Math.round(runX), y);
+        rctx.fillText(emoji, Math.round(runX), y);
       }
 
       rctx.restore();
@@ -665,11 +720,79 @@
     const bursts = [];
     document.addEventListener('click', e => bursts.push(new Burst(e.clientX, e.clientY)));
 
+    /* ─────────────────────────────────────────────────────
+       CARD SHUFFLE
+       Fisher-Yates on the live DOM nodes.
+       Each card flips out (22ms), DOM reorders, flips in.
+       Cards get staggered delays so they don't all flip
+       at exactly the same time — looks like a deck riffle.
+    ───────────────────────────────────────────────────── */
+    function shuffleCards() {
+      const list  = document.getElementById('tools-list');
+      // only grab real card elements, not the comment/template
+      const cards = Array.from(list.querySelectorAll('a.card'));
+      if (cards.length < 2) return;
+
+      const FLIP_OUT = 220;  // ms — must match card-flip-out duration
+      const FLIP_IN  = 220;  // ms — must match card-flip-in duration
+      const STAGGER  = 60;   // ms between each card starting its flip
+
+      // phase 1: flip all cards out, staggered
+      cards.forEach((card, i) => {
+        setTimeout(() => {
+          card.classList.add('card-flipping-out');
+        }, i * STAGGER);
+      });
+
+      // phase 2: after last card finishes flipping out, reorder + flip in
+      const reorderAt = cards.length * STAGGER + FLIP_OUT;
+
+      setTimeout(() => {
+        // Fisher-Yates shuffle — guaranteed different order
+        const shuffled = [...cards];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        // re-append in new order (moves DOM nodes, no cloning needed)
+        shuffled.forEach(card => {
+          card.classList.remove('card-flipping-out');
+          list.appendChild(card);
+        });
+
+        // phase 3: flip in, staggered
+        shuffled.forEach((card, i) => {
+          setTimeout(() => {
+            card.classList.add('card-flipping-in');
+            card.addEventListener('animationend', () => {
+              card.classList.remove('card-flipping-in');
+            }, { once: true });
+          }, i * STAGGER);
+        });
+
+      }, reorderAt);
+    }
+
     const emojiEl = document.querySelector('.profile-emoji');
     emojiEl.addEventListener('click', () => {
+      // swap pfp to 🤪 for 0.25s then restore
+      emojiEl.textContent = '🤪';
+      setTimeout(() => { emojiEl.textContent = '🤓'; }, 250);
+
+      // wiggle the pfp
       emojiEl.style.animation = 'none';
       void emojiEl.offsetWidth;
       emojiEl.style.animation = 'wiggle calc(0.9s / var(--spd)) ease-in-out, float calc(6s / var(--spd)) ease-in-out 0.9s infinite';
+
+      // trigger rage mode on the runner
+      rageMode      = true;
+      rageTimer     = RAGE_DURATION;
+      rageSwapTimer = 0;
+      rageEmojiIdx  = 0;
+
+      // shuffle the tool cards
+      shuffleCards();
     });
 
     /* ─────────────────────────────────────────────────────
