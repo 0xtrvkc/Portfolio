@@ -756,8 +756,11 @@
         }
 
         // re-append in new order (moves DOM nodes, no cloning needed)
+        // force opacity 0 instantly so there's no naked frame between
+        // flip-out ending and flip-in starting
         shuffled.forEach(card => {
           card.classList.remove('card-flipping-out');
+          card.style.opacity = '0';
           list.appendChild(card);
         });
 
