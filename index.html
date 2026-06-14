@@ -27,18 +27,21 @@
       --radius:   4px;
       --border:   2px;
 
-      /* ── BREATHING ENGINE ──────────────────────
-         JS writes --spd every frame.
-         Range: 0.15 (super slow) → 0.35 (slow).
-         All durations = calc(BASE / var(--spd)).
-         Full cycle ~30 seconds.
-      ─────────────────────────────────────────── */
-      --spd: 0.2;
+      /*
+      ┌─────────────────────────────────────────────────────┐
+      │  ANIMATION SPEED — edit --spd here if you want a   │
+      │  fixed speed instead of the breathing effect.       │
+      │  Lower = slower. Suggested range: 0.02 – 0.5       │
+      │  This gets overwritten every frame by the JS        │
+      │  breathing engine below. To use a fixed speed,      │
+      │  set BREATH_ENABLED = false in the <script>.        │
+      └─────────────────────────────────────────────────────┘
+      */
+      --spd: 0.04;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
     body {
       background: var(--bg);
       color: var(--text);
@@ -50,49 +53,29 @@
     a { color: inherit; text-decoration: none; }
 
     #sparkle-canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.55;
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0; opacity: 0.55;
     }
-
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0;
       background: repeating-linear-gradient(
-        0deg,
-        transparent, transparent 2px,
+        0deg, transparent, transparent 2px,
         rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px
       );
-      pointer-events: none;
-      z-index: 1;
+      pointer-events: none; z-index: 1;
     }
-
     .wrapper {
-      position: relative;
-      z-index: 2;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 16px 80px;
+      position: relative; z-index: 2;
+      max-width: 480px; margin: 0 auto; padding: 0 16px 80px;
     }
 
     /* ── TERMINAL BAR ── */
     .terminal-bar {
-      background: #1a1f1a;
-      border-bottom: 2px solid var(--green);
-      padding: 8px 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--terminal);
-      font-size: 1.1rem;
-      color: var(--dim);
-      letter-spacing: 0.05em;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: #1a1f1a; border-bottom: 2px solid var(--green);
+      padding: 8px 16px; display: flex; align-items: center; gap: 8px;
+      font-family: var(--terminal); font-size: 1.1rem;
+      color: var(--dim); letter-spacing: 0.05em;
+      position: sticky; top: 0; z-index: 100;
       box-shadow: 0 0 20px rgba(0,255,65,0.15);
     }
     .terminal-bar .dots { display: flex; gap: 6px; }
@@ -101,135 +84,79 @@
     .dot-y { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
     .dot-g { background: var(--green);  box-shadow: 0 0 6px var(--green); }
     .terminal-bar .path {
-      font-family: var(--terminal);
-      font-size: 1rem;
-      color: var(--green);
-      opacity: 0.7;
-      flex: 1;
-      text-align: center;
+      font-family: var(--terminal); font-size: 1rem;
+      color: var(--green); opacity: 0.7; flex: 1; text-align: center;
     }
 
-    /* ── MARIO STAGE ── */
-    .mario-stage {
-      position: relative;
-      height: 48px;
-      overflow: hidden;
-      margin: 0 -16px;
-      background: transparent;
+    /* ── EMOJI RUNNER STAGE ── */
+    .runner-stage {
+      position: relative; height: 52px; overflow: hidden;
+      margin: 0; background: transparent;
     }
-    #mario-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      image-rendering: pixelated;
+    #runner-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
     }
 
     /* ── HERO ── */
     .hero { text-align: center; padding: 32px 0 24px; }
-
-    .profile-emoji-wrap {
-      position: relative;
-      display: inline-block;
-      margin-bottom: 20px;
-    }
+    .profile-emoji-wrap { position: relative; display: inline-block; margin-bottom: 20px; }
     .profile-emoji {
-      font-size: 7rem;
-      line-height: 1;
-      display: block;
+      font-size: 7rem; line-height: 1; display: block;
       animation: float calc(6s / var(--spd)) ease-in-out infinite;
-      filter: drop-shadow(0 0 24px rgba(0,207,255,0.6))
-              drop-shadow(0 0 8px rgba(255,45,120,0.4));
-      cursor: default;
-      user-select: none;
+      filter: drop-shadow(0 0 24px rgba(0,207,255,0.6)) drop-shadow(0 0 8px rgba(255,45,120,0.4));
+      cursor: default; user-select: none;
     }
-    .profile-emoji:hover {
-      animation: wiggle calc(0.7s / var(--spd)) ease-in-out;
-    }
+    .profile-emoji:hover { animation: wiggle calc(0.9s / var(--spd)) ease-in-out; }
     .profile-ring {
-      position: absolute;
-      inset: -10px;
-      border-radius: 50%;
+      position: absolute; inset: -10px; border-radius: 50%;
       border: 3px dashed var(--purple);
       animation: spin-slow calc(24s / var(--spd)) linear infinite;
       opacity: 0.5;
     }
     .profile-ring::after {
-      content: '★✦❋✧★✦❋✧';
-      position: absolute;
-      top: -10px; left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.5rem;
-      color: var(--yellow);
+      content: '★✦❋✧★✦❋✧'; position: absolute; top: -10px; left: 50%;
+      transform: translateX(-50%); font-size: 0.5rem; color: var(--yellow);
     }
-
     .handle {
-      font-family: var(--terminal);
-      font-size: 2.2rem;
-      color: var(--green);
-      text-shadow: 0 0 12px var(--green);
-      letter-spacing: 0.04em;
-      line-height: 1.1;
-      margin-bottom: 6px;
+      font-family: var(--terminal); font-size: 2.2rem;
+      color: var(--green); text-shadow: 0 0 12px var(--green);
+      letter-spacing: 0.04em; line-height: 1.1; margin-bottom: 6px;
     }
     .handle .cursor {
-      display: inline-block;
-      width: 14px; height: 2px;
-      background: var(--green);
-      vertical-align: middle;
-      margin-left: 3px;
+      display: inline-block; width: 14px; height: 2px;
+      background: var(--green); vertical-align: middle; margin-left: 3px;
       animation: blink calc(1.4s / var(--spd)) step-end infinite;
     }
     .tagline {
-      font-family: var(--cozy);
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--yellow);
-      background: rgba(255,228,0,0.1);
-      border: 1.5px solid rgba(255,228,0,0.35);
-      border-radius: 99px;
-      padding: 6px 18px;
-      display: inline-block;
-      margin-top: 10px;
-      line-height: 1.5;
-      text-align: center;
+      font-family: var(--cozy); font-size: 0.88rem; font-weight: 600;
+      color: var(--yellow); background: rgba(255,228,0,0.1);
+      border: 1.5px solid rgba(255,228,0,0.35); border-radius: 99px;
+      padding: 6px 18px; display: inline-block; margin-top: 10px;
+      line-height: 1.5; text-align: center;
     }
 
     /* ── SECTION LABELS ── */
     .section-label {
-      font-family: var(--pixel);
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      margin: 32px 0 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-family: var(--pixel); font-size: 0.6rem; letter-spacing: 0.12em;
+      margin: 32px 0 14px; display: flex; align-items: center; gap: 10px;
     }
     .section-label::before, .section-label::after {
-      content: ''; flex: 1; height: 1px;
-      background: currentColor; opacity: 0.25;
+      content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.25;
     }
     .label-tools    { color: var(--blue); }
     .label-creative { color: var(--pink); }
 
     /* ── CARDS ── */
     .cards { display: flex; flex-direction: column; gap: 14px; }
-
     .card {
-      background: var(--card-bg);
-      border: var(--border) solid transparent;
-      border-radius: var(--radius);
-      padding: 16px 16px 14px;
-      position: relative;
-      cursor: pointer;
+      background: var(--card-bg); border: var(--border) solid transparent;
+      border-radius: var(--radius); padding: 16px 16px 14px;
+      position: relative; cursor: pointer;
       transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease;
-      text-decoration: none;
-      display: block;
-      overflow: hidden;
+      text-decoration: none; display: block; overflow: hidden;
     }
     .card::before, .card::after {
-      content: ''; position: absolute;
-      width: 10px; height: 10px; border-color: inherit;
+      content: ''; position: absolute; width: 10px; height: 10px; border-color: inherit;
     }
     .card::before { top: -2px; left: -2px; border-top: 3px solid; border-left: 3px solid; }
     .card::after  { bottom: -2px; right: -2px; border-bottom: 3px solid; border-right: 3px solid; }
@@ -262,7 +189,6 @@
     .card-yellow .card-title { color: var(--yellow); text-shadow: 0 0 8px rgba(255,228,0,0.5); }
     .card-purple .card-title { color: var(--purple); text-shadow: 0 0 8px rgba(199,125,255,0.5); }
     .card-orange .card-title { color: var(--orange); text-shadow: 0 0 8px rgba(255,123,0,0.5); }
-
     .card-desc { font-size: 0.78rem; font-weight: 600; color: #6a8f70; line-height: 1.5; margin-top: 2px; }
     .card-tag {
       display: inline-block; font-family: var(--pixel);
@@ -275,13 +201,11 @@
     .card-yellow .card-tag { background: rgba(255,228,0,0.12);   color: var(--yellow); }
     .card-purple .card-tag { background: rgba(199,125,255,0.12); color: var(--purple); }
     .card-orange .card-tag { background: rgba(255,123,0,0.12);   color: var(--orange); }
-
     .card-arrow {
       position: absolute; top: 14px; right: 14px;
-      font-size: 0.9rem; opacity: 0.35;
-      transition: opacity 0.2s, transform 0.2s;
+      font-size: 0.9rem; opacity: 0.35; transition: opacity 0.2s, transform 0.2s;
     }
-    .card:hover .card-arrow { opacity: 1; transform: translate(2px, -2px); }
+    .card:hover .card-arrow { opacity: 1; transform: translate(2px,-2px); }
 
     /* ── CREATIVE ── */
     .creative-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -297,7 +221,6 @@
     .creative-card.loop { border: 2px solid var(--purple); box-shadow: 0 0 0 1px rgba(199,125,255,0.1), inset 0 0 30px rgba(199,125,255,0.04); }
     .creative-card.vid:hover  { box-shadow: 0 8px 28px rgba(255,123,0,0.25); }
     .creative-card.loop:hover { box-shadow: 0 8px 28px rgba(199,125,255,0.25); }
-
     .creative-icon {
       font-size: 2.5rem; display: block; margin-bottom: 10px;
       animation: bobble calc(6s / var(--spd)) ease-in-out infinite;
@@ -391,9 +314,8 @@
     <span class="path">~/0xtrvkc/portfolio</span>
   </div>
 
-  <!-- mario lives here, between topbar and hero -->
-  <div class="mario-stage">
-    <canvas id="mario-canvas"></canvas>
+  <div class="runner-stage">
+    <canvas id="runner-canvas"></canvas>
   </div>
 
   <div class="wrapper">
@@ -413,7 +335,6 @@
 
     <div class="cards" id="tools-list">
 
-      <!-- CARD 1 ─ BTC MVRV -->
       <a class="card card-green"
          href="https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard/"
          target="_blank" rel="noopener">
@@ -428,7 +349,6 @@
         <span class="card-tag">BITCOIN · ON-CHAIN · ANALYTICS</span>
       </a>
 
-      <!-- CARD 2 ─ 0DTE Signal -->
       <a class="card card-blue"
          href="https://0xtrvkc.github.io/BTC-Daily-Short-Call-Premium-Income-Checklist/"
          target="_blank" rel="noopener">
@@ -443,7 +363,6 @@
         <span class="card-tag">OPTIONS · 0DTE · SIGNAL</span>
       </a>
 
-      <!-- CARD 3 ─ BTC Loan Analyzer -->
       <a class="card card-yellow"
          href="https://0xtrvkc.github.io/btcLoanAnalyzer/"
          target="_blank" rel="noopener">
@@ -458,7 +377,6 @@
         <span class="card-tag">DEFI · LENDING · CALCULATOR</span>
       </a>
 
-      <!-- CARD 4 ─ Gold SD Visualizer -->
       <a class="card card-pink"
          href="https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer/"
          target="_blank" rel="noopener">
@@ -473,7 +391,6 @@
         <span class="card-tag">GOLD · OI · STD-DEV</span>
       </a>
 
-      <!-- CARD 5 ─ Vol2Vol DB -->
       <a class="card card-purple"
          href="https://0xtrvkc.github.io/itd-oi-db/"
          target="_blank" rel="noopener">
@@ -539,159 +456,138 @@
   <script>
   (function () {
 
-    /* ═══════════════════════════════════════════════
-       BREATHING ENGINE
-       --spd range: 0.15 (super slow) → 0.3 (slow)
-       Cycle: ~30 seconds
-       All CSS durations = calc(BASE / var(--spd))
-    ═══════════════════════════════════════════════ */
-    const root          = document.documentElement;
-    const BREATH_PERIOD = 30000; // ms per full cycle
-    const SPD_MIN       = 0.15;
-    const SPD_MAX       = 0.30;
+    /* ═══════════════════════════════════════════════════════
+       ★  SPEED CONTROLS — edit these to tune the feeling  ★
+       ═══════════════════════════════════════════════════════
 
+       BREATH_ENABLED  true  → breathing between SPD_MIN and SPD_MAX
+                       false → fixed at SPD_FIXED, no variation
+
+       SPD_MIN         super-super-super slow (the floor)
+       SPD_MAX         slow (the ceiling — still slow, just less so)
+       BREATH_PERIOD   ms for one full slow→slow cycle
+       SPD_FIXED       used only when BREATH_ENABLED = false
+
+       EMOJI_INTERVAL  real-time seconds between emoji swaps.
+                       this is scaled by --spd so slower page =
+                       slower emoji changes. set to a fixed number
+                       (e.g. 1000) and remove the / currentSpd
+                       in swapEmoji() if you want it always 1s.
+    ═══════════════════════════════════════════════════════ */
+    const BREATH_ENABLED = true;
+    const SPD_MIN        = 0.04;   // super super super slow
+    const SPD_MAX        = 0.10;   // super slow peak
+    const BREATH_PERIOD  = 30000;  // 30s per breath cycle
+    const SPD_FIXED      = 0.06;   // only if BREATH_ENABLED = false
+
+    /* ═══════════════════════════════════════════════════════
+       ★  RUNNER CONTROLS                                   ★
+       ═══════════════════════════════════════════════════════
+       RUNNER_BASE_SPEED   px/s at SPD_MIN. scales up with breath.
+       EMOJI_BASE_INTERVAL real seconds between emoji swaps at SPD_MIN.
+                           also scales with breath — faster page,
+                           faster swaps.
+       RUNNER_SIZE         font size of the running emoji in px.
+    ═══════════════════════════════════════════════════════ */
+    const RUNNER_BASE_SPEED    = 20;   // px/s at slowest
+    const EMOJI_BASE_INTERVAL  = 1.0;  // seconds between swaps at SPD_MIN
+    const RUNNER_SIZE          = 32;   // px
+
+    /* ─── emoji list — edit freely ─────────────────────── */
+    const EMOJIS = [
+      '😀','😁','😂','🤣','😃','😄','😅','😆',
+      '😉','😊','😋','😎','😍','😘','🥰','😗',
+    ];
+
+    /* ─────────────────────────────────────────────────────
+       BREATHING ENGINE
+    ───────────────────────────────────────────────────── */
+    const root = document.documentElement;
     let currentSpd = SPD_MIN;
 
     function updateBreath(ts) {
-      const phase = (ts % BREATH_PERIOD) / BREATH_PERIOD * Math.PI * 2;
-      // sine goes -1→1→-1, map to SPD_MIN→SPD_MAX
-      currentSpd = SPD_MIN + (SPD_MAX - SPD_MIN) * 0.5 * (1 + Math.sin(phase));
+      if (!BREATH_ENABLED) {
+        currentSpd = SPD_FIXED;
+      } else {
+        const phase = (ts % BREATH_PERIOD) / BREATH_PERIOD * Math.PI * 2;
+        currentSpd  = SPD_MIN + (SPD_MAX - SPD_MIN) * 0.5 * (1 + Math.sin(phase));
+      }
       root.style.setProperty('--spd', currentSpd.toFixed(4));
     }
 
-    /* ═══════════════════════════════════════════════
-       MARIO SPRITE — drawn pixel-by-pixel on canvas
-       2-frame walk cycle, classic SMB palette
-       Colours:
-         R = #e52521 (red hat/shirt)
-         S = #fbd000 (skin)
-         B = #431811 (brown shoes/hair)
-         O = #fa7d20 (overalls highlight)
-         N = #0652dd (blue overalls)
-         . = transparent
-    ═══════════════════════════════════════════════ */
-    const PIXEL = 3; // display size of each sprite pixel
+    /* ─────────────────────────────────────────────────────
+       EMOJI RUNNER (canvas)
+       — bounces left/right
+       — flips horizontally when bouncing (CSS scale trick
+         via offscreen canvas transform)
+       — swaps emoji every EMOJI_BASE_INTERVAL seconds,
+         scaled so slower breath = longer between swaps
+    ───────────────────────────────────────────────────── */
+    const rc   = document.getElementById('runner-canvas');
+    const rctx = rc.getContext('2d');
 
-    // frame 0 — right leg forward
-    const F0 = [
-      '....RRR.....',
-      '...RRRRRRR..',
-      '...BBBSBS...',
-      '..BSBSSBS...',
-      '..BSSSSBS...',
-      '...SSSSS....',
-      '..NNSSSNN...',
-      '.NNNNNNNNN..',
-      'NNNSSSSNNN..',
-      '..SSSSSS....',
-      '.BSBS.BSBS..',
-      '.BBB...BBB..',
-    ];
+    function resizeRunner() { rc.width = rc.offsetWidth; rc.height = rc.offsetHeight; }
+    window.addEventListener('resize', resizeRunner);
+    resizeRunner();
 
-    // frame 1 — left leg forward
-    const F1 = [
-      '....RRR.....',
-      '...RRRRRRR..',
-      '...BBBSBS...',
-      '..BSBSSBS...',
-      '..BSSSSBS...',
-      '...SSSSS....',
-      '..NNSSSNN...',
-      '.NNNNNNNNN..',
-      'NNNSSSSNNN..',
-      '..SSSSSS....',
-      '.BSBS.BSBS..',
-      '..BBB.BBB...',
-    ];
+    let runX         = 0;
+    let runDir       = 1;        // 1 = right, -1 = left
+    let emojiIdx     = 0;
+    let emojiTimer   = 0;        // accumulated seconds since last swap
 
-    const COLORS = {
-      R: '#e52521',
-      S: '#fbd000',
-      B: '#431811',
-      O: '#fa7d20',
-      N: '#0652dd',
-      '.': null,
-    };
+    function updateRunner(dt) {
+      const speedScale = currentSpd / SPD_MIN;
+      const pxPerSec   = RUNNER_BASE_SPEED * speedScale;
+      runX            += runDir * pxPerSec * dt;
 
-    const SPRITE_W = F0[0].length;
-    const SPRITE_H = F0.length;
+      // bounce — flip direction at edges
+      const pad  = RUNNER_SIZE;
+      const maxX = rc.width - pad;
+      if (runDir === 1 && runX >= maxX) {
+        runX   = maxX;
+        runDir = -1;
+      } else if (runDir === -1 && runX <= 0) {
+        runX   = 0;
+        runDir = 1;
+      }
 
-    // pre-render both frames to offscreen canvases
-    function makeFrame(rows) {
-      const oc  = document.createElement('canvas');
-      oc.width  = SPRITE_W * PIXEL;
-      oc.height = SPRITE_H * PIXEL;
-      const cx  = oc.getContext('2d');
-      cx.imageSmoothingEnabled = false;
-      rows.forEach((row, y) => {
-        row.split('').forEach((ch, x) => {
-          const col = COLORS[ch];
-          if (!col) return;
-          cx.fillStyle = col;
-          cx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
-        });
-      });
-      return oc;
-    }
-
-    const frames = [makeFrame(F0), makeFrame(F1)];
-
-    /* ── mario canvas setup ── */
-    const mc   = document.getElementById('mario-canvas');
-    const mctx = mc.getContext('2d');
-    mctx.imageSmoothingEnabled = false;
-
-    function resizeMario() {
-      mc.width  = mc.offsetWidth;
-      mc.height = mc.offsetHeight;
-    }
-    window.addEventListener('resize', resizeMario);
-    resizeMario();
-
-    const MARIO_W    = SPRITE_W * PIXEL;
-    const MARIO_H    = SPRITE_H * PIXEL;
-    const BASE_SPEED = 35; // px/s at spd=1 — but we scale by currentSpd
-    // walk cycle: swap frame every N pixels walked
-    const FRAME_DIST = 10;
-
-    let marioX       = -MARIO_W;
-    let marioDist    = 0;   // pixels walked, drives frame cycle
-    let marioFrame   = 0;
-
-    function updateMario(dt) {
-      // scale px/s by currentSpd so mario matches page rhythm
-      const pxPerSec = BASE_SPEED * (currentSpd / SPD_MIN);
-      const move     = pxPerSec * dt;
-      marioX        += move;
-      marioDist     += move;
-
-      // swap frame every FRAME_DIST pixels
-      marioFrame = Math.floor(marioDist / FRAME_DIST) % 2;
-
-      // wrap around
-      if (marioX > mc.width + MARIO_W) {
-        marioX    = -MARIO_W;
-        marioDist = 0;
+      // emoji swap — interval scales with breath speed
+      const interval = EMOJI_BASE_INTERVAL / speedScale;
+      emojiTimer += dt;
+      if (emojiTimer >= interval) {
+        emojiTimer = 0;
+        emojiIdx   = (emojiIdx + 1) % EMOJIS.length;
       }
     }
 
-    function drawMario() {
-      mctx.clearRect(0, 0, mc.width, mc.height);
-      const y = mc.height - MARIO_H - 2; // sit on floor
-      mctx.drawImage(frames[marioFrame], Math.round(marioX), y);
+    function drawRunner() {
+      rctx.clearRect(0, 0, rc.width, rc.height);
+      const y = rc.height / 2 + RUNNER_SIZE * 0.35;
+
+      rctx.save();
+      rctx.font = `${RUNNER_SIZE}px serif`;
+      rctx.textBaseline = 'alphabetic';
+
+      if (runDir === -1) {
+        // flip horizontally around the emoji's centre
+        rctx.translate(Math.round(runX) + RUNNER_SIZE * 0.5, 0);
+        rctx.scale(-1, 1);
+        rctx.fillText(EMOJIS[emojiIdx], -RUNNER_SIZE * 0.5, y);
+      } else {
+        rctx.fillText(EMOJIS[emojiIdx], Math.round(runX), y);
+      }
+
+      rctx.restore();
     }
 
-    /* ═══════════════════════════════════════════════
+    /* ─────────────────────────────────────────────────────
        SPARKLE CANVAS
-    ═══════════════════════════════════════════════ */
+    ───────────────────────────────────────────────────── */
     const sc   = document.getElementById('sparkle-canvas');
     const sctx = sc.getContext('2d');
     const SPARK_COLORS = ['#00ff41','#ff2d78','#00cfff','#ffe400','#c77dff','#ff7b00'];
 
-    function resizeSparkle() {
-      sc.width  = window.innerWidth;
-      sc.height = window.innerHeight;
-    }
+    function resizeSparkle() { sc.width = window.innerWidth; sc.height = window.innerHeight; }
     window.addEventListener('resize', resizeSparkle);
     resizeSparkle();
 
@@ -709,9 +605,9 @@
         this.twinkleOff   = Math.random() * Math.PI * 2;
         this.shape        = Math.random() < 0.3 ? 'diamond' : 'circle';
       }
-      update(t, spd) {
-        this.y += this.vy * spd;
-        this.x += this.vx * spd;
+      update(t, scale) {
+        this.y += this.vy * scale;
+        this.x += this.vx * scale;
         if (this.y > sc.height + 8) this.reset(false);
       }
       draw(t) {
@@ -767,40 +663,37 @@
 
     const stars  = Array.from({length: 80}, () => new Star());
     const bursts = [];
-
     document.addEventListener('click', e => bursts.push(new Burst(e.clientX, e.clientY)));
 
     const emojiEl = document.querySelector('.profile-emoji');
     emojiEl.addEventListener('click', () => {
       emojiEl.style.animation = 'none';
       void emojiEl.offsetWidth;
-      emojiEl.style.animation = 'wiggle calc(0.7s / var(--spd)) ease-in-out, float calc(6s / var(--spd)) ease-in-out 0.7s infinite';
+      emojiEl.style.animation = 'wiggle calc(0.9s / var(--spd)) ease-in-out, float calc(6s / var(--spd)) ease-in-out 0.9s infinite';
     });
 
-    /* ═══════════════════════════════════════════════
-       MAIN LOOP — 60fps cap, delta-time for mario
-    ═══════════════════════════════════════════════ */
+    /* ─────────────────────────────────────────────────────
+       MAIN LOOP — 60fps cap
+    ───────────────────────────────────────────────────── */
     let t        = 0;
     let lastTime = 0;
     const TARGET = 1000 / 60;
 
-    function loop(timestamp) {
-      const elapsed = timestamp - lastTime;
+    function loop(ts) {
+      const elapsed = ts - lastTime;
       if (elapsed < TARGET) { requestAnimationFrame(loop); return; }
-      const dt  = Math.min(elapsed, 100) / 1000; // seconds, clamped
-      lastTime  = timestamp - (elapsed % TARGET);
+      const dt = Math.min(elapsed, 100) / 1000;
+      lastTime  = ts - (elapsed % TARGET);
 
-      // 1. update breath — sets currentSpd + CSS var
-      updateBreath(timestamp);
+      updateBreath(ts);
 
-      // 2. mario
-      updateMario(dt);
-      drawMario();
+      updateRunner(dt);
+      drawRunner();
 
-      // 3. sparkles
       t++;
+      const scale = currentSpd / SPD_MIN;
       sctx.clearRect(0, 0, sc.width, sc.height);
-      stars.forEach(s => { s.update(t, currentSpd / SPD_MIN); s.draw(t); });
+      stars.forEach(s => { s.update(t, scale); s.draw(t); });
       for (let i = bursts.length - 1; i >= 0; i--) {
         bursts[i].update(); bursts[i].draw();
         if (bursts[i].done) bursts.splice(i, 1);
