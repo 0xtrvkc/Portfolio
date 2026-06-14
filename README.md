@@ -2,7 +2,7 @@
 
 single-file portfolio page. no framework, no build step, no node_modules folder I have to remember to gitignore.
 
-live: [https://0xtrvkc.github.io](https://0xtrvkc.github.io/Portfolio/)
+live: [https://0xtrvkc.github.io/Portfolio/]
 
 ---
 
