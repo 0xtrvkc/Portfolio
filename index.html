@@ -698,10 +698,11 @@
         }
 
         update(t) {
-          this.y += this.vy;
-          this.x += this.vx;
-          if (this.y > canvas.height + 8) this.reset(false);
-        }
+  const speed = 0.5 + Math.sin(t * 0.008 + this.twinkleOff) * 0.45;
+  this.y += this.vy * speed;
+  this.x += this.vx * speed;
+  if (this.y > canvas.height + 8) this.reset(false);
+}
 
         draw(t) {
           const a = this.alpha * (0.6 + 0.4 * Math.sin(t * this.twinkleSpeed + this.twinkleOff));
