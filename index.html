@@ -148,13 +148,13 @@
       font-size: 7rem;
       line-height: 1;
       display: block;
-      animation: float 3.5s ease-in-out infinite;
+      animation: float 6s ease-in-out infinite;
       filter: drop-shadow(0 0 24px rgba(0,207,255,0.6)) drop-shadow(0 0 8px rgba(255,45,120,0.4));
       cursor: default;
       user-select: none;
     }
     .profile-emoji:hover {
-      animation: wiggle 0.5s ease-in-out;
+      animation: wiggle 1s ease-in-out;
     }
 
     /* ring of pixel dots around emoji */
@@ -163,7 +163,7 @@
       inset: -10px;
       border-radius: 50%;
       border: 3px dashed var(--purple);
-      animation: spin-slow 12s linear infinite;
+      animation: spin-slow 24s linear infinite;
       opacity: 0.5;
     }
     .profile-ring::after {
@@ -190,7 +190,7 @@
       background: var(--green);
       vertical-align: middle;
       margin-left: 3px;
-      animation: blink 1s step-end infinite;
+      animation: blink 2s step-end infinite;
     }
 
     .tagline {
@@ -299,7 +299,7 @@
       line-height: 1;
       flex-shrink: 0;
       filter: drop-shadow(0 0 4px currentColor);
-      animation: bobble 2.5s ease-in-out infinite;
+      animation: bobble 4s ease-in-out infinite;
     }
 
     .card-title {
@@ -386,10 +386,10 @@
       font-size: 2.5rem;
       display: block;
       margin-bottom: 10px;
-      animation: bobble 3s ease-in-out infinite;
+      animation: bobble 6s ease-in-out infinite;
     }
     .creative-card.loop .creative-icon {
-      animation: spin-slow 6s linear infinite;
+      animation: spin-slow 12s linear infinite;
     }
 
     .creative-title {
@@ -771,12 +771,12 @@
       emojiEl.addEventListener('click', () => {
         emojiEl.style.animation = 'none';
         void emojiEl.offsetWidth;
-        emojiEl.style.animation = 'wiggle 0.5s ease-in-out, float 3.5s ease-in-out 0.5s infinite';
+        emojiEl.style.animation = 'wiggle 1s ease-in-out, float 6s ease-in-out 1s infinite';
       });
 
       let t = 0;
 let lastTime = 0;
-const TARGET = 1000 / 30;
+const TARGET = 1000 / 60;
 
 function loop(timestamp) {
   const delta = timestamp - lastTime;
