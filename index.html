@@ -743,323 +743,483 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>trvkc · portfolio</title>
+  <title>trvkc :: fun_mode</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:       #0d0d0d;
-      --surface:  #111411;
-      --card-bg:  #131813;
-      --green:    #00ff41;
-      --pink:     #ff2d78;
-      --blue:     #00cfff;
-      --yellow:   #ffe400;
-      --purple:   #c77dff;
-      --orange:   #ff7b00;
-      --text:     #e8ffe0;
-      --dim:      #5a7a5a;
-      --pixel:    'Press Start 2P', monospace;
-      --terminal: 'VT323', monospace;
-      --cozy:     'Nunito', sans-serif;
-      --radius:   4px;
-      --border:   2px;
-      --spd: 0.04;
+      --void:    #05060a;
+      --panel:   #0d111a;
+      --volt:    #c6ff3d;
+      --cyan:    #33e6ff;
+      --magenta: #ff3ec8;
+      --amber:   #ffb43d;
+      --ghost:   #eaf2ff;
+      --dim:     #5c6b80;
+      --line:    rgba(234,242,255,0.08);
+      --display: 'Bricolage Grotesque', system-ui, sans-serif;
+      --mono:    'JetBrains Mono', 'Courier New', monospace;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * , *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); font-family: var(--cozy); min-height: 100vh; overflow-x: hidden; position: relative; }
+    body { background: var(--void); color: var(--ghost); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; position: relative; }
     a { color: inherit; text-decoration: none; }
-    :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-    #sparkle-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55; }
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px);
-      pointer-events: none; z-index: 1;
-    }
-    .wrapper { position: relative; z-index: 2; max-width: 480px; margin: 0 auto; padding: 0 16px 80px; transition: max-width 0.2s; }
-    .terminal-bar {
-      background: #1a1f1a; border-bottom: 2px solid var(--green);
-      padding: 8px 16px; display: flex; align-items: center; gap: 8px;
-      font-family: var(--terminal); font-size: 1.1rem;
-      color: var(--dim); letter-spacing: 0.05em;
-      position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 0 20px rgba(0,255,65,0.15);
-    }
-    .terminal-bar .dots { display: flex; gap: 6px; flex-shrink: 0; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .dot-r { background: var(--pink);   box-shadow: 0 0 6px var(--pink); }
-    .dot-y { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
-    .dot-g { background: var(--green);  box-shadow: 0 0 6px var(--green); }
-    .terminal-bar .path { font-family: var(--terminal); font-size: 1rem; color: var(--green); opacity: 0.7; flex: 1; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-    .normal-mode-btn {
-      font-family: var(--terminal); font-size: 0.9rem; letter-spacing: 0.08em;
-      background: transparent; color: var(--dim); border: 1px solid var(--dim);
-      padding: 3px 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .normal-mode-btn:hover { color: var(--text); border-color: var(--green); }
-    .runner-stage { position: relative; height: 52px; overflow: hidden; margin: 0; background: transparent; }
-    #runner-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .hero { text-align: center; padding: 32px 0 24px; }
-    .profile-emoji-wrap { position: relative; display: inline-block; margin-bottom: 20px; }
-    .profile-emoji {
-      font-size: 6.5rem; line-height: 1; display: block;
-      animation: float calc(6s / var(--spd)) ease-in-out infinite;
-      filter: drop-shadow(0 0 24px rgba(0,207,255,0.6)) drop-shadow(0 0 8px rgba(255,45,120,0.4));
-      cursor: default; user-select: none;
-    }
-    .profile-emoji:hover { animation: wiggle calc(0.9s / var(--spd)) ease-in-out; }
-    .profile-ring { position: absolute; inset: -10px; border-radius: 50%; border: 3px dashed var(--purple); animation: spin-slow calc(24s / var(--spd)) linear infinite; opacity: 0.5; }
-    .handle { font-family: var(--terminal); font-size: 2.1rem; color: var(--green); text-shadow: 0 0 12px var(--green); letter-spacing: 0.04em; line-height: 1.1; margin-bottom: 6px; }
-    .handle .cursor { display: inline-block; width: 14px; height: 2px; background: var(--green); vertical-align: middle; margin-left: 3px; animation: blink calc(1.4s / var(--spd)) step-end infinite; }
-    .tagline { font-family: var(--cozy); font-size: 0.88rem; font-weight: 600; color: var(--yellow); background: rgba(255,228,0,0.1); border: 1.5px solid rgba(255,228,0,0.35); border-radius: 99px; padding: 6px 18px; display: inline-block; margin-top: 10px; line-height: 1.5; text-align: center; }
-    .section-label { font-family: var(--pixel); font-size: 0.6rem; letter-spacing: 0.12em; margin: 32px 0 14px; display: flex; align-items: center; gap: 10px; }
-    .section-label::before, .section-label::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.25; }
-    .label-tools    { color: var(--blue); }
-    .label-creative { color: var(--pink); }
-    .cards { display: flex; flex-direction: column; gap: 14px; }
-    .card { background: var(--card-bg); border: var(--border) solid transparent; border-radius: var(--radius); padding: 16px 16px 14px; position: relative; cursor: pointer; transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease; text-decoration: none; display: block; overflow: hidden; }
-    .card::before, .card::after { content: ''; position: absolute; width: 10px; height: 10px; border-color: inherit; }
-    .card::before { top: -2px; left: -2px; border-top: 3px solid; border-left: 3px solid; }
-    .card::after  { bottom: -2px; right: -2px; border-bottom: 3px solid; border-right: 3px solid; }
-    .card:hover   { transform: translateY(-4px) rotate(-0.8deg); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-    .card-green  { border-color: var(--green);  box-shadow: 0 0 0 1px rgba(0,255,65,0.1),    inset 0 0 40px rgba(0,255,65,0.03); }
-    .card-blue   { border-color: var(--blue);   box-shadow: 0 0 0 1px rgba(0,207,255,0.1),   inset 0 0 40px rgba(0,207,255,0.03); }
-    .card-pink   { border-color: var(--pink);   box-shadow: 0 0 0 1px rgba(255,45,120,0.1),  inset 0 0 40px rgba(255,45,120,0.03); }
-    .card-yellow { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255,228,0,0.1),   inset 0 0 40px rgba(255,228,0,0.03); }
-    .card-purple { border-color: var(--purple); box-shadow: 0 0 0 1px rgba(199,125,255,0.1), inset 0 0 40px rgba(199,125,255,0.03); }
-    .card-orange { border-color: var(--orange); box-shadow: 0 0 0 1px rgba(255,123,0,0.1),   inset 0 0 40px rgba(255,123,0,0.03); }
-    .card:hover.card-green  { box-shadow: 0 8px 32px rgba(0,255,65,0.2); }
-    .card:hover.card-blue   { box-shadow: 0 8px 32px rgba(0,207,255,0.2); }
-    .card:hover.card-pink   { box-shadow: 0 8px 32px rgba(255,45,120,0.2); }
-    .card:hover.card-yellow { box-shadow: 0 8px 32px rgba(255,228,0,0.2); }
-    .card:hover.card-purple { box-shadow: 0 8px 32px rgba(199,125,255,0.2); }
-    .card:hover.card-orange { box-shadow: 0 8px 32px rgba(255,123,0,0.2); }
-    .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
-    .card-icon { font-size: 1.8rem; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 0 4px currentColor); animation: bobble calc(4s / var(--spd)) ease-in-out infinite; }
-    .card-title { font-family: var(--terminal); font-size: 1.35rem; line-height: 1.15; letter-spacing: 0.03em; }
-    .card-green  .card-title { color: var(--green);  text-shadow: 0 0 8px rgba(0,255,65,0.5); }
-    .card-blue   .card-title { color: var(--blue);   text-shadow: 0 0 8px rgba(0,207,255,0.5); }
-    .card-pink   .card-title { color: var(--pink);   text-shadow: 0 0 8px rgba(255,45,120,0.5); }
-    .card-yellow .card-title { color: var(--yellow); text-shadow: 0 0 8px rgba(255,228,0,0.5); }
-    .card-purple .card-title { color: var(--purple); text-shadow: 0 0 8px rgba(199,125,255,0.5); }
-    .card-orange .card-title { color: var(--orange); text-shadow: 0 0 8px rgba(255,123,0,0.5); }
-    .card-desc { font-size: 0.78rem; font-weight: 600; color: #6a8f70; line-height: 1.5; margin-top: 2px; }
-    .card-tag { display: inline-block; font-family: var(--pixel); font-size: 0.42rem; letter-spacing: 0.08em; padding: 3px 7px; border-radius: 2px; margin-top: 10px; }
-    .card-green  .card-tag { background: rgba(0,255,65,0.12);    color: var(--green); }
-    .card-blue   .card-tag { background: rgba(0,207,255,0.12);   color: var(--blue); }
-    .card-pink   .card-tag { background: rgba(255,45,120,0.12);  color: var(--pink); }
-    .card-yellow .card-tag { background: rgba(255,228,0,0.12);   color: var(--yellow); }
-    .card-purple .card-tag { background: rgba(199,125,255,0.12); color: var(--purple); }
-    .card-orange .card-tag { background: rgba(255,123,0,0.12);   color: var(--orange); }
-    .card-arrow { position: absolute; top: 14px; right: 14px; font-size: 0.9rem; opacity: 0.35; transition: opacity 0.2s, transform 0.2s; }
-    .card:hover .card-arrow { opacity: 1; transform: translate(2px,-2px); }
-    .creative-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .creative-card { background: var(--card-bg); border-radius: var(--radius); padding: 18px 14px; text-align: center; text-decoration: none; display: block; position: relative; transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s; overflow: hidden; }
-    .creative-card:hover { transform: translateY(-5px) rotate(1deg); }
-    .creative-card.vid  { border: 2px solid var(--orange); box-shadow: 0 0 0 1px rgba(255,123,0,0.1),   inset 0 0 30px rgba(255,123,0,0.04); }
-    .creative-card.loop { border: 2px solid var(--purple); box-shadow: 0 0 0 1px rgba(199,125,255,0.1), inset 0 0 30px rgba(199,125,255,0.04); }
-    .creative-card.vid:hover  { box-shadow: 0 8px 28px rgba(255,123,0,0.25); }
-    .creative-card.loop:hover { box-shadow: 0 8px 28px rgba(199,125,255,0.25); }
-    .creative-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; animation: bobble calc(6s / var(--spd)) ease-in-out infinite; }
-    .creative-card.loop .creative-icon { animation: spin-slow calc(12s / var(--spd)) linear infinite; }
-    .creative-title { font-family: var(--terminal); font-size: 1.1rem; margin-bottom: 5px; }
-    .creative-card.vid  .creative-title { color: var(--orange); text-shadow: 0 0 8px rgba(255,123,0,0.5); }
-    .creative-card.loop .creative-title { color: var(--purple); text-shadow: 0 0 8px rgba(199,125,255,0.5); }
-    .creative-sub { font-size: 0.7rem; font-weight: 700; color: #5a6a5a; letter-spacing: 0.03em; }
-    .ig-badge { font-family: var(--pixel); font-size: 0.38rem; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 2px; display: inline-block; margin-top: 8px; }
-    .creative-card.vid  .ig-badge { background: rgba(255,123,0,0.15);   color: var(--orange); }
-    .creative-card.loop .ig-badge { background: rgba(199,125,255,0.15); color: var(--purple); }
-    .footer { text-align: center; padding-top: 40px; font-family: var(--terminal); font-size: 0.85rem; color: var(--dim); letter-spacing: 0.05em; }
-    .footer span { color: var(--pink); }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-    @keyframes wiggle { 0% { transform: rotate(0deg); } 20% { transform: rotate(-15deg) scale(1.15); } 40% { transform: rotate(15deg) scale(1.15); } 60% { transform: rotate(-8deg) scale(1.08); } 80% { transform: rotate(8deg) scale(1.08); } 100% { transform: rotate(0deg); } }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    @keyframes bobble { 0%, 100% { transform: translateY(0) rotate(0deg); } 30% { transform: translateY(-4px) rotate(-4deg); } 70% { transform: translateY(-2px) rotate(4deg); } }
-    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pop-in { 0% { opacity: 0; transform: scale(0.7) rotate(-5deg); } 70% { transform: scale(1.08) rotate(2deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
-    #tools-list { perspective: 800px; }
+    :focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; }
+
+    /* ── ambient decoration layers ── */
+    #fx-canvas { position: fixed; inset: 0; z-index: 3; pointer-events: none; width: 100%; height: 100%; }
+    .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.32; mix-blend-mode: screen; }
+    .b1 { width: 520px; height: 520px; background: var(--volt); top: -120px; left: -80px; animation: drift1 34s ease-in-out infinite; }
+    .b2 { width: 460px; height: 460px; background: var(--magenta); bottom: -140px; right: -100px; animation: drift2 40s ease-in-out infinite; }
+    .b3 { width: 380px; height: 380px; background: var(--cyan); top: 40%; left: 60%; animation: drift3 46s ease-in-out infinite; }
+    @keyframes drift1 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(60px,80px); } }
+    @keyframes drift2 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-70px,-50px); } }
+    @keyframes drift3 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-40px,60px) scale(1.15); } }
+    .scan-overlay { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(234,242,255,0.02) 2px, rgba(234,242,255,0.02) 4px); }
+    .spotlight { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(360px circle at var(--mx,50%) var(--my,50%), rgba(198,255,61,0.07), transparent 70%); }
+
+    /* ── top bar ── */
+    .terminal-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 18px; background: rgba(10,13,20,0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+    .tb-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+    .dots { display: flex; gap: 5px; flex-shrink: 0; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-a { background: var(--magenta); }
+    .dot-b { background: var(--amber); }
+    .dot-c { background: var(--volt); }
+    .path { font-size: 0.66rem; color: var(--dim); letter-spacing: 0.06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .tb-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .uptime-wrap { font-size: 0.6rem; color: var(--dim); letter-spacing: 0.08em; }
+    #uptime { color: var(--volt); }
+    .normal-mode-btn { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; background: transparent; color: var(--dim); border: 1px solid var(--line); padding: 5px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+    .normal-mode-btn:hover { color: var(--ghost); border-color: var(--volt); }
+
+    /* ── hero / boot sequence ── */
+    .hero-boot { position: relative; z-index: 10; text-align: center; padding: 68px 20px 34px; }
+    .boot-line { font-size: 0.68rem; letter-spacing: 0.1em; color: var(--volt); opacity: 0.8; min-height: 1.1em; margin-bottom: 10px; }
+    .wordmark { font-family: var(--display); font-weight: 800; font-size: clamp(3rem, 11vw, 6.6rem); line-height: 0.95; letter-spacing: -0.02em; color: var(--ghost); position: relative; display: inline-block; text-shadow: 0 0 40px rgba(198,255,61,0.15); }
+    .wordmark::before, .wordmark::after { content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%; opacity: 0.55; }
+    .wordmark::before { color: var(--cyan); transform: translate(2px,0); mix-blend-mode: screen; }
+    .wordmark::after { color: var(--magenta); transform: translate(-2px,0); mix-blend-mode: screen; }
+    .wordmark.pulse::before { animation: jitterB 0.26s steps(2,end); }
+    .wordmark.pulse::after { animation: jitterA 0.26s steps(2,end); }
+    @keyframes jitterA { 0% { transform: translate(-2px,0); } 30% { transform: translate(4px,-2px); } 60% { transform: translate(-5px,2px); } 100% { transform: translate(-2px,0); } }
+    @keyframes jitterB { 0% { transform: translate(2px,0); } 30% { transform: translate(-4px,2px); } 60% { transform: translate(5px,-2px); } 100% { transform: translate(2px,0); } }
+    body.glitch-mode .wordmark::before { animation: jitterB 0.12s steps(2,end) infinite; }
+    body.glitch-mode .wordmark::after { animation: jitterA 0.12s steps(2,end) infinite; }
+    .subline { margin-top: 14px; font-size: 0.82rem; color: var(--dim); letter-spacing: 0.02em; }
+    .blink-cursor { display: inline-block; width: 8px; height: 1em; background: var(--volt); vertical-align: text-bottom; margin-left: 2px; animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .badge-wrap { position: relative; width: 120px; height: 120px; margin: 32px auto 0; display: flex; align-items: center; justify-content: center; }
+    .badge-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px dashed rgba(234,242,255,0.25); animation: ring-rotate 18s linear infinite; }
+    .badge-ring::before { content: ''; position: absolute; top: -2px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--volt); box-shadow: 0 0 10px var(--volt); }
+    @keyframes ring-rotate { to { transform: rotate(360deg); } }
+    .profile-emoji { font-size: 3.4rem; cursor: pointer; user-select: none; filter: drop-shadow(0 0 18px rgba(198,255,61,0.45)); transition: transform 0.2s; display: inline-block; }
+    .profile-emoji:hover { transform: scale(1.08) rotate(-4deg); }
+    .profile-emoji:active { transform: scale(0.95); }
+
+    /* ── ticker ── */
+    .ticker-wrap { position: relative; z-index: 10; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.015); overflow: hidden; white-space: nowrap; padding: 10px 0; }
+    .ticker-track { display: inline-flex; gap: 28px; animation: ticker-scroll 26s linear infinite; will-change: transform; }
+    body.glitch-mode .ticker-track { animation-duration: 5s; }
+    @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .tick { font-size: 0.72rem; letter-spacing: 0.06em; color: var(--dim); display: inline-flex; align-items: center; gap: 6px; }
+    .tick b { font-style: normal; }
+    .tick b.up { color: var(--volt); }
+    .tick b.down { color: var(--magenta); }
+
+    /* ── layout ── */
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 90px; position: relative; }
+    .sec-head { display: flex; align-items: baseline; gap: 12px; margin: 54px 0 20px; position: relative; z-index: 10; }
+    .sec-head .n { font-family: var(--display); font-weight: 800; color: var(--volt); font-size: 0.85rem; }
+    .sec-head .tag { font-size: 0.66rem; letter-spacing: 0.16em; color: var(--ghost); opacity: 0.85; }
+    .sec-head .tag.dim { color: var(--dim); opacity: 1; letter-spacing: 0.08em; }
+    .sec-head .rule { flex: 1; height: 1px; background: var(--line); }
+
+    /* ── tool cards (terminal windows) ── */
+    .procs { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 10; perspective: 1000px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit; display: block; position: relative; transition: transform 0.28s cubic-bezier(.2,.8,.2,1), border-color 0.28s, box-shadow 0.28s; }
+    .card:hover { transform: translateY(-5px); border-color: var(--accent, var(--volt)); box-shadow: 0 0 0 1px var(--accent, var(--volt)), 0 24px 48px -24px var(--accent, var(--volt)); }
+    .card::after { content: ''; position: absolute; left: 0; right: 0; top: -40%; height: 40%; background: linear-gradient(180deg, rgba(255,255,255,0.12), transparent); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .card:hover::after { opacity: 1; animation: sweep 0.9s ease forwards; }
+    @keyframes sweep { from { top: -40%; } to { top: 120%; } }
+    .card-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.02); }
+    .card-bar .dots { display: flex; gap: 4px; }
+    .card-bar .dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: inline-block; }
+    .card-bar .fname { font-size: 0.64rem; color: var(--dim); letter-spacing: 0.03em; margin-left: 2px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-bar .live { font-size: 0.54rem; letter-spacing: 0.1em; color: var(--accent, var(--volt)); border: 1px solid currentColor; padding: 1px 6px; border-radius: 20px; flex-shrink: 0; }
+    .card-body { padding: 18px 16px 16px; }
+    .card-idx { font-size: 0.6rem; color: var(--dim); letter-spacing: 0.06em; }
+    .card-title { font-family: var(--display); font-weight: 700; font-size: 1.12rem; color: var(--ghost); margin: 5px 0 6px; letter-spacing: -0.01em; }
+    .card-desc { font-size: 0.78rem; color: var(--dim); line-height: 1.55; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .chip { font-size: 0.58rem; letter-spacing: 0.05em; color: var(--accent, var(--volt)); border: 1px solid var(--accent, var(--volt)); opacity: 0.85; padding: 2px 7px; border-radius: 20px; }
+    .card-launch { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.62rem; color: var(--dim); }
+    .card-launch .go { color: var(--accent, var(--volt)); opacity: 0; transform: translateX(-4px); transition: opacity 0.2s, transform 0.2s; }
+    .card:hover .card-launch .go { opacity: 1; transform: translateX(0); }
+
     @keyframes card-flip-out { 0% { transform: rotateY(0deg); opacity: 1; } 100% { transform: rotateY(90deg); opacity: 0; } }
-    @keyframes card-flip-in  { 0% { transform: rotateY(-90deg); opacity: 0; } 100% { transform: rotateY(0deg); opacity: 1; } }
+    @keyframes card-flip-in { 0% { transform: rotateY(-90deg); opacity: 0; } 100% { transform: rotateY(0deg); opacity: 1; } }
     .card-flipping-out { animation: card-flip-out 0.22s ease-in forwards !important; pointer-events: none; }
-    .card-flipping-in  { animation: card-flip-in 0.22s ease-out forwards !important; pointer-events: none; }
-    .card, .creative-card { opacity: 0; animation: fadeInUp 0.45s ease forwards; }
-    .card:nth-child(1) { animation-delay: 0.08s; }
-    .card:nth-child(2) { animation-delay: 0.16s; }
-    .card:nth-child(3) { animation-delay: 0.24s; }
-    .card:nth-child(4) { animation-delay: 0.32s; }
-    .card:nth-child(5) { animation-delay: 0.40s; }
-    .card:nth-child(6) { animation-delay: 0.48s; }
-    .card:nth-child(7) { animation-delay: 0.56s; }
-    .card:nth-child(8) { animation-delay: 0.64s; }
+    .card-flipping-in { animation: card-flip-in 0.22s ease-out forwards !important; pointer-events: none; }
+
+    .card, .creative-card { opacity: 0; animation: fadeInUp 0.5s ease forwards; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    .card:nth-child(1) { animation-delay: 0.08s; } .card:nth-child(2) { animation-delay: 0.16s; }
+    .card:nth-child(3) { animation-delay: 0.24s; } .card:nth-child(4) { animation-delay: 0.32s; }
+    .card:nth-child(5) { animation-delay: 0.40s; } .card:nth-child(6) { animation-delay: 0.48s; }
+    .card:nth-child(7) { animation-delay: 0.56s; } .card:nth-child(8) { animation-delay: 0.64s; }
     .card:nth-child(9) { animation-delay: 0.72s; }
-    .creative-card:nth-child(1) { animation-delay: 0.50s; }
-    .creative-card:nth-child(2) { animation-delay: 0.60s; }
-    .hero { animation: pop-in 0.6s cubic-bezier(.34,1.56,.64,1) both; }
+    .creative-card:nth-child(1) { animation-delay: 0.5s; } .creative-card:nth-child(2) { animation-delay: 0.6s; }
 
-    /* ── DESKTOP RECOMPOSE — real grid, not a stretched phone screen ── */
-    @media (min-width: 860px) {
-      .wrapper { max-width: 960px; padding: 0 32px 96px; }
-      .hero { display: flex; align-items: center; justify-content: center; gap: 40px; text-align: left; padding: 48px 0 40px; }
-      .profile-emoji-wrap { margin-bottom: 0; flex-shrink: 0; }
-      .hero-text { display: flex; flex-direction: column; align-items: flex-start; }
-      .tagline { margin-top: 14px; }
-      .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      .creative-grid { grid-template-columns: 1fr 1fr; max-width: 480px; }
+    /* ── creative reels ── */
+    .reels { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 10; }
+    .creative-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 26px 22px; text-decoration: none; color: inherit; position: relative; overflow: hidden; display: block; transition: transform 0.28s cubic-bezier(.2,.8,.2,1), border-color 0.28s, box-shadow 0.28s; }
+    .creative-card:hover { transform: translateY(-5px); border-color: var(--accent, var(--volt)); box-shadow: 0 24px 48px -28px var(--accent, var(--volt)); }
+    .creative-card::before { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.10), transparent); transform: skewX(-20deg); transition: left 0.5s ease; }
+    .creative-card:hover::before { left: 130%; }
+    .reel-badge { font-size: 0.56rem; letter-spacing: 0.14em; color: var(--accent, var(--volt)); display: block; margin-bottom: 14px; }
+    .reel-icon { font-size: 2.4rem; display: block; margin-bottom: 12px; filter: drop-shadow(0 0 12px var(--accent, var(--volt))); }
+    .creative-title { font-family: var(--display); font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; }
+    .creative-sub { font-size: 0.7rem; color: var(--dim); letter-spacing: 0.03em; }
+
+    /* ── footer ── */
+    .sys-log { position: relative; z-index: 10; border: 1px solid var(--line); background: var(--panel); padding: 14px 16px; font-size: 0.64rem; color: var(--dim); line-height: 1.7; margin-top: 56px; border-radius: 8px; }
+    .sys-tag { color: var(--volt); font-weight: 700; margin-right: 6px; }
+    .footer-prompt { position: relative; z-index: 10; margin-top: 26px; font-size: 0.7rem; color: var(--dim); text-align: center; padding-bottom: 10px; }
+
+    @media (max-width: 600px) {
+      .uptime-wrap { display: none; }
+      .terminal-bar { padding: 8px 12px; }
     }
-
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+    @media (min-width: 860px) {
+      .wrap { max-width: 1040px; }
+      .procs { display: grid; grid-template-columns: 1fr 1fr; }
+      .reels { display: grid; grid-template-columns: 1fr 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
   </style>
 </head>
 <body>
-  <canvas id="sparkle-canvas"></canvas>
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+  <div class="aurora" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  <div class="scan-overlay" aria-hidden="true"></div>
+  <div class="spotlight" aria-hidden="true"></div>
+
   <div class="terminal-bar">
-    <div class="dots">
-      <span class="dot dot-r"></span>
-      <span class="dot dot-y"></span>
-      <span class="dot dot-g"></span>
+    <div class="tb-left">
+      <span class="dots"><span class="dot dot-a"></span><span class="dot dot-b"></span><span class="dot dot-c"></span></span>
+      <span class="path">cryptotrvkc@gmail.com</span>
     </div>
-    <span class="path">cryptotrvkc@gmail.com</span>
-    <button class="normal-mode-btn" id="normalModeBtn" onclick="goNormalMode()">[ TOGGLE NORMAL MODE ]</button>
+    <div class="tb-right">
+      <span class="uptime-wrap">UPTIME <span id="uptime">00:00:00</span></span>
+      <button class="normal-mode-btn" id="normalModeBtn" onclick="goNormalMode()">[ TOGGLE NORMAL MODE ]</button>
+    </div>
   </div>
-  <div class="runner-stage">
-    <canvas id="runner-canvas"></canvas>
+
+  <header class="hero-boot">
+    <div class="boot-line" id="bootLine">&gt;</div>
+    <div class="wordmark" id="wordmark" data-text="trvkc">trvkc</div>
+    <div class="subline"><span id="subline"></span><span class="blink-cursor"></span></div>
+    <div class="badge-wrap">
+      <span class="badge-ring" aria-hidden="true"></span>
+      <span class="profile-emoji" title="click me" role="button" tabindex="0">🤓</span>
+    </div>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="tickerTrack">
+      <span class="tick">BTC <b class="up">&#9650;</b> 128,402</span>
+      <span class="tick">MVRV 2.14</span>
+      <span class="tick">DXY <b class="down">&#9660;</b> 101.2</span>
+      <span class="tick">XAU <b class="up">&#9650;</b> 2,412</span>
+      <span class="tick">GC OI +4.1%</span>
+      <span class="tick">0DTE ARMED</span>
+      <span class="tick">LOAN LTV 42%</span>
+      <span class="tick">PVD +6.8%</span>
+      <span class="tick">SIGNAL LIVE</span>
+      <span class="tick">BTC <b class="up">&#9650;</b> 128,402</span>
+      <span class="tick">MVRV 2.14</span>
+      <span class="tick">DXY <b class="down">&#9660;</b> 101.2</span>
+      <span class="tick">XAU <b class="up">&#9650;</b> 2,412</span>
+      <span class="tick">GC OI +4.1%</span>
+      <span class="tick">0DTE ARMED</span>
+      <span class="tick">LOAN LTV 42%</span>
+      <span class="tick">PVD +6.8%</span>
+      <span class="tick">SIGNAL LIVE</span>
+    </div>
   </div>
-  <div class="wrapper">
-    <header class="hero">
-      <div class="profile-emoji-wrap">
-        <div class="profile-ring"></div>
-        <span class="profile-emoji" title="tap me!">🤓</span>
-      </div>
-      <div class="hero-text">
-        <div class="handle">trvkc<span class="cursor"></span></div>
-        <div class="tagline">Fixing my pain points by creating tools,<br>hope these app helps.</div>
-      </div>
-    </header>
-    <div class="section-label label-tools">⚙ tools</div>
-    <div class="cards" id="tools-list">
-      <a class="card card-green" href="https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">₿</span><div><div class="card-title">BTC-MVRV Analytics</div><div class="card-desc">Dynamic BTC analytics dashboard with MVRV ratio visualisation</div></div></div>
-        <span class="card-tag">BITCOIN · ON-CHAIN · ANALYTICS</span>
+
+  <main class="wrap">
+    <div class="sec-head"><span class="n">01</span><span class="tag">ACTIVE PROCESSES</span><span class="rule"></span><span class="tag dim" id="toolCount">/ 9</span></div>
+    <div class="procs" id="tools-list">
+
+      <a class="card" style="--accent:var(--volt)" href="https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">mvrv_analytics.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">BTC-MVRV Analytics</div><div class="card-desc">Dynamic BTC analytics dashboard with MVRV ratio visualisation</div><div class="card-tags"><span class="chip">BITCOIN</span><span class="chip">ON-CHAIN</span><span class="chip">ANALYTICS</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-green" href="https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard_mobile/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">₿</span><div><div class="card-title">BTC-MVRV Analytics (Mobile)</div><div class="card-desc">Dynamic BTC analytics dashboard with MVRV ratio visualisation</div></div></div>
-        <span class="card-tag">BITCOIN · ON-CHAIN · ANALYTICS</span>
+
+      <a class="card" style="--accent:var(--volt)" href="https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard_mobile/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">mvrv_analytics_m.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">BTC-MVRV Analytics (Mobile)</div><div class="card-desc">Dynamic BTC analytics dashboard with MVRV ratio visualisation</div><div class="card-tags"><span class="chip">BITCOIN</span><span class="chip">ON-CHAIN</span><span class="chip">ANALYTICS</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-orange" href="https://0xtrvkc.github.io/dynamic-btc-dxy-analytics-dashboard/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">💰</span><div><div class="card-title">BTC-DXY Analytics</div><div class="card-desc">Dynamic BTC analytics dashboard with DXY visualisation</div></div></div>
-        <span class="card-tag">BITCOIN · DXY · ANALYTICS</span>
+
+      <a class="card" style="--accent:var(--cyan)" href="https://0xtrvkc.github.io/dynamic-btc-dxy-analytics-dashboard/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">dxy_analytics.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">BTC-DXY Analytics</div><div class="card-desc">Dynamic BTC analytics dashboard with DXY visualisation</div><div class="card-tags"><span class="chip">BITCOIN</span><span class="chip">DXY</span><span class="chip">ANALYTICS</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-blue" href="https://0xtrvkc.github.io/BTC-Daily-Short-Call-Premium-Income-Checklist/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">📡</span><div><div class="card-title">BTC 0DTE Signal</div><div class="card-desc">Daily short-call premium income checklist &amp; indicator suite</div></div></div>
-        <span class="card-tag">OPTIONS · 0DTE · SIGNAL</span>
+
+      <a class="card" style="--accent:var(--cyan)" href="https://0xtrvkc.github.io/BTC-Daily-Short-Call-Premium-Income-Checklist/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">0dte_signal.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">BTC 0DTE Signal</div><div class="card-desc">Daily short-call premium income checklist &amp; indicator suite</div><div class="card-tags"><span class="chip">OPTIONS</span><span class="chip">0DTE</span><span class="chip">SIGNAL</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-yellow" href="https://0xtrvkc.github.io/btcLoanAnalyzer/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">🏦</span><div><div class="card-title">BTC Loan Analyzer</div><div class="card-desc">Model BTC-collateral loans: LTV, liquidation, and cash flow</div></div></div>
-        <span class="card-tag">DEFI · LENDING · CALCULATOR</span>
+
+      <a class="card" style="--accent:var(--magenta)" href="https://0xtrvkc.github.io/btcLoanAnalyzer/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">loan_analyzer.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">BTC Loan Analyzer</div><div class="card-desc">Model BTC-collateral loans: LTV, liquidation, and cash flow</div><div class="card-tags"><span class="chip">DEFI</span><span class="chip">LENDING</span><span class="chip">CALCULATOR</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-pink" href="https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">📊</span><div><div class="card-title">Gold SD Visualizer</div><div class="card-desc">Intraday OI standard deviation visualiser for Gold (OG|GC)</div></div></div>
-        <span class="card-tag">GOLD · OI · STD-DEV</span>
+
+      <a class="card" style="--accent:var(--amber)" href="https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">gold_sd.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">Gold SD Visualizer</div><div class="card-desc">Intraday OI standard deviation visualiser for Gold (OG|GC)</div><div class="card-tags"><span class="chip">GOLD</span><span class="chip">OI</span><span class="chip">STD-DEV</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-pink" href="https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer_mobile/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">📊</span><div><div class="card-title">Gold SD Visualizer (Mobile)</div><div class="card-desc">Intraday OI standard deviation visualiser for Gold (OG|GC)</div></div></div>
-        <span class="card-tag">GOLD · OI · STD-DEV</span>
+
+      <a class="card" style="--accent:var(--amber)" href="https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer_mobile/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">gold_sd_m.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">Gold SD Visualizer (Mobile)</div><div class="card-desc">Intraday OI standard deviation visualiser for Gold (OG|GC)</div><div class="card-tags"><span class="chip">GOLD</span><span class="chip">OI</span><span class="chip">STD-DEV</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-purple" href="https://0xtrvkc.github.io/itd-oi-db/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">🗄️</span><div><div class="card-title">Vol2Vol Gold DB</div><div class="card-desc">Volatility-to-volatility Gold (OG|GC) open interest database</div></div></div>
-        <span class="card-tag">VOL · DATABASE · GOLD</span>
+
+      <a class="card" style="--accent:var(--amber)" href="https://0xtrvkc.github.io/itd-oi-db/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">vol2vol_db.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">Vol2Vol Gold DB</div><div class="card-desc">Volatility-to-volatility Gold (OG|GC) open interest database</div><div class="card-tags"><span class="chip">VOL</span><span class="chip">DATABASE</span><span class="chip">GOLD</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
-      <a class="card card-green" href="https://0xtrvkc.github.io/pvd-vs-investment/" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">⚔</span><div><div class="card-title">PVD VS Investment</div><div class="card-desc">Comparing a provident fund with your investment growth</div></div></div>
-        <span class="card-tag">Comparing · Retirement · Future plan</span>
+
+      <a class="card" style="--accent:var(--volt)" href="https://0xtrvkc.github.io/pvd-vs-investment/" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">pvd_vs_invest.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">PVD vs Investment</div><div class="card-desc">Comparing a provident fund with your investment growth</div><div class="card-tags"><span class="chip">COMPARING</span><span class="chip">RETIREMENT</span><span class="chip">FUTURE PLAN</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
 
       <!--
       ══ CARD BLANK TEMPLATE — copy & paste to add a new tool ══
-      Available color classes: card-green, card-blue, card-pink, card-yellow, card-purple, card-orange
+      Leave card-idx empty and the "/ 9" counter above updates itself.
+      Accent options: var(--volt) var(--cyan) var(--magenta) var(--amber)
 
-      <a class="card card-orange" href="YOUR_LINK_HERE" target="_blank" rel="noopener">
-        <span class="card-arrow">↗</span>
-        <div class="card-header"><span class="card-icon">🔧</span><div><div class="card-title">Tool Name Here</div><div class="card-desc">Short description of what this tool does</div></div></div>
-        <span class="card-tag">TAG · TAG · TAG</span>
+      <a class="card" style="--accent:var(--cyan)" href="YOUR_LINK_HERE" target="_blank" rel="noopener">
+        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">new_tool.run</span><span class="live">LIVE</span></div>
+        <div class="card-body"><span class="card-idx"></span><div class="card-title">Tool Name Here</div><div class="card-desc">Short description</div><div class="card-tags"><span class="chip">TAG</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
       -->
+
     </div>
-    <div class="section-label label-creative">✦ creative</div>
-    <div class="creative-grid">
-      <a class="creative-card vid" href="https://instagram.com/expsr.v" target="_blank" rel="noopener">
-        <span class="creative-icon">🎬</span>
+
+    <div class="sec-head"><span class="n">02</span><span class="tag">SIGNAL OUT</span><span class="rule"></span><span class="tag dim">/ 2</span></div>
+    <div class="reels">
+      <a class="creative-card" style="--accent:var(--magenta)" href="https://instagram.com/expsr.v" target="_blank" rel="noopener">
+        <span class="reel-badge">REEL 01</span>
+        <span class="reel-icon" aria-hidden="true">&#127902;</span>
         <div class="creative-title">Videography</div>
-        <div class="creative-sub">@expsr.v</div>
-        <span class="ig-badge">INSTAGRAM</span>
+        <div class="creative-sub">@expsr.v &mdash; Instagram</div>
       </a>
-      <a class="creative-card loop" href="https://instagram.com/contrvkc" target="_blank" rel="noopener">
-        <span class="creative-icon">🔁</span>
+      <a class="creative-card" style="--accent:var(--cyan)" href="https://instagram.com/contrvkc" target="_blank" rel="noopener">
+        <span class="reel-badge">REEL 02</span>
+        <span class="reel-icon" aria-hidden="true">&#128257;</span>
         <div class="creative-title">Loop Anim</div>
-        <div class="creative-sub">@contrvkc</div>
-        <span class="ig-badge">INSTAGRAM</span>
+        <div class="creative-sub">@contrvkc &mdash; Instagram</div>
       </a>
     </div>
-    <footer class="footer"><p>made with <span>♥</span> + too much coffee</p></footer>
-  </div>
+
+    <div class="sys-log"><span class="sys-tag">[SYS]</span>notice — tools built to fix personal workflow gaps, shared as-is. no warranty implied. nothing here is financial advice.</div>
+    <div class="footer-prompt">$ echo "built with obsession + caffeine"<span class="blink-cursor"></span></div>
+  </main>
+
   <script>
   (function () {
-    const BREATH_ENABLED = true;
-    const SPD_MIN        = 0.04;
-    const SPD_MAX        = 0.10;
-    const BREATH_PERIOD  = 30000;
-    const SPD_FIXED      = 0.06;
-    const RUNNER_BASE_SPEED    = 20;
-    const EMOJI_BASE_INTERVAL  = 1.0;
-    const RUNNER_SIZE          = 32;
-    const EMOJIS = ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','😘','🥰','😗'];
-    const RAGE_EMOJIS   = ['👿','😠','😡','💀','😈'];
-    const RAGE_INTERVAL = 0.25;
-    const RAGE_DURATION = 4.0;
-    let rageMode=false,rageTimer=0,rageEmojiIdx=0,rageSwapTimer=0;
-    const root=document.documentElement;
-    let currentSpd=SPD_MIN;
-    function updateBreath(ts){if(!BREATH_ENABLED){currentSpd=SPD_FIXED;}else{const phase=(ts%BREATH_PERIOD)/BREATH_PERIOD*Math.PI*2;currentSpd=SPD_MIN+(SPD_MAX-SPD_MIN)*0.5*(1+Math.sin(phase));}root.style.setProperty('--spd',currentSpd.toFixed(4));}
-    const rc=document.getElementById('runner-canvas');
-    const rctx=rc.getContext('2d');
-    function resizeRunner(){rc.width=rc.offsetWidth;rc.height=rc.offsetHeight;}
-    window.addEventListener('resize',resizeRunner);resizeRunner();
-    let runX=0,runDir=1,emojiIdx=0,emojiTimer=0;
-    function updateRunner(dt){const speedScale=currentSpd/SPD_MIN;const pxPerSec=RUNNER_BASE_SPEED*speedScale;runX+=runDir*pxPerSec*dt;const activeSize=rageMode?RUNNER_SIZE*1.5:RUNNER_SIZE;const pad=activeSize;const maxX=rc.width-pad;if(runDir===1&&runX>=maxX){runX=maxX;runDir=-1;}else if(runDir===-1&&runX<=0){runX=0;runDir=1;}if(rageMode){rageTimer-=dt;rageSwapTimer+=dt;if(rageSwapTimer>=RAGE_INTERVAL){rageSwapTimer=0;rageEmojiIdx=(rageEmojiIdx+1)%RAGE_EMOJIS.length;}if(rageTimer<=0){rageMode=false;rageTimer=0;emojiTimer=0;}}else{const interval=EMOJI_BASE_INTERVAL/speedScale;emojiTimer+=dt;if(emojiTimer>=interval){emojiTimer=0;emojiIdx=(emojiIdx+1)%EMOJIS.length;}}}
-    function drawRunner(){rctx.clearRect(0,0,rc.width,rc.height);const drawSize=rageMode?RUNNER_SIZE*1.5:RUNNER_SIZE;const emoji=rageMode?RAGE_EMOJIS[rageEmojiIdx]:EMOJIS[emojiIdx];const y=rc.height/2+drawSize*0.35;rctx.save();rctx.font=drawSize+'px serif';rctx.textBaseline='alphabetic';if(runDir===-1){rctx.translate(Math.round(runX)+drawSize*0.5,0);rctx.scale(-1,1);rctx.fillText(emoji,-drawSize*0.5,y);}else{rctx.fillText(emoji,Math.round(runX),y);}rctx.restore();}
-    const sc=document.getElementById('sparkle-canvas');
-    const sctx=sc.getContext('2d');
-    const SPARK_COLORS=['#00ff41','#ff2d78','#00cfff','#ffe400','#c77dff','#ff7b00'];
-    function resizeSparkle(){sc.width=window.innerWidth;sc.height=window.innerHeight;}
-    window.addEventListener('resize',resizeSparkle);resizeSparkle();
-    class Star{constructor(){this.reset(true);}reset(initial){this.x=Math.random()*sc.width;this.y=initial?Math.random()*sc.height:-8;this.r=Math.random()*1.6+0.3;this.vy=Math.random()*0.3+0.08;this.vx=(Math.random()-0.5)*0.2;this.color=SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];this.alpha=Math.random()*0.6+0.2;this.twinkleSpeed=Math.random()*0.02+0.008;this.twinkleOff=Math.random()*Math.PI*2;this.shape=Math.random()<0.3?'diamond':'circle';}update(t,scale){this.y+=this.vy*scale;this.x+=this.vx*scale;if(this.y>sc.height+8)this.reset(false);}draw(t){const a=this.alpha*(0.6+0.4*Math.sin(t*this.twinkleSpeed+this.twinkleOff));sctx.save();sctx.globalAlpha=a;sctx.fillStyle=this.color;sctx.shadowColor=this.color;sctx.shadowBlur=this.r*4;if(this.shape==='diamond'){sctx.translate(this.x,this.y);sctx.rotate(Math.PI/4);sctx.fillRect(-this.r,-this.r,this.r*2,this.r*2);}else{sctx.beginPath();sctx.arc(this.x,this.y,this.r,0,Math.PI*2);sctx.fill();}sctx.restore();}}
-    class Burst{constructor(x,y){this.particles=Array.from({length:12},()=>({x,y,vx:(Math.random()-0.5)*5,vy:(Math.random()-0.5)*5,r:Math.random()*3+1,color:SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)],life:1}));}update(){this.particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.life-=0.03;});this.particles=this.particles.filter(p=>p.life>0);}draw(){this.particles.forEach(p=>{sctx.save();sctx.globalAlpha=p.life;sctx.fillStyle=p.color;sctx.shadowColor=p.color;sctx.shadowBlur=p.r*3;sctx.beginPath();sctx.arc(p.x,p.y,p.r,0,Math.PI*2);sctx.fill();sctx.restore();});}get done(){return this.particles.length===0;}}
-    const stars=Array.from({length:80},()=>new Star());
-    const bursts=[];
-    document.addEventListener('click',e=>bursts.push(new Burst(e.clientX,e.clientY)));
-    function shuffleCards(){const list=document.getElementById('tools-list');const cards=Array.from(list.querySelectorAll('a.card'));if(cards.length<2)return;const FLIP_OUT=220;const FLIP_IN=220;const STAGGER=60;cards.forEach((card,i)=>{setTimeout(()=>{card.classList.add('card-flipping-out');},i*STAGGER);});const reorderAt=cards.length*STAGGER+FLIP_OUT;setTimeout(()=>{const shuffled=[...cards];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}shuffled.forEach(card=>{card.classList.remove('card-flipping-out');card.style.opacity='0';list.appendChild(card);});shuffled.forEach((card,i)=>{setTimeout(()=>{card.classList.add('card-flipping-in');card.addEventListener('animationend',()=>{card.classList.remove('card-flipping-in');},{once:true});},i*STAGGER);});},reorderAt);}
-    const emojiEl=document.querySelector('.profile-emoji');
-    emojiEl.addEventListener('click',()=>{emojiEl.textContent='🤪';setTimeout(()=>{emojiEl.textContent='🤓';},250);emojiEl.style.animation='none';void emojiEl.offsetWidth;emojiEl.style.animation='wiggle calc(0.9s / var(--spd)) ease-in-out, float calc(6s / var(--spd)) ease-in-out 0.9s infinite';rageMode=true;rageTimer=RAGE_DURATION;rageSwapTimer=0;rageEmojiIdx=0;shuffleCards();});
-    window.goNormalMode=function(){const btn=document.getElementById('normalModeBtn');if(btn){btn.textContent='[ RESTORING... ]';btn.disabled=true;}const stash=window.name||'';if(stash.indexOf('NORMAL_HTML::')===0){const html=stash.slice('NORMAL_HTML::'.length);document.open();document.write(html);document.close();}else{document.write('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0"></head><body></body></html>');document.close();}};
-    let t=0,lastTime=0;
-    const TARGET=1000/60;
-    function loop(ts){const elapsed=ts-lastTime;if(elapsed<TARGET){requestAnimationFrame(loop);return;}const dt=Math.min(elapsed,100)/1000;lastTime=ts-(elapsed%TARGET);updateBreath(ts);updateRunner(dt);drawRunner();t++;const scale=currentSpd/SPD_MIN;sctx.clearRect(0,0,sc.width,sc.height);stars.forEach(s=>{s.update(t,scale);s.draw(t);});for(let i=bursts.length-1;i>=0;i--){bursts[i].update();bursts[i].draw();if(bursts[i].done)bursts.splice(i,1);}requestAnimationFrame(loop);}
-    requestAnimationFrame(loop);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ── boot sequence ── */
+    function typeInto(el, text, speed, cb) {
+      let i = 0; el.textContent = '';
+      const iv = setInterval(() => {
+        el.textContent += text[i]; i++;
+        if (i >= text.length) { clearInterval(iv); if (cb) cb(); }
+      }, speed);
+    }
+    function decodeText(el, finalText, duration, cb) {
+      const chars = '!<>-_/[]{}=+*^?#01';
+      const startTime = performance.now();
+      const len = finalText.length;
+      function frame(now) {
+        const progress = Math.min(1, (now - startTime) / duration);
+        let out = '';
+        for (let i = 0; i < len; i++) {
+          out += (progress * len > i + 1 || progress >= 1) ? finalText[i] : chars[Math.floor(Math.random() * chars.length)];
+        }
+        el.textContent = out;
+        if (progress < 1) { requestAnimationFrame(frame); } else if (cb) { cb(); }
+      }
+      requestAnimationFrame(frame);
+    }
+    const bootEl = document.getElementById('bootLine');
+    const wordEl = document.getElementById('wordmark');
+    const subEl  = document.getElementById('subline');
+    const finalWord = wordEl.getAttribute('data-text') || 'trvkc';
+    const finalSub  = 'fixing my own problems, shipping the fix_';
+    if (reduced) {
+      bootEl.textContent = '> fun_mode: ready';
+      wordEl.textContent = finalWord;
+      subEl.textContent = finalSub;
+    } else {
+      wordEl.textContent = '';
+      typeInto(bootEl, '> booting fun_mode.exe ...', 26, () => {
+        setTimeout(() => {
+          decodeText(wordEl, finalWord, 700, () => {
+            typeInto(subEl, finalSub, 22);
+          });
+        }, 200);
+      });
+      setInterval(() => {
+        wordEl.classList.add('pulse');
+        setTimeout(() => wordEl.classList.remove('pulse'), 260);
+      }, 9000);
+    }
+
+    /* ── uptime clock ── */
+    const startedAt = Date.now();
+    const upEl = document.getElementById('uptime');
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function tickUptime() {
+      const s = Math.floor((Date.now() - startedAt) / 1000);
+      const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
+      if (upEl) upEl.textContent = pad(hh) + ':' + pad(mm) + ':' + pad(ss);
+    }
+    tickUptime(); setInterval(tickUptime, 1000);
+
+    /* ── cursor spotlight ── */
+    const spot = document.querySelector('.spotlight');
+    if (spot) {
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        window.addEventListener('mousemove', e => {
+          document.documentElement.style.setProperty('--mx', e.clientX + 'px');
+          document.documentElement.style.setProperty('--my', e.clientY + 'px');
+        });
+      } else {
+        spot.style.display = 'none';
+      }
+    }
+
+    /* ── click-burst fx ── */
+    const fx = document.getElementById('fx-canvas');
+    const fctx = fx.getContext('2d');
+    function resizeFx() { fx.width = window.innerWidth; fx.height = window.innerHeight; }
+    window.addEventListener('resize', resizeFx); resizeFx();
+    const FX_COLORS = ['#c6ff3d', '#33e6ff', '#ff3ec8', '#ffb43d'];
+    class Burst {
+      constructor(x, y) {
+        this.particles = Array.from({ length: 12 }, () => ({
+          x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5,
+          r: Math.random() * 3 + 1, color: FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)], life: 1
+        }));
+      }
+      update() {
+        this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= 0.03; });
+        this.particles = this.particles.filter(p => p.life > 0);
+      }
+      draw() {
+        this.particles.forEach(p => {
+          fctx.save(); fctx.globalAlpha = p.life; fctx.fillStyle = p.color;
+          fctx.shadowColor = p.color; fctx.shadowBlur = p.r * 3;
+          fctx.beginPath(); fctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); fctx.fill(); fctx.restore();
+        });
+      }
+      get done() { return this.particles.length === 0; }
+    }
+    const bursts = [];
+    document.addEventListener('click', e => { if (!reduced) bursts.push(new Burst(e.clientX, e.clientY)); });
+    function fxLoop() {
+      fctx.clearRect(0, 0, fx.width, fx.height);
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        bursts[i].update(); bursts[i].draw();
+        if (bursts[i].done) bursts.splice(i, 1);
+      }
+      requestAnimationFrame(fxLoop);
+    }
+    requestAnimationFrame(fxLoop);
+
+    /* ── process numbering (auto, mirrors the normal-mode behaviour) ── */
+    function numberProcs() {
+      const list = document.getElementById('tools-list');
+      if (!list) return;
+      const cards = list.querySelectorAll('a.card');
+      cards.forEach((c, i) => {
+        const idx = c.querySelector('.card-idx');
+        if (idx) idx.textContent = 'PROC_' + String(i + 1).padStart(2, '0');
+      });
+      const countEl = document.getElementById('toolCount');
+      if (countEl) countEl.textContent = '/ ' + cards.length;
+    }
+    numberProcs();
+
+    /* ── shuffle on avatar click ── */
+    function shuffleCards() {
+      const list = document.getElementById('tools-list');
+      const cards = Array.from(list.querySelectorAll('a.card'));
+      if (cards.length < 2) return;
+      const FLIP_OUT = 220, STAGGER = 60;
+      cards.forEach((card, i) => { setTimeout(() => { card.classList.add('card-flipping-out'); }, i * STAGGER); });
+      const reorderAt = cards.length * STAGGER + FLIP_OUT;
+      setTimeout(() => {
+        const shuffled = [...cards];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        shuffled.forEach(card => { card.classList.remove('card-flipping-out'); card.style.opacity = '0'; list.appendChild(card); });
+        numberProcs();
+        shuffled.forEach((card, i) => {
+          setTimeout(() => {
+            card.classList.add('card-flipping-in');
+            card.addEventListener('animationend', () => { card.classList.remove('card-flipping-in'); }, { once: true });
+          }, i * STAGGER);
+        });
+      }, reorderAt);
+    }
+
+    /* ── avatar glitch burst ── */
+    const emojiEl = document.querySelector('.profile-emoji');
+    const GLITCH_EMOJIS = ['🥴', '🫨', '🌀', '⚡', '🤖'];
+    let glitchTimer = null;
+    emojiEl.addEventListener('click', () => {
+      shuffleCards();
+      if (reduced) return;
+      document.body.classList.add('glitch-mode');
+      let gi = 0;
+      clearInterval(glitchTimer);
+      glitchTimer = setInterval(() => { emojiEl.textContent = GLITCH_EMOJIS[gi % GLITCH_EMOJIS.length]; gi++; }, 140);
+      setTimeout(() => {
+        clearInterval(glitchTimer);
+        emojiEl.textContent = '🤓';
+        document.body.classList.remove('glitch-mode');
+      }, 2400);
+    });
+
+    /* ── restore to normal mode ── */
+    window.goNormalMode = function () {
+      const btn = document.getElementById('normalModeBtn');
+      if (btn) { btn.textContent = '[ RESTORING... ]'; btn.disabled = true; }
+      const stash = window.name || '';
+      if (stash.indexOf('NORMAL_HTML::') === 0) {
+        const html = stash.slice('NORMAL_HTML::'.length);
+        document.open(); document.write(html); document.close();
+      } else {
+        document.write('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0"></head><body></body></html>');
+        document.close();
+      }
+    };
   })();
-  </scr`+'ipt>\n</body>\n</html>';
+    </scr`+'ipt>\n</body>\n</html>';
 
   </script>
 
