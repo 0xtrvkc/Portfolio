@@ -725,10 +725,7 @@
 
   function activateFunMode() {
     clearTimeout(loopTimer);
-    btn.classList.remove('phase-formal', 'phase-uneasy', 'phase-chaos');
-    btn.classList.add('phase-chaos');
-    label.textContent = '[ 🚀 LAUNCHING FUN MODE ]';
-    setTimeout(() => { loadFunPortfolio(); }, 400);
+    loadFunPortfolio();
   }
 
   function loadFunPortfolio() {
@@ -898,9 +895,6 @@
       .procs { display: grid; grid-template-columns: 1fr 1fr; }
       .reels { display: grid; grid-template-columns: 1fr 1fr; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-    }
   </style>
 </head>
 <body>
@@ -1037,7 +1031,7 @@
 
   <script>
   (function () {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = false; // forced on — animations always play, ignoring OS Reduce Motion setting
 
     /* ── boot sequence ── */
     function typeInto(el, text, speed, cb) {
