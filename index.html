@@ -823,15 +823,11 @@
     .profile-emoji:hover { transform: scale(1.08) rotate(-4deg); }
     .profile-emoji:active { transform: scale(0.95); }
 
-    /* ── ticker ── */
-    .ticker-wrap { position: relative; z-index: 10; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.015); overflow: hidden; white-space: nowrap; padding: 10px 0; }
-    .ticker-track { display: inline-flex; gap: 28px; animation: ticker-scroll 26s linear infinite; will-change: transform; }
-    body.glitch-mode .ticker-track { animation-duration: 5s; }
-    @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    .tick { font-size: 0.72rem; letter-spacing: 0.06em; color: var(--dim); display: inline-flex; align-items: center; gap: 6px; }
-    .tick b { font-style: normal; }
-    .tick b.up { color: var(--volt); }
-    .tick b.down { color: var(--magenta); }
+    /* ── poem band (was: ticker) ── */
+    .ticker-wrap { position: relative; z-index: 10; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.015); overflow: hidden; padding: 16px 20px; text-align: center; }
+    .poem-box { display: inline-block; max-width: 620px; font-size: 0.74rem; letter-spacing: 0.03em; line-height: 1.7; color: var(--dim); opacity: 0; transform: translateY(3px); transition: opacity 0.45s ease, transform 0.45s ease; }
+    .poem-box.visible { opacity: 1; transform: translateY(0); }
+    .poem-box .poem-title { display: block; color: var(--volt); font-size: 0.66rem; letter-spacing: 0.14em; margin-bottom: 6px; }
 
     /* ── layout ── */
     .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 90px; position: relative; }
@@ -932,26 +928,7 @@
   </header>
 
   <div class="ticker-wrap">
-    <div class="ticker-track" id="tickerTrack">
-      <span class="tick">BTC <b class="up">&#9650;</b> 128,402</span>
-      <span class="tick">MVRV 2.14</span>
-      <span class="tick">DXY <b class="down">&#9660;</b> 101.2</span>
-      <span class="tick">XAU <b class="up">&#9650;</b> 2,412</span>
-      <span class="tick">GC OI +4.1%</span>
-      <span class="tick">0DTE ARMED</span>
-      <span class="tick">LOAN LTV 42%</span>
-      <span class="tick">PVD +6.8%</span>
-      <span class="tick">SIGNAL LIVE</span>
-      <span class="tick">BTC <b class="up">&#9650;</b> 128,402</span>
-      <span class="tick">MVRV 2.14</span>
-      <span class="tick">DXY <b class="down">&#9660;</b> 101.2</span>
-      <span class="tick">XAU <b class="up">&#9650;</b> 2,412</span>
-      <span class="tick">GC OI +4.1%</span>
-      <span class="tick">0DTE ARMED</span>
-      <span class="tick">LOAN LTV 42%</span>
-      <span class="tick">PVD +6.8%</span>
-      <span class="tick">SIGNAL LIVE</span>
-    </div>
+    <div class="poem-box" id="poemBox" aria-live="polite"></div>
   </div>
 
   <main class="wrap">
@@ -1110,6 +1087,111 @@
         spot.style.display = 'none';
       }
     }
+
+    /* ── poem band: 10 original poems, shuffled and rotated one at a time ──
+       Uses a "shuffle bag": shuffle all 10 indices, show them one by one,
+       and only reshuffle once every poem in the bag has been shown —
+       so you never see a repeat until the full set has cycled. */
+    (function poemRotator() {
+      const box = document.getElementById('poemBox');
+      if (!box) return;
+
+      const POEMS = [
+        ['FRIDAY DEPLOY', [
+          'I pushed to prod on Friday night,',
+          'ignored the tests, ignored the fright.',
+          'Now it is the weekend, phone on fire —',
+          'this is fine, this is fine, this is fire.'
+        ]],
+        ['STANDUP', [
+          '"No blockers," I say out loud,',
+          'while my code quietly burns the crowd.',
+          'Nobody asks a follow-up thing —',
+          'we are all just faking everything.'
+        ]],
+        ['CONSOLE.LOG', [
+          'I debug with console.log,',
+          'professionals call it "tracing."',
+          'I call it screaming into the void',
+          'and hoping something is pacing.'
+        ]],
+        ['COFFEE', [
+          'Coffee is my love language,',
+          'also my whole personality,',
+          'also the reason I still know',
+          'what "asynchronous" means, technically.'
+        ]],
+        ['404', [
+          'Roses are red, this page is gone,',
+          'so is my will to carry on.',
+          'But hey, at least the button is sound —',
+          'small mercies, cursor, homeward bound.'
+        ]],
+        ['CODE REVIEW', [
+          '"LGTM," I typed with pride,',
+          'not reading a single line inside.',
+          'We are all just faking expertise,',
+          'one careless merge, one gentle please.'
+        ]],
+        ['THE BUG', [
+          'It worked at two, it broke at nine,',
+          'somewhere between I lost my mind',
+          'and also lost one semicolon —',
+          'we never found where either had gone.'
+        ]],
+        ['SLEEP SCHEDULE', [
+          'I do not have insomnia,',
+          'I have "aggressive late-night focus."',
+          'My bed and I are long distance now,',
+          'we speak through texts, mostly hopeless.'
+        ]],
+        ['GIT BLAME', [
+          'I ran git blame to find the fool',
+          'who wrote this mess, who broke this rule.',
+          'Turns out it is me, six months ago —',
+          'past me, you absolute goblin, you.'
+        ]],
+        ['THE TOGGLE BUTTON', [
+          'Click me once, I am professional,',
+          'click me twice, I lose the plot,',
+          'click me thrice, security is involved,',
+          'click me more — see what you have got.'
+        ]]
+      ];
+
+      function esc(s) {
+        return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+      }
+
+      let bag = [];
+      function refillBag() {
+        bag = POEMS.map((_, i) => i);
+        for (let i = bag.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const tmp = bag[i]; bag[i] = bag[j]; bag[j] = tmp;
+        }
+      }
+      function nextIndex() {
+        if (bag.length === 0) refillBag();
+        return bag.pop();
+      }
+
+      function showNext() {
+        const poem = POEMS[nextIndex()];
+        const title = poem[0], lines = poem[1];
+        box.classList.remove('visible');
+        setTimeout(() => {
+          box.innerHTML = '<span class="poem-title">' + esc(title) + '</span>' +
+            lines.map(esc).join('<br>');
+          void box.offsetWidth; // force reflow so the fade-in transition replays
+          box.classList.add('visible');
+        }, 420);
+      }
+
+      showNext(); // show one poem on load
+      const emojiTrigger = document.querySelector('.profile-emoji');
+      if (emojiTrigger) emojiTrigger.addEventListener('click', showNext);
+    })();
 
     /* ── start ambient blob drift only after the new page has actually painted once ──
        Kicking these off in the same tick as document.write() means the browser has to
