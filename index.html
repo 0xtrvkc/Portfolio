@@ -670,6 +670,8 @@
   </div>
 
   <script>
+  (function () {
+  if (typeof window.__trvkcDispose === 'function') window.__trvkcDispose();
   /* ═══════════════════════════════════════════════════════════════
      TOGGLE LOGIC
      The button cycles through 3 phases before redirecting:
@@ -703,8 +705,10 @@
   // Re-run automatically if cards are ever added/removed/reordered
   // at runtime (e.g. via devtools, a future CMS, or fun-mode shuffle).
   const toolsListEl = document.getElementById('tools-list');
+  let cardsObserver = null;
   if (toolsListEl && window.MutationObserver) {
-    new MutationObserver(autoNumberCards).observe(toolsListEl, { childList: true });
+    cardsObserver = new MutationObserver(autoNumberCards);
+    cardsObserver.observe(toolsListEl, { childList: true });
   }
 
   const btn   = document.getElementById('modeBtn');
@@ -712,9 +716,7 @@
 
   // Stash the pristine "normal mode" HTML so fun mode can restore it later.
   // window.name survives document.write/document.open/close in the same tab.
-  if (!window.name || window.name.indexOf('NORMAL_HTML::') !== 0) {
-    window.name = 'NORMAL_HTML::' + document.documentElement.outerHTML;
-  }
+  window.name = 'NORMAL_HTML::<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
   const PHASES = [
     { cls: 'phase-formal', text: '[ TOGGLE VIEW ]',          duration: 1800 },
@@ -750,14 +752,19 @@
     loopTimer = setTimeout(step, phase.duration);
   }
 
+  window.__trvkcDispose = function () {
+    clearTimeout(loopTimer);
+    if (cardsObserver) cardsObserver.disconnect();
+  };
   runLoop();
 
-  function activateFunMode() {
+  window.activateFunMode = function () {
     clearTimeout(loopTimer);
     loadFunPortfolio();
   }
 
   function loadFunPortfolio() {
+    window.__trvkcDispose();
     document.open();
     document.write(funnyPortfolioHTML);
     document.close();
@@ -768,7 +775,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>trvkc :: fun_mode</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -888,20 +895,6 @@
     .card-launch .go { color: var(--accent, var(--volt)); opacity: 0; transform: translateX(-4px); transition: opacity 0.2s, transform 0.2s; }
     .card:hover .card-launch .go { opacity: 1; transform: translateX(0); }
 
-    @keyframes card-flip-out { 0% { transform: rotateY(0deg); opacity: 1; } 100% { transform: rotateY(90deg); opacity: 0; } }
-    @keyframes card-flip-in { 0% { transform: rotateY(-90deg); opacity: 0; } 100% { transform: rotateY(0deg); opacity: 1; } }
-    .card-flipping-out { animation: card-flip-out 0.22s ease-in forwards !important; pointer-events: none; }
-    .card-flipping-in { animation: card-flip-in 0.22s ease-out forwards !important; pointer-events: none; }
-
-    .card, .creative-card { opacity: 0; animation: fadeInUp 0.5s ease forwards; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-    .card:nth-child(1) { animation-delay: 0.08s; } .card:nth-child(2) { animation-delay: 0.16s; }
-    .card:nth-child(3) { animation-delay: 0.24s; } .card:nth-child(4) { animation-delay: 0.32s; }
-    .card:nth-child(5) { animation-delay: 0.40s; } .card:nth-child(6) { animation-delay: 0.48s; }
-    .card:nth-child(7) { animation-delay: 0.56s; } .card:nth-child(8) { animation-delay: 0.64s; }
-    .card:nth-child(9) { animation-delay: 0.72s; }
-    .creative-card:nth-child(1) { animation-delay: 0.5s; } .creative-card:nth-child(2) { animation-delay: 0.6s; }
-
     /* ── creative reels ── */
     .reels { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 10; }
     .creative-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 26px 22px; text-decoration: none; color: inherit; position: relative; overflow: hidden; display: block; transition: transform 0.28s cubic-bezier(.2,.8,.2,1), border-color 0.28s, box-shadow 0.28s; }
@@ -927,10 +920,192 @@
       .procs { display: grid; grid-template-columns: 1fr 1fr; }
       .reels { display: grid; grid-template-columns: 1fr 1fr; }
     }
+    /* FUN MODE / OVERLOAD — all effects stay inside the embedded fun document. */
+    :root { --dim: #95a6bc; --heat: 0; }
+    #ambient-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+    #fx-canvas { z-index: 90; }
+    .aurora .blob { opacity: .36; animation-play-state: paused; }
+    .aurora .blob.fx-live { animation-play-state: running; }
+    .b1 { animation-duration: 12s; }
+    .b2 { animation-duration: 15s; }
+    .b3 { animation-duration: 18s; }
+    @keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(24vw,26vh) scale(1.35); } }
+    @keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1.2); } 50% { transform: translate(-25vw,-22vh) scale(.8); } }
+    @keyframes drift3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-34vw,18vh) scale(1.45); } }
+    .chaos-grid { position: fixed; inset: 0; overflow: hidden; z-index: 1; pointer-events: none; opacity: .24; }
+    .chaos-grid::before { content: ''; position: absolute; inset: -60%; background-image: linear-gradient(rgba(51,230,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(198,255,61,.22) 1px,transparent 1px); background-size: 76px 76px; transform: perspective(600px) rotateX(55deg) rotateZ(-14deg); animation: grid-travel 10s linear infinite; }
+    @keyframes grid-travel { to { background-position: 0 152px,76px 152px; } }
+    .chaos-vignette { position: fixed; inset: 0; z-index: 89; pointer-events: none; box-shadow: inset 0 0 100px -50px var(--cyan),inset 0 -35px 90px -55px var(--magenta); opacity: .45; transition: opacity 1s; }
+    .fx-overdrive .chaos-vignette { opacity: 1; box-shadow: inset 0 0 120px -45px var(--magenta),inset 0 -35px 100px -40px var(--cyan); }
+    .fx-overdrive .blob { opacity: .48; }
+    .fx-overdrive .badge-ring { animation-duration: 2s; }
+    .chaos-progress { position: fixed; z-index: 110; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg,var(--volt),var(--cyan),var(--magenta),var(--amber)); box-shadow: 0 0 12px var(--cyan); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+    .terminal-bar { border-bottom-color: rgba(51,230,255,.25); }
+    .tb-right { gap: 8px; }
+    .normal-mode-btn { min-height: 34px; color: #c0cee0; font-size: .65rem; }
+    #fxPauseBtn { border-color: rgba(198,255,61,.55); color: var(--volt); }
+    #fxPauseBtn[aria-pressed="true"] { color: var(--ghost); border-color: var(--dim); }
+    .dot { animation: dot-hop 1.8s ease-in-out infinite; }
+    .dot-b { animation-delay: -.3s; }
+    .dot-c { animation-delay: -.6s; }
+    @keyframes dot-hop { 0%,65%,100% { transform: translateY(0); } 25% { transform: translateY(-3px) scale(1.25); box-shadow: 0 0 9px currentColor; } }
+    .hero-boot { padding-top: 66px; }
+    .wordmark { cursor: pointer; animation: title-float 4.8s ease-in-out infinite; text-shadow: -3px 0 rgba(51,230,255,.6),3px 0 rgba(255,62,200,.65),0 0 60px rgba(198,255,61,.4); }
+    .wordmark::before { animation: chroma-drift 6s ease-in-out infinite; }
+    .wordmark::after { animation: chroma-drift 6s ease-in-out -3s infinite reverse; }
+    .wordmark:hover { color: var(--volt); text-shadow: -7px 2px var(--cyan),7px -2px var(--magenta),0 0 60px var(--volt); }
+    @keyframes title-float { 0%,100% { translate: 0 0; rotate: -2deg; } 50% { translate: 0 -8px; rotate: 2deg; } }
+    @keyframes chroma-drift { 0%,70%,100% { transform: translate(2px,0); opacity: .35; } 80% { transform: translate(6px,-3px); opacity: .7; } 90% { transform: translate(-5px,2px); opacity: .45; } }
+    body.glitch-mode .wordmark::before { animation: jitterB .6s steps(3,end) infinite; }
+    body.glitch-mode .wordmark::after { animation: jitterA .6s steps(3,end) infinite; }
+    .badge-wrap { width: 138px; height: 138px; margin-top: 30px; }
+    .badge-wrap::before,.badge-wrap::after { content: ''; position: absolute; inset: -10px; border: 2px dotted var(--magenta); border-radius: 50%; opacity: .55; animation: ring-rotate 10s linear infinite reverse; pointer-events: none; }
+    .badge-wrap::after { inset: 12px; border: 1px solid transparent; border-top-color: var(--cyan); border-bottom-color: var(--volt); animation-duration: 3s; }
+    .badge-ring { border-color: rgba(198,255,61,.6); animation-duration: 7s; }
+    .badge-ring::before { box-shadow: 0 0 16px 3px var(--volt); }
+    .profile-emoji { border: 0; padding: 6px; background: transparent; line-height: 1.3; font-family: inherit; animation: avatar-bop 2.8s ease-in-out infinite; -webkit-tap-highlight-color: transparent; }
+    @keyframes avatar-bop { 0%,100% { translate: 0 0; rotate: -8deg; } 25% { translate: 0 -9px; rotate: 5deg; } 50% { translate: 0 0; rotate: 9deg; } 75% { translate: 0 -5px; rotate: -4deg; } }
+    .profile-emoji:hover { transform: scale(1.25) rotate(-12deg); }
+    .chaos-hint { margin-top: 24px; color: var(--cyan); font-size: .65rem; letter-spacing: .14em; }
+    .ticker-wrap { border-image: linear-gradient(90deg,transparent,var(--magenta),var(--cyan),transparent) 1; }
+    .ticker-wrap::before { content: ''; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg,transparent,rgba(51,230,255,.06),transparent); animation: poem-shimmer 9s linear infinite; pointer-events: none; }
+    @keyframes poem-shimmer { from { translate: -100% 0; } to { translate: 350% 0; } }
+    .poem-box { position: relative; }
+    .wrap { padding-bottom: 125px; }
+    .sec-head .rule { background: linear-gradient(90deg,var(--volt),var(--cyan),var(--magenta),transparent); background-size: 200% 100%; animation: rule-flow 5s linear infinite; }
+    @keyframes rule-flow { to { background-position: 200% 0; } }
+    .card,.creative-card { opacity: 1; animation: none; --rx: 0deg; --ry: 0deg; transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)); border-color: rgba(234,242,255,.16); transition: transform .2s ease-out,border-color .25s,box-shadow .25s; }
+    .card.fx-visible,.creative-card.fx-visible { animation: card-drift var(--float-time,5s) ease-in-out var(--float-delay,0s) infinite; }
+    @keyframes card-drift { 0%,100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+    .card:hover,.creative-card:hover,.card.fx-hot,.creative-card.fx-hot { transform: perspective(900px) translateY(-7px) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.015); border-color: var(--accent,var(--volt)); box-shadow: 0 0 0 1px var(--accent,var(--volt)),0 0 30px -12px var(--accent,var(--volt)),0 24px 48px -24px var(--accent,var(--volt)); z-index: 12; }
+    .card::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(320px circle at var(--hx,50%) var(--hy,50%),rgba(234,242,255,.12),transparent 70%); opacity: 0; transition: opacity .3s; }
+    .card.fx-hot::before { opacity: 1; }
+    .card::after { top: -50%; height: 45%; background: linear-gradient(180deg,transparent,rgba(51,230,255,.09),transparent); }
+    .card.fx-visible::after { opacity: .8; animation: sweep 4.5s ease-in-out var(--float-delay,0s) infinite; }
+    .card:hover::after { animation-duration: 1.5s; }
+    .card-bar { background: linear-gradient(100deg,rgba(255,255,255,.06),transparent); }
+    .card-bar .dots span:nth-child(1) { background: var(--magenta); }
+    .card-bar .dots span:nth-child(2) { background: var(--amber); }
+    .card-bar .dots span:nth-child(3) { background: var(--volt); }
+    .card.fx-visible .live { animation: live-breathe 3s ease-in-out var(--float-delay,0s) infinite; }
+    @keyframes live-breathe { 50% { box-shadow: 0 0 12px -3px currentColor; background: rgba(255,255,255,.07); } }
+    .card-title,.creative-title { transition: color .2s,text-shadow .2s; }
+    .card:hover .card-title,.creative-card:hover .creative-title { color: var(--accent,var(--volt)); text-shadow: 2px 0 rgba(255,62,200,.25),-2px 0 rgba(51,230,255,.25); }
+    .chip { transition: transform .25s,background .25s; }
+    .card.fx-hot .chip:nth-child(3n+1) { transform: translateY(-3px) rotate(-4deg); background: rgba(198,255,61,.07); }
+    .card.fx-hot .chip:nth-child(3n+2) { transform: translateY(2px) rotate(3deg); }
+    .card.fx-hot .chip:nth-child(3n) { transform: translateY(-2px) rotate(-2deg); }
+    .card-launch .go { opacity: .6; transform: none; }
+    .card.fx-hot .go { opacity: 1; animation: launch-nudge .8s ease-in-out infinite alternate; }
+    @keyframes launch-nudge { to { transform: translateX(5px); } }
+    .creative-card.fx-visible .reel-icon { animation: reel-wiggle 5s ease-in-out infinite; transform-origin: left bottom; }
+    @keyframes reel-wiggle { 0%,60%,100% { transform: rotate(0); } 70% { transform: rotate(-12deg); } 85% { transform: rotate(8deg) scale(1.1); } }
+    .chaos-cursor { position: fixed; top: -19px; left: -19px; width: 38px; height: 38px; z-index: 120; pointer-events: none; border: 1px solid var(--cyan); border-radius: 50%; opacity: 0; box-shadow: 0 0 18px -5px var(--magenta); transition: width .2s,height .2s,opacity .25s,border-color .2s; }
+    .chaos-cursor::before { content: ''; position: absolute; inset: -6px; border: 1px dashed var(--magenta); border-radius: 50%; animation: ring-rotate 5s linear infinite; }
+    .chaos-hud { position: fixed; right: 18px; bottom: 18px; z-index: 101; width: 228px; max-width: calc(100vw - 24px); padding: 12px 14px; border: 1px solid rgba(198,255,61,.4); border-radius: 10px; background: rgba(5,6,10,.93); box-shadow: 0 6px 35px rgba(0,0,0,.35); pointer-events: none; }
+    .chaos-hud-top { display: flex; justify-content: space-between; gap: 12px; font-size: .64rem; letter-spacing: .06em; color: var(--volt); }
+    #chaosCombo { color: var(--magenta); font-weight: 700; }
+    .chaos-meter { height: 4px; background: #202a39; margin: 8px 0; overflow: hidden; }
+    .chaos-meter-fill { display: block; width: 100%; height: 100%; transform: scaleX(.08); transform-origin: left; background: linear-gradient(90deg,var(--volt),var(--cyan),var(--magenta)); }
+    #chaosStatus { font-size: .6rem; color: #c0cee0; letter-spacing: .08em; }
+    .fx-overdrive .chaos-hud { border-color: var(--magenta); }
+    .fx-quake .wrap,.fx-quake .hero-boot,.fx-quake .ticker-wrap { animation: chaos-quake .38s ease-out; }
+    @keyframes chaos-quake { 0%,100% { translate: 0 0; } 20% { translate: -3px 2px; } 45% { translate: 3px -2px; } 70% { translate: -2px 1px; } }
+    body.fx-paused *,body.fx-paused *::before,body.fx-paused *::after,body.fx-suspended *,body.fx-suspended *::before,body.fx-suspended *::after { animation-play-state: paused !important; }
+    body.fx-paused .card,body.fx-paused .creative-card { translate: none; transform: none; transition: none; }
+    body.fx-paused .chaos-cursor,body.fx-paused .chaos-grid,body.fx-paused .chaos-vignette { display: none; }
+    body.fx-paused .wordmark,body.fx-paused .profile-emoji { translate: none; rotate: none; }
+    @media (hover: none) {
+      .chaos-cursor { display: none; }
+      .card-launch .go { opacity: 1; }
+      /* A touch must not leave a simulated mouse hover stuck on the last card. */
+      .card:hover,.creative-card:hover { transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)); border-color: rgba(234,242,255,.16); box-shadow: none; }
+      .card:hover .card-title,.creative-card:hover .creative-title { color: var(--ghost); text-shadow: none; }
+      .profile-emoji:hover { transform: none; }
+      .card:hover::after { animation-duration: 4.5s; }
+    }
+    .card.fx-scroll-focus,.creative-card.fx-scroll-focus { border-color: var(--accent,var(--volt)); box-shadow: 0 0 22px -12px var(--accent,var(--volt)); }
+    .card.fx-scroll-focus .card-title,.creative-card.fx-scroll-focus .creative-title { color: var(--accent,var(--volt)); }
+    .card.fx-touching,.creative-card.fx-touching { transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) scale(.985); border-color: var(--accent,var(--volt)); box-shadow: 0 0 0 1px var(--accent,var(--volt)),0 0 30px -8px var(--accent,var(--volt)); }
+    .card.fx-touching::before { opacity: 1; }
+    .card.fx-touching .chip:nth-child(odd) { transform: translateY(-2px) rotate(-3deg); }
+    .card.fx-touching .chip:nth-child(even) { transform: translateY(2px) rotate(3deg); }
+    @media (max-width: 640px) {
+      .aurora .blob { filter: blur(36px); opacity: .3; mix-blend-mode: normal; }
+      .b1 { width: 360px; height: 360px; } .b2 { width: 320px; height: 320px; } .b3 { width: 280px; height: 280px; }
+      .terminal-bar { backdrop-filter: none; background: rgba(10,13,20,.97); gap: 8px; flex-wrap: wrap; padding: calc(6px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px)); }
+      .tb-left { gap: 7px; } .tb-right { gap: 6px; }
+      .tb-right { margin-left: auto; max-width: 100%; flex-wrap: wrap; }
+      .path { font-size: .75rem; }
+      .normal-mode-btn { min-height: 44px; padding: 8px 10px; font-size: .75rem; letter-spacing: .02em; touch-action: manipulation; }
+      #fxPauseBtn { min-width: 6.25rem; }
+      .hero-boot { padding: 36px max(20px,env(safe-area-inset-left,0px)) 26px; }
+      .wordmark { font-size: clamp(4rem,19vw,6rem); }
+      .boot-line { font-size: .75rem; letter-spacing: .04em; }
+      .subline { font-size: .875rem; line-height: 1.6; margin-top: 16px; }
+      .badge-wrap { width: 112px; height: 112px; margin-top: 24px; }
+      .profile-emoji { min-width: 64px; min-height: 64px; touch-action: manipulation; }
+      .chaos-hint { font-size: .75rem; line-height: 1.5; letter-spacing: .06em; }
+      .ticker-wrap { padding: 16px max(18px,env(safe-area-inset-left,0px)); }
+      .poem-box { font-size: .875rem; line-height: 1.7; letter-spacing: 0; }
+      .poem-box .poem-title { font-size: .75rem; letter-spacing: .08em; }
+      .wrap { width: 100%; padding: 0 max(16px,env(safe-area-inset-right,0px)) calc(120px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); }
+      .procs,.reels { gap: 18px; }
+      .sec-head { gap: 8px; margin: 34px 0 18px; flex-wrap: wrap; }
+      .sec-head .tag { font-size: .75rem; letter-spacing: .08em; }
+      .sec-head .tag.dim { white-space: nowrap; }
+      .card-bar { padding: 12px 14px; }
+      .card-bar .fname { font-size: .75rem; }
+      .card-bar .live { font-size: .65rem; letter-spacing: .03em; padding: 3px 6px; }
+      .card-body { padding: 18px 16px; }
+      .card-idx { font-size: .75rem; }
+      .card-title,.creative-title { font-size: 1.25rem; line-height: 1.3; overflow-wrap: anywhere; }
+      .card-desc { font-size: .875rem; line-height: 1.65; }
+      .card-tags { gap: 7px; }
+      .chip { font-size: .75rem; letter-spacing: .02em; padding: 4px 8px; }
+      .card-launch { font-size: .8125rem; padding-top: 14px; }
+      .reel-badge { font-size: .75rem; }
+      .creative-sub { font-size: .875rem; }
+      .sys-log { font-size: .8125rem; margin-top: 38px; }
+      .footer-prompt { font-size: .8125rem; line-height: 1.7; overflow-wrap: anywhere; }
+      .chaos-hud { display: grid; grid-template-columns: minmax(0,1fr) auto; column-gap: 12px; row-gap: 6px; align-items: center; width: auto; max-width: none; left: max(12px,env(safe-area-inset-left,0px)); right: max(12px,env(safe-area-inset-right,0px)); bottom: calc(10px + env(safe-area-inset-bottom,0px)); padding: 9px 12px; }
+      .chaos-hud-top { grid-column: 1 / -1; min-width: 0; flex-wrap: wrap; font-size: .75rem; letter-spacing: .04em; }
+      #chaosCombo { white-space: nowrap; }
+      .chaos-meter { margin: 0; }
+      #chaosStatus { font-size: .65rem; letter-spacing: .02em; }
+      .chaos-grid { opacity: .19; }
+      .chaos-grid::before { inset: -35%; background-size: 64px 64px; animation: mobile-grid-travel 14s linear infinite; }
+      @keyframes mobile-grid-travel { from { transform: perspective(600px) rotateX(55deg) rotateZ(-14deg) translateY(0); } to { transform: perspective(600px) rotateX(55deg) rotateZ(-14deg) translateY(128px); } }
+    }
+    @media (pointer: coarse) and (min-width: 641px) {
+      .normal-mode-btn { min-height: 44px; padding: 8px 12px; font-size: .75rem; }
+      .terminal-bar { padding-left: max(18px,env(safe-area-inset-left,0px)); padding-right: max(18px,env(safe-area-inset-right,0px)); }
+      .chaos-hud { bottom: calc(12px + env(safe-area-inset-bottom,0px)); right: max(18px,env(safe-area-inset-right,0px)); }
+    }
+    @media (pointer: coarse) and (max-height: 500px) {
+      .hero-boot { padding-top: 24px; }
+      .chaos-hud { padding: 7px 12px; }
+      .chaos-meter { margin: 5px 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      body:not(.fx-manual-motion) *,body:not(.fx-manual-motion) *::before,body:not(.fx-manual-motion) *::after { animation: none !important; transition: none !important; }
+    }
+
   </style>
 </head>
-<body>
+<body class="fx-manual-motion">
+  <canvas id="ambient-canvas" aria-hidden="true"></canvas>
   <canvas id="fx-canvas" aria-hidden="true"></canvas>
+  <div class="chaos-grid" aria-hidden="true"></div>
+  <div class="chaos-vignette" aria-hidden="true"></div>
+  <div class="chaos-progress" id="chaosProgress" aria-hidden="true"></div>
+  <div class="chaos-cursor" id="chaosCursor" aria-hidden="true"></div>
+  <div class="chaos-hud" aria-hidden="true">
+    <div class="chaos-hud-top"><span>CHAOS LEVEL</span><span id="chaosCombo"></span></div>
+    <div class="chaos-meter"><span class="chaos-meter-fill" id="chaosMeter"></span></div>
+    <div id="chaosStatus">HOVER · SCROLL · TAP THE VOID</div>
+  </div>
   <div class="aurora" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
   <div class="scan-overlay" aria-hidden="true"></div>
   <div class="spotlight" aria-hidden="true"></div>
@@ -942,7 +1117,8 @@
     </div>
     <div class="tb-right">
       <span class="uptime-wrap">UPTIME <span id="uptime">00:00:00</span></span>
-      <button class="normal-mode-btn" id="normalModeBtn" onclick="goNormalMode()">[ TOGGLE NORMAL MODE ]</button>
+      <button class="normal-mode-btn" id="fxPauseBtn" type="button" aria-pressed="false" aria-label="Pause fun animations">FX: ON</button>
+      <button class="normal-mode-btn" id="normalModeBtn" type="button" onclick="goNormalMode()">NORMAL MODE</button>
     </div>
   </div>
 
@@ -952,8 +1128,9 @@
     <div class="subline"><span id="subline"></span><span class="blink-cursor"></span></div>
     <div class="badge-wrap">
       <span class="badge-ring" aria-hidden="true"></span>
-      <span class="profile-emoji" title="click me" role="button" tabindex="0">🤓</span>
+      <button class="profile-emoji" type="button" title="Unleash chaos, shuffle tools, and change the poem" aria-label="Unleash chaos, shuffle tools, and change the poem">🤓</button>
     </div>
+    <div class="chaos-hint">HOVER. SCROLL. TAP THE VOID.</div>
   </header>
 
   <div class="ticker-wrap">
@@ -1059,12 +1236,51 @@
 
   <script>
   (function () {
-    const reduced = false; // forced on — animations always play, ignoring OS Reduce Motion setting
+    // Every mode owns its timers, animation frames, observers, and listeners.
+    // document.write does not cancel old timers or reset global lexical bindings.
+    if (typeof window.__trvkcDispose === 'function') window.__trvkcDispose();
+    let scopeAlive = true;
+    const timeouts = new Set(), intervals = new Set(), frames = new Set();
+    const events = new AbortController();
+    const onDispose = [];
+    const setTimeout = (fn,ms,...args) => {
+      if (!scopeAlive) return 0;
+      const id = window.setTimeout(() => { timeouts.delete(id); if (scopeAlive) fn(...args); },ms);
+      timeouts.add(id); return id;
+    };
+    const clearTimeout = id => { window.clearTimeout(id); timeouts.delete(id); };
+    const setInterval = (fn,ms) => {
+      if (!scopeAlive) return 0;
+      const id = window.setInterval(() => { if (scopeAlive) fn(); },ms);
+      intervals.add(id); return id;
+    };
+    const clearInterval = id => { window.clearInterval(id); intervals.delete(id); };
+    const requestAnimationFrame = fn => {
+      if (!scopeAlive) return 0;
+      const id = window.requestAnimationFrame(now => { frames.delete(id); if (scopeAlive) fn(now); });
+      frames.add(id); return id;
+    };
+    const cancelAnimationFrame = id => { window.cancelAnimationFrame(id); frames.delete(id); };
+    const listen = (target,type,fn,options) => target.addEventListener(type,fn,Object.assign({},options,{signal:events.signal}));
+    // Fun Mode is opt-in. Always start FX ON; the FX button explicitly pauses it.
+    let reduced = false;
+    function dispose() {
+      if (!scopeAlive) return;
+      scopeAlive = false; events.abort();
+      timeouts.forEach(id => window.clearTimeout(id));
+      intervals.forEach(id => window.clearInterval(id));
+      frames.forEach(id => window.cancelAnimationFrame(id));
+      timeouts.clear(); intervals.clear(); frames.clear();
+      onDispose.forEach(fn => fn());
+    }
+    window.__trvkcDispose = dispose;
+    listen(window,'pagehide',event => { if (!event.persisted) dispose(); });
 
     /* ── boot sequence ── */
     function typeInto(el, text, speed, cb) {
       let i = 0; el.textContent = '';
       const iv = setInterval(() => {
+        if (reduced) { el.textContent = text; clearInterval(iv); if (cb) cb(); return; }
         el.textContent += text[i]; i++;
         if (i >= text.length) { clearInterval(iv); if (cb) cb(); }
       }, speed);
@@ -1074,7 +1290,7 @@
       const startTime = performance.now();
       const len = finalText.length;
       function frame(now) {
-        const progress = Math.min(1, (now - startTime) / duration);
+        const progress = reduced ? 1 : Math.min(1, (now - startTime) / duration);
         let out = '';
         for (let i = 0; i < len; i++) {
           out += (progress * len > i + 1 || progress >= 1) ? finalText[i] : chars[Math.floor(Math.random() * chars.length)];
@@ -1103,9 +1319,10 @@
         }, 200);
       });
       setInterval(() => {
+        if (reduced || document.hidden) return;
         wordEl.classList.add('pulse');
         setTimeout(() => wordEl.classList.remove('pulse'), 260);
-      }, 9000);
+      }, 6000);
     }
 
     /* ── uptime clock ── */
@@ -1118,19 +1335,6 @@
       if (upEl) upEl.textContent = pad(hh) + ':' + pad(mm) + ':' + pad(ss);
     }
     tickUptime(); setInterval(tickUptime, 1000);
-
-    /* ── cursor spotlight ── */
-    const spot = document.querySelector('.spotlight');
-    if (spot) {
-      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        window.addEventListener('mousemove', e => {
-          document.documentElement.style.setProperty('--mx', e.clientX + 'px');
-          document.documentElement.style.setProperty('--my', e.clientY + 'px');
-        });
-      } else {
-        spot.style.display = 'none';
-      }
-    }
 
     /* ── poem band: 10 original poems, shuffled and rotated one at a time ──
        Uses a "shuffle bag": shuffle all 10 indices, show them one by one,
@@ -1220,11 +1424,13 @@
         return bag.pop();
       }
 
+      let poemTimer = 0;
       function showNext() {
+        clearTimeout(poemTimer);
         const poem = POEMS[nextIndex()];
         const title = poem[0], lines = poem[1];
         box.classList.remove('visible');
-        setTimeout(() => {
+        poemTimer = setTimeout(() => {
           box.innerHTML = '<span class="poem-title">' + esc(title) + '</span>' +
             lines.map(esc).join('<br>');
           void box.offsetWidth; // force reflow so the fade-in transition replays
@@ -1245,51 +1451,495 @@
       document.querySelectorAll('.blob').forEach(b => b.classList.add('fx-live'));
     }));
 
-    /* ── click-burst fx ── */
-    const fx = document.getElementById('fx-canvas');
-    const fctx = fx.getContext('2d');
-    function resizeFx() { fx.width = window.innerWidth; fx.height = window.innerHeight; }
-    window.addEventListener('resize', resizeFx); resizeFx();
-    const FX_COLORS = ['#c6ff3d', '#33e6ff', '#ff3ec8', '#ffb43d'];
-    class Burst {
-      constructor(x, y) {
-        this.particles = Array.from({ length: 12 }, () => ({
-          x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5,
-          r: Math.random() * 3 + 1, color: FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)], life: 1
-        }));
+    /* OVERLOAD: one managed render loop, bounded pools, passive input. */
+    const chaos = (() => {
+      const fx = document.getElementById('fx-canvas');
+      const ambient = document.getElementById('ambient-canvas');
+      const ctx = fx.getContext('2d');
+      const bg = ambient.getContext('2d');
+      const body = document.body;
+      const root = document.documentElement;
+      const pauseBtn = document.getElementById('fxPauseBtn');
+      const cursor = document.getElementById('chaosCursor');
+      const meter = document.getElementById('chaosMeter');
+      const comboEl = document.getElementById('chaosCombo');
+      const status = document.getElementById('chaosStatus');
+      const progress = document.getElementById('chaosProgress');
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+      const idleMessage = coarse ? 'SWIPE · TAP · REPEAT' : 'HOVER · SCROLL · TAP THE VOID';
+      const hint = document.querySelector('.chaos-hint');
+      if (hint && coarse) hint.textContent = 'SWIPE. TAP. MAKE A SCENE.';
+      const COLORS = ['#c6ff3d','#33e6ff','#ff3ec8','#ffb43d','#b18cff','#f0f8ff'];
+      const GLYPHS = ['✦','✧','⚡','★','+','×','₿','!'];
+      const WORDS = ['WOAHHH!','BOOM.','MORE? MORE.','ABSOLUTE CHAOS','LET IT RIP','ZERO CHILL'];
+      const HOT = '.card,.creative-card,.profile-emoji,.wordmark,.normal-mode-btn';
+      const MAX = coarse ? 260 : 620;
+      const particles = [], rings = [], words = [];
+      const visibleCards = new Set();
+      const cards = Array.from(document.querySelectorAll('.card,.creative-card'));
+      const entryAnimations = new Map();
+      const animations = new Set();
+      let width = 1, height = 1, dpr = 1, raf = 0, lastPaint = 0;
+      let quality = 1, slowFrames = 0, heat = 8, combo = 0, lastClick = -Infinity;
+      let superUntil = 0, lastSuper = -Infinity, nextIdle = 0, lastHover = 0, lastTrail = 0;
+      let lastHud = 0, lastScrollWord = 0, scrollSpeed = 0, lastScroll = window.scrollY;
+      let hover = null, hoverRect = null, pendingTilt = false, pointerActive = false;
+      let px = 0, py = 0, cx = 0, cy = 0, trailX = 0, trailY = 0;
+      let tap = null, suppressClickUntil = 0, explosionIndex = 0, pointerDirty = false;
+      let quakeTimer = 0;
+      let touchCard = null, touchReleaseTimer = 0, lastInputWasTouch = false;
+      let featuredCard = null, featureDirty = true, lastFeatureUpdate = 0, resizeTimer = 0;
+      const random = (min,max) => min + Math.random() * (max-min);
+      const pick = list => list[Math.floor(Math.random() * list.length)];
+      const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
+      const enabled = () => !reduced && !document.hidden && scopeAlive && !!ctx && !!bg;
+      const stars = Array.from({length: coarse ? 54 : 110}, () => ({
+        x: Math.random(), y: Math.random(), r: random(.6,2), speed: random(12,36),
+        phase: random(0,Math.PI*2), color: pick(COLORS)
+      }));
+
+      function animate(el, frames, options) {
+        if (!enabled() || !el || !el.animate) return null;
+        const a = el.animate(frames, Object.assign({duration: 550, easing: 'cubic-bezier(.2,.8,.2,1)'},options));
+        animations.add(a);
+        a.onfinish = a.oncancel = () => animations.delete(a);
+        return a;
       }
-      update() {
-        this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= 0.03; });
-        this.particles = this.particles.filter(p => p.life > 0);
+      function cancelAnimations() {
+        animations.forEach(a => a.cancel());
+        animations.clear(); entryAnimations.clear();
       }
-      draw() {
-        this.particles.forEach(p => {
-          fctx.save(); fctx.globalAlpha = p.life; fctx.fillStyle = p.color;
-          fctx.shadowColor = p.color; fctx.shadowBlur = p.r * 3;
-          fctx.beginPath(); fctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); fctx.fill(); fctx.restore();
+      function resize() {
+        width = Math.max(1,window.innerWidth); height = Math.max(1,window.innerHeight);
+        dpr = Math.min(window.devicePixelRatio || 1,coarse ? 1.3 : 1.7,Math.sqrt(4500000/(width*height)));
+        // Mobile browser bars resize the viewport during a swipe. Reallocate only
+        // when the final dimensions change, instead of clearing both layers repeatedly.
+        [fx,ambient].forEach(c => {
+          const w = Math.round(width*dpr), h = Math.round(height*dpr);
+          if (c.width !== w) c.width = w;
+          if (c.height !== h) c.height = h;
         });
+        if (ctx) ctx.setTransform(dpr,0,0,dpr,0,0);
+        if (bg) bg.setTransform(dpr,0,0,dpr,0,0);
+        hoverRect = null; featureDirty = true;
+        updateProgress();
       }
-      get done() { return this.particles.length === 0; }
-    }
-    const bursts = [];
-    let fxLoopRunning = false;
-    document.addEventListener('click', e => {
-      if (reduced) return;
-      bursts.push(new Burst(e.clientX, e.clientY));
-      if (!fxLoopRunning) { fxLoopRunning = true; requestAnimationFrame(fxLoop); }
-    });
-    function fxLoop() {
-      fctx.clearRect(0, 0, fx.width, fx.height);
-      for (let i = bursts.length - 1; i >= 0; i--) {
-        bursts[i].update(); bursts[i].draw();
-        if (bursts[i].done) bursts.splice(i, 1);
+      function queueResize() {
+        if (!coarse) { resize(); return; }
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resize,120);
       }
-      if (bursts.length > 0) {
-        requestAnimationFrame(fxLoop);
-      } else {
-        fxLoopRunning = false;
+      function updateProgress() {
+        const max = root.scrollHeight - window.innerHeight;
+        progress.style.transform = 'scaleX(' + (max > 0 ? clamp(window.scrollY/max,0,1) : 0) + ')';
       }
-    }
+      function spawn(x,y,count,power,kind) {
+        if (!enabled()) return;
+        count = Math.min(Math.round(count*quality),MAX-particles.length);
+        const variant = kind || 'burst';
+        for (let i=0;i<count;i++) {
+          const angle = variant === 'spiral' ? i*2.39996 : random(0,Math.PI*2);
+          const speed = random(80,420)*(power || 1);
+          const life = random(.55,1.65);
+          const shape = variant === 'trail' ? 2 : (Math.random() < .1 ? 3 : Math.floor(random(0,3)));
+          particles.push({x,y,px:x,py:y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-(variant === 'confetti' ? 180 : 40),
+            life,total:life,size:random(2,6)*(power > 1.6 ? 1.2 : 1),color:pick(COLORS),shape,
+            glyph:pick(GLYPHS),angle,spin:random(-7,7),gravity:variant === 'trail' ? 15 : 220,
+            drag:variant === 'spiral' ? .96 : .987});
+        }
+      }
+      function ring(x,y,power) {
+        if (!enabled()) return;
+        if (rings.length >= 14) rings.shift();
+        rings.push({x,y,age:0,total:.85,max:Math.min(width,height)*.48*power,color:pick(COLORS),turn:random(0,6)});
+      }
+      function shout(text,x,y,big) {
+        if (!enabled()) return;
+        if (words.length >= (coarse ? 4 : 7)) words.shift();
+        words.push({text,x,y,age:0,total:big ? 1.4 : .95,size:big ? Math.min(width*.10,72) : random(19,28),
+          angle:random(-.16,.16),color:pick(COLORS)});
+      }
+      function shake() {
+        if (!enabled() || body.classList.contains('fx-quake')) return;
+        body.classList.add('fx-quake');
+        clearTimeout(quakeTimer);
+        quakeTimer = setTimeout(() => body.classList.remove('fx-quake'),400);
+      }
+      function overload(x,y,avatar) {
+        if (!enabled()) return;
+        const now = performance.now();
+        if (now-lastSuper < 1600) { spawn(x,y,50,1.1,'confetti'); return; }
+        lastSuper = now; superUntil = now+5200;
+        body.classList.add('fx-overdrive');
+        spawn(x,y,coarse ? 100 : 220,1.7,'spiral');
+        ring(x,y,1.9); shake();
+        shout(avatar ? 'CHAOS UNLEASHED' : 'WOAHHH!',width/2,clamp(y,100,height-130),true);
+        for (let i=0;i<5;i++) {
+          setTimeout(() => {
+            if (!enabled()) return;
+            const x2 = width*(.12+i*.19), y2 = random(height*.15,height*.65);
+            spawn(x2,y2,coarse ? 28 : 64,1.1,'confetti'); ring(x2,y2,.6);
+          },160+i*210);
+        }
+      }
+      function resetHover() {
+        if (hover) {
+          hover.classList.remove('fx-hot');
+          ['--rx','--ry','--hx','--hy'].forEach(p => hover.style.removeProperty(p));
+        }
+        hover = null; hoverRect = null; pendingTilt = false;
+        cursor.style.borderColor = '';
+      }
+      function clearTouch() {
+        clearTimeout(touchReleaseTimer);
+        if (touchCard) {
+          touchCard.classList.remove('fx-touching');
+          ['--rx','--ry','--hx','--hy'].forEach(p => touchCard.style.removeProperty(p));
+        }
+        touchCard = null;
+      }
+      function previewTouch(el,x,y) {
+        clearTouch(); resetHover();
+        if (!el || !enabled()) return;
+        touchCard = el;
+        if (entryAnimations.has(el)) { entryAnimations.get(el).cancel(); entryAnimations.delete(el); }
+        const rect = el.getBoundingClientRect();
+        const nx = clamp((x-rect.left)/Math.max(1,rect.width),0,1);
+        const ny = clamp((y-rect.top)/Math.max(1,rect.height),0,1);
+        el.style.setProperty('--hx',(nx*100).toFixed(1)+'%');
+        el.style.setProperty('--hy',(ny*100).toFixed(1)+'%');
+        el.style.setProperty('--rx',((.5-ny)*5).toFixed(2)+'deg');
+        el.style.setProperty('--ry',((nx-.5)*6).toFixed(2)+'deg');
+        el.classList.add('fx-touching');
+      }
+      function featureVisibleCard() {
+        let next = null, distance = Infinity;
+        visibleCards.forEach(card => {
+          const r = card.getBoundingClientRect();
+          if (r.bottom<=0 || r.top>=height) return;
+          const d = Math.abs(r.top+r.height/2-height*.5);
+          if (d<distance) { distance = d; next = card; }
+        });
+        if (next !== featuredCard) {
+          if (featuredCard) featuredCard.classList.remove('fx-scroll-focus');
+          featuredCard = next;
+          if (featuredCard) featuredCard.classList.add('fx-scroll-focus');
+        }
+        featureDirty = false;
+      }
+      function enter(el,keyboard) {
+        if (!enabled() || el === hover) return;
+        resetHover(); hover = el; hover.classList.add('fx-hot');
+        hoverRect = el.getBoundingClientRect(); pendingTilt = !keyboard;
+        if (entryAnimations.has(el)) { entryAnimations.get(el).cancel(); entryAnimations.delete(el); }
+        const x = keyboard ? hoverRect.left+hoverRect.width/2 : px;
+        const y = keyboard ? hoverRect.top+hoverRect.height/2 : py;
+        const now = performance.now();
+        if (now-lastHover > 90) {
+          spawn(x,y,22,.7,'trail'); ring(x,y,.24); heat = Math.min(100,heat+3); lastHover = now;
+        }
+        cursor.style.borderColor = '#ff3ec8';
+        if (el.matches('.wordmark,.profile-emoji')) animate(el,[{scale:'1'},{scale:'1.2',rotate:'-12deg'},{scale:'1'}],{duration:500});
+      }
+      function applyPointer() {
+        if (!pointerActive) return;
+        cx += (px-cx)*.24; cy += (py-cy)*.24;
+        cursor.style.transform = 'translate3d('+cx+'px,'+cy+'px,0)';
+        if (pointerDirty) {
+          root.style.setProperty('--mx',px+'px'); root.style.setProperty('--my',py+'px');
+          pointerDirty = false;
+        }
+        if (hover && pendingTilt && hover.matches('.card,.creative-card')) {
+          if (!hoverRect) hoverRect = hover.getBoundingClientRect();
+          const x = clamp((px-hoverRect.left)/Math.max(1,hoverRect.width),0,1);
+          const y = clamp((py-hoverRect.top)/Math.max(1,hoverRect.height),0,1);
+          hover.style.setProperty('--rx',((.5-y)*9).toFixed(2)+'deg');
+          hover.style.setProperty('--ry',((x-.5)*12).toFixed(2)+'deg');
+          hover.style.setProperty('--hx',(x*100).toFixed(1)+'%');
+          hover.style.setProperty('--hy',(y*100).toFixed(1)+'%');
+          pendingTilt = false;
+        }
+      }
+      function drawBackground(now,dt) {
+        bg.clearRect(0,0,width,height);
+        const n = Math.floor(stars.length*quality);
+        for (let i=0;i<n;i++) {
+          const s = stars[i];
+          s.y += (s.speed+Math.abs(scrollSpeed)*2)*dt/height;
+          if (s.y > 1.03) { s.y = -.03; s.x = Math.random(); }
+          const x = s.x*width+Math.sin(now*.0003+s.phase)*16;
+          const y = s.y*height;
+          bg.globalAlpha = .3 + (Math.sin(now*.0018+s.phase)+1)*.25;
+          bg.fillStyle = s.color; bg.strokeStyle = s.color; bg.lineWidth = s.r*.7;
+          if (Math.abs(scrollSpeed)>4) {
+            bg.beginPath(); bg.moveTo(x,y); bg.lineTo(x-(x-width/2)*.02,y-Math.sign(scrollSpeed)*Math.min(75,Math.abs(scrollSpeed)*1.5)); bg.stroke();
+          } else {
+            bg.beginPath(); bg.arc(x,y,s.r,0,Math.PI*2); bg.fill();
+            if (i%9 === 0) { bg.fillRect(x-s.r*3,y-.5,s.r*6,1); bg.fillRect(x-.5,y-s.r*3,1,s.r*6); }
+          }
+        }
+        // Orbiting constellations keep even an untouched page visibly alive.
+        for (let i=0;i<(coarse ? 2 : 4);i++) {
+          const orbit = Math.min(width,height)*(.17+i*.08);
+          const ox = width*(i%2 ? .86 : .14), oy = height*(i<2 ? .28 : .78);
+          const angle = now*.00022*(i%2 ? -1 : 1)+i*1.8;
+          bg.globalAlpha = .1; bg.strokeStyle = COLORS[i]; bg.lineWidth = 1;
+          bg.beginPath(); bg.ellipse(ox,oy,orbit,orbit*.6,angle*.25,0,Math.PI*2); bg.stroke();
+          bg.globalAlpha = .55; bg.fillStyle = COLORS[i];
+          bg.font = '24px monospace'; bg.fillText(GLYPHS[i],ox+Math.cos(angle)*orbit,oy+Math.sin(angle)*orbit*.6);
+        }
+        bg.globalAlpha = 1;
+      }
+      function drawEffects(dt) {
+        ctx.clearRect(0,0,width,height);
+        for (let i=particles.length-1;i>=0;i--) {
+          const p = particles[i]; p.life -= dt;
+          if (p.life<=0) { particles[i] = particles[particles.length-1]; particles.pop(); continue; }
+          p.px = p.x; p.py = p.y;
+          const drag = Math.pow(p.drag,dt*60);
+          p.vx *= drag; p.vy = p.vy*drag+p.gravity*dt;
+          p.x += p.vx*dt; p.y += p.vy*dt; p.angle += p.spin*dt;
+          ctx.globalAlpha = Math.min(1,p.life/p.total*2);
+          ctx.fillStyle = p.color; ctx.strokeStyle = p.color;
+          if (p.shape === 0) {
+            ctx.lineWidth = p.size*.5; ctx.beginPath(); ctx.moveTo(p.x,p.y);
+            ctx.lineTo(p.x-p.vx*.035,p.y-p.vy*.035); ctx.stroke();
+          } else if (p.shape === 1) {
+            ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle);
+            ctx.fillRect(-p.size,-p.size*.4,p.size*2,p.size*.8); ctx.restore();
+          } else if (p.shape === 2) {
+            ctx.fillRect(p.x-p.size,p.y-1,p.size*2,2); ctx.fillRect(p.x-1,p.y-p.size,2,p.size*2);
+          } else {
+            ctx.font = Math.round(p.size*3.4)+'px monospace'; ctx.fillText(p.glyph,p.x,p.y);
+          }
+        }
+        for (let i=rings.length-1;i>=0;i--) {
+          const r = rings[i]; r.age += dt; const t = r.age/r.total;
+          if (t>=1) { rings.splice(i,1); continue; }
+          const radius = (1-Math.pow(1-t,3))*r.max;
+          ctx.globalAlpha = (1-t)*.8; ctx.strokeStyle = r.color; ctx.lineWidth = Math.max(.6,3*(1-t));
+          ctx.beginPath(); ctx.arc(r.x,r.y,radius,0,Math.PI*2); ctx.stroke();
+          ctx.save(); ctx.setLineDash([6,18]); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(r.x,r.y,radius*.78,r.turn+t,r.turn+t+Math.PI*2); ctx.stroke(); ctx.restore();
+          for (let j=0;j<10;j++) {
+            const a = j*Math.PI/5+r.turn;
+            ctx.beginPath(); ctx.moveTo(r.x+Math.cos(a)*radius*.94,r.y+Math.sin(a)*radius*.94);
+            ctx.lineTo(r.x+Math.cos(a)*radius*1.07,r.y+Math.sin(a)*radius*1.07); ctx.stroke();
+          }
+        }
+        for (let i=words.length-1;i>=0;i--) {
+          const w = words[i]; w.age += dt; const t = w.age/w.total;
+          if (t>=1) { words.splice(i,1); continue; }
+          ctx.save();
+          let size = w.size;
+          ctx.font = '800 '+Math.round(size)+'px '+"'Bricolage Grotesque',system-ui,sans-serif";
+          const measured = ctx.measureText(w.text).width;
+          if (measured > width-48) { size *= (width-48)/measured; ctx.font = '800 '+Math.round(size)+'px system-ui,sans-serif'; }
+          const half = Math.min(width/2-24,ctx.measureText(w.text).width/2);
+          ctx.translate(clamp(w.x,half+24,width-half-24),clamp(w.y-t*75,60,height-60));
+          ctx.rotate(w.angle); const pop = Math.min(1,t*9);
+          ctx.scale(.8+pop*.2,.8+pop*.2); ctx.globalAlpha = Math.min(1,t*12)*(1-Math.pow(t,3));
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.lineWidth = 7; ctx.strokeStyle = '#05060a'; ctx.strokeText(w.text,0,0);
+          ctx.fillStyle = w.color; ctx.fillText(w.text,0,0); ctx.restore();
+        }
+        ctx.globalAlpha = 1;
+      }
+      function render(now) {
+        raf = 0;
+        if (!enabled()) return;
+        // 60 Hz phones should paint each frame; 45 fps throttling on a 60 Hz
+        // display actually skipped every other frame. Drop to 30 only under load.
+        if (lastPaint && now-lastPaint < (quality<.7 ? 1000/30 : 1000/60)-1) { start(); return; }
+        const elapsed = lastPaint ? now-lastPaint : 16.7;
+        const dt = Math.min(.04,elapsed/1000); lastPaint = now;
+        if (elapsed>34 && elapsed<200) slowFrames++; else slowFrames = Math.max(0,slowFrames-1);
+        if (slowFrames>35) { quality = Math.max(.45,quality-.15); slowFrames = 0; }
+        heat = Math.max(8,heat-dt*4); scrollSpeed *= Math.pow(.90,dt*60);
+        if (combo && now-lastClick>1600) { combo = 0; comboEl.textContent = ''; }
+        if (superUntil && now>superUntil) { superUntil = 0; body.classList.remove('fx-overdrive'); }
+        if (heat>=84 && now-lastSuper>7000) { overload(width/2,height*.36,false); heat = 50; }
+        applyPointer();
+        if (coarse && featureDirty && now-lastFeatureUpdate>150) {
+          featureVisibleCard(); lastFeatureUpdate = now;
+        }
+        if (pointerActive && now-lastTrail>28 && Math.hypot(px-trailX,py-trailY)>5) {
+          const distance = Math.hypot(px-trailX,py-trailY), steps = Math.min(7,Math.ceil(distance/16));
+          for (let i=1;i<=steps;i++) spawn(trailX+(px-trailX)*i/steps,trailY+(py-trailY)*i/steps,2,.13,'trail');
+          trailX = px; trailY = py; lastTrail = now;
+        }
+        if (now>nextIdle) {
+          const edge = Math.random()<.5 ? random(10,width*.12) : random(width*.88,width-10);
+          spawn(edge,random(50,height-70),coarse ? 8 : 17,.5,'spiral');
+          if (Math.random()<.4) ring(edge,random(50,height-70),.3);
+          nextIdle = now+random(650,1300);
+        }
+        if (Math.abs(scrollSpeed)>6 && Math.random()<.65) {
+          const edge = Math.random()<.5 ? random(0,24) : random(width-24,width);
+          spawn(edge,random(0,height),4,.55,'trail');
+        }
+        drawBackground(now,dt); drawEffects(dt);
+        if (now-lastHud>100) {
+          meter.style.transform = 'scaleX('+(heat/100).toFixed(3)+')';
+          const message = superUntil ? 'OVERDRIVE / ZERO CHILL' : Math.abs(scrollSpeed)>10 ? 'WARP SPEED' : combo>1 ? 'KEEP IT GOING' : idleMessage;
+          if (status.textContent !== message) status.textContent = message;
+          lastHud = now;
+        }
+        start();
+      }
+      function start() { if (!raf && enabled()) raf = requestAnimationFrame(render); }
+      function stop() {
+        cancelAnimationFrame(raf); raf = 0; lastPaint = 0;
+        particles.length = 0; rings.length = 0; words.length = 0;
+        if (ctx) ctx.clearRect(0,0,width,height);
+        if (bg) bg.clearRect(0,0,width,height);
+        cancelAnimations(); resetHover(); clearTouch(); cursor.style.opacity = '0';
+        if (featuredCard) featuredCard.classList.remove('fx-scroll-focus');
+        featuredCard = null; featureDirty = true; tap = null;
+        pointerActive = false; pointerDirty = false; scrollSpeed = 0;
+        body.classList.remove('fx-overdrive','fx-quake','glitch-mode'); superUntil = 0;
+      }
+      function setPaused(paused,manual) {
+        reduced = paused;
+        if (manual) body.classList.toggle('fx-manual-motion',!paused);
+        body.classList.toggle('fx-paused',paused);
+        pauseBtn.setAttribute('aria-pressed',String(paused));
+        pauseBtn.setAttribute('aria-label',paused ? 'Resume fun animations' : 'Pause fun animations');
+        pauseBtn.textContent = paused ? 'FX: PAUSED' : 'FX: ON';
+        root.style.scrollBehavior = paused ? 'auto' : 'smooth';
+        if (paused) { stop(); status.textContent = 'ANIMATIONS PAUSED'; }
+        else { nextIdle = performance.now()+600; status.textContent = idleMessage; start(); }
+      }
+
+      cards.forEach((card,i) => {
+        card.style.setProperty('--float-time',(4.2+i%5*.6)+'s');
+        card.style.setProperty('--float-delay',(-i*.61)+'s');
+      });
+      let observer = null;
+      if ('IntersectionObserver' in window) {
+        observer = new IntersectionObserver(entries => entries.forEach(entry => {
+          const el = entry.target;
+          el.classList.toggle('fx-visible',entry.isIntersecting);
+          featureDirty = true;
+          if (entry.isIntersecting) {
+            visibleCards.add(el);
+            if (!el.dataset.fxEntered && enabled()) {
+              el.dataset.fxEntered = '1';
+              const a = animate(el,[{opacity:0,translate:'0 40px',rotate:'-2deg'},{opacity:1,translate:'0 -5px',rotate:'1deg',offset:.75},{opacity:1,translate:'0 0',rotate:'0deg'}],{duration:650});
+              if (a) entryAnimations.set(el,a);
+              const rect = entry.boundingClientRect;
+              spawn(rect.left+rect.width*.1,clamp(rect.top+20,0,height),12,.4,'trail');
+            }
+          } else { visibleCards.delete(el); }
+        }),{threshold:.08});
+        cards.forEach(card => observer.observe(card));
+      } else cards.forEach(card => { visibleCards.add(card); card.classList.add('fx-visible'); });
+
+      listen(window,'resize',queueResize,{passive:true});
+      listen(document,'pointermove',e => {
+        if (tap && tap.id === e.pointerId) {
+          if (Math.hypot(e.clientX-tap.x,e.clientY-tap.y)>14) { tap.moved = true; clearTouch(); }
+          // A short sparkle follows the finger before native scrolling takes over.
+          // No capture or preventDefault: scrolling, zooming, and links stay native.
+          if (enabled() && tap.type === 'touch' && !tap.control && performance.now()-tap.lastFx>40) {
+            spawn(e.clientX,e.clientY,4,.15,'trail'); tap.lastFx = performance.now();
+          }
+        }
+        if (!enabled() || e.pointerType === 'touch') return;
+        if (!pointerActive) { cx = trailX = e.clientX; cy = trailY = e.clientY; }
+        pointerActive = true; px = e.clientX; py = e.clientY;
+        pointerDirty = true; pendingTilt = true; cursor.style.opacity = '.85';
+      },{passive:true});
+      listen(document,'pointerover',e => {
+        if (e.pointerType === 'touch' || !enabled()) return;
+        px = e.clientX; py = e.clientY;
+        const el = e.target.closest(HOT); if (el) enter(el,false);
+      },{passive:true});
+      listen(document,'pointerout',e => {
+        if (hover && (!e.relatedTarget || !hover.contains(e.relatedTarget))) resetHover();
+        if (!e.relatedTarget) { pointerActive = false; cursor.style.opacity = '0'; }
+      },{passive:true});
+      listen(document,'keydown',() => { lastInputWasTouch = false; });
+      listen(document,'focusin',e => { const el = e.target.closest(HOT); if (el && !lastInputWasTouch) enter(el,true); });
+      listen(document,'focusout',resetHover);
+      listen(document,'pointerdown',e => {
+        if (e.isPrimary === false) { clearTouch(); return; }
+        lastInputWasTouch = e.pointerType === 'touch';
+        suppressClickUntil = 0;
+        tap = {id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,type:e.pointerType,lastFx:performance.now(),control:!!e.target.closest('#normalModeBtn,#fxPauseBtn')};
+        if (lastInputWasTouch) previewTouch(e.target.closest('.card,.creative-card'),e.clientX,e.clientY);
+      },{passive:true});
+      listen(document,'pointerup',e => {
+        if (tap && tap.id === e.pointerId) {
+          if (tap.moved) { suppressClickUntil = performance.now()+400; clearTouch(); }
+          else if (touchCard) touchReleaseTimer = setTimeout(clearTouch,180);
+          tap = null;
+        }
+      },{passive:true});
+      listen(document,'pointercancel',() => { clearTouch(); tap = null; suppressClickUntil = performance.now()+400; },{passive:true});
+      listen(document,'click',e => {
+        if (!enabled() || e.target.closest('#normalModeBtn,#fxPauseBtn') || (e.detail && performance.now()<suppressClickUntil)) return;
+        const now = performance.now();
+        const target = e.target.closest('a,button,input,select,textarea,summary,[role="button"]');
+        let x = e.clientX, y = e.clientY;
+        if (!e.detail && target) { const r = target.getBoundingClientRect(); x = r.left+r.width/2; y = r.top+r.height/2; }
+        combo = now-lastClick<950 ? Math.min(99,combo+1) : 1; lastClick = now;
+        heat = Math.min(100,heat+(target ? 8 : 16));
+        comboEl.textContent = combo>1 ? '×'+combo+' COMBO' : '+1 VIBE';
+        if (target && target.matches('.profile-emoji')) return;
+        if (!target) {
+          const power = 1.15+Math.min(combo,8)*.1;
+          spawn(x,y,coarse ? 85 : 155,power,explosionIndex%2 ? 'confetti' : 'spiral');
+          ring(x,y,power); ring(x,y,power*.55); shake();
+          shout(combo>2 ? '×'+combo+' '+WORDS[explosionIndex%WORDS.length] : WORDS[explosionIndex%WORDS.length],x,y-28,true);
+          explosionIndex++;
+          if (combo%5 === 0) overload(x,y,false);
+        } else {
+          spawn(x,y,coarse ? 44 : 80,1,'confetti'); ring(x,y,.55);
+          shout(target.matches('a') ? 'LAUNCH!' : 'LET’S GO',x,y-30,false);
+          animate(target,[{scale:'1'},{scale:'.96',offset:.3},{scale:'1.025',offset:.7},{scale:'1'}],{duration:380});
+        }
+      },{capture:true,passive:true});
+      listen(window,'scroll',() => {
+        const current = window.scrollY, delta = current-lastScroll; lastScroll = current;
+        updateProgress(); hoverRect = null; featureDirty = true;
+        if (touchCard) clearTouch();
+        if (!enabled() || Math.abs(delta)<1) return;
+        scrollSpeed = clamp(scrollSpeed+clamp(delta,-120,120)*.12,-60,60);
+        heat = Math.min(100,heat+Math.min(1.4,Math.abs(delta)*.012));
+        const now = performance.now();
+        if (Math.abs(scrollSpeed)>23 && now-lastScrollWord>1700) {
+          shout(delta>0 ? 'WHEEEE ↓' : 'BACK TO ORBIT ↑',width/2,height*.3,false); lastScrollWord = now;
+        }
+      },{passive:true});
+      listen(pauseBtn,'click',() => setPaused(!reduced,true));
+      listen(document,'visibilitychange',() => {
+        body.classList.toggle('fx-suspended',document.hidden);
+        if (document.hidden) stop(); else { lastScroll = window.scrollY; nextIdle = performance.now()+600; start(); }
+      });
+      resize(); setPaused(false,true);
+      onDispose.push(() => { stop(); if (observer) observer.disconnect(); visibleCards.clear(); });
+      setTimeout(() => {
+        if (!enabled()) return;
+        const r = wordEl.getBoundingClientRect();
+        spawn(width*.15,height*.3,coarse ? 55 : 120,1.1,'confetti');
+        spawn(width*.85,height*.3,coarse ? 55 : 120,1.1,'confetti');
+        ring(width/2,clamp(r.top+r.height/2,60,height-60),1.25);
+        shout('FUN MODE: UNHINGED',width/2,clamp(r.top+30,100,height-120),true);
+      },1500);
+
+      return {
+        avatar() {
+          if (!enabled()) return;
+          const el = document.querySelector('.profile-emoji'), r = el.getBoundingClientRect();
+          heat = Math.min(100,heat+30); overload(r.left+r.width/2,r.top+r.height/2,true);
+          animate(el,[{scale:'1',rotate:'0deg'},{scale:'1.6',rotate:'-25deg',offset:.25},{scale:'.8',rotate:'375deg',offset:.8},{scale:'1',rotate:'360deg'}],{duration:900});
+        },
+        animate, enabled,
+        visibleCards
+      };
+    })();
+
 
     /* ── process numbering (auto, mirrors the normal-mode behaviour) ── */
     function numberProcs() {
@@ -1305,47 +1955,59 @@
     }
     numberProcs();
 
-    /* ── shuffle on avatar click ── */
+    /* Avatar: a keyboard-accessible chaos button, poem change, and guarded shuffle. */
+    let shuffling = false;
     function shuffleCards() {
+      if (shuffling) return;
       const list = document.getElementById('tools-list');
       const cards = Array.from(list.querySelectorAll('a.card'));
       if (cards.length < 2) return;
-      const FLIP_OUT = 220, STAGGER = 60;
-      cards.forEach((card, i) => { setTimeout(() => { card.classList.add('card-flipping-out'); }, i * STAGGER); });
-      const reorderAt = cards.length * STAGGER + FLIP_OUT;
-      setTimeout(() => {
-        const shuffled = [...cards];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      shuffling = true;
+      const reorder = () => {
+        const shuffled = cards.slice();
+        for (let i=shuffled.length-1;i>0;i--) {
+          const j = Math.floor(Math.random()*(i+1));
+          [shuffled[i],shuffled[j]] = [shuffled[j],shuffled[i]];
         }
-        shuffled.forEach(card => { card.classList.remove('card-flipping-out'); card.style.opacity = '0'; list.appendChild(card); });
+        // Always make a visible change, including the rare unchanged random order.
+        if (shuffled.every((card,i) => card === cards[i])) shuffled.push(shuffled.shift());
+        shuffled.forEach(card => list.appendChild(card));
         numberProcs();
-        shuffled.forEach((card, i) => {
-          setTimeout(() => {
-            card.classList.add('card-flipping-in');
-            card.addEventListener('animationend', () => { card.classList.remove('card-flipping-in'); }, { once: true });
-          }, i * STAGGER);
+        shuffled.forEach(card => {
+          const r = card.getBoundingClientRect();
+          if (r.bottom>0 && r.top<window.innerHeight) chaos.animate(card,
+            [{opacity:.2,transform:'perspective(900px) rotateY(-35deg) translateX(16px)'},{opacity:1,transform:'perspective(900px) rotateY(0deg) translateX(0)'}],
+            {duration:420});
         });
-      }, reorderAt);
+        setTimeout(() => { shuffling = false; },450);
+      };
+      if (!chaos.enabled()) { reorder(); return; }
+      cards.filter(card => chaos.visibleCards.has(card)).forEach(card => chaos.animate(card,
+        [{opacity:1,transform:'perspective(900px) rotateY(0deg)'},{opacity:.2,transform:'perspective(900px) rotateY(35deg)'}],{duration:220}));
+      setTimeout(reorder,210);
     }
 
-    /* ── avatar glitch burst ── */
     const emojiEl = document.querySelector('.profile-emoji');
-    const GLITCH_EMOJIS = ['🥴', '🫨', '🌀', '⚡', '🤖'];
-    let glitchTimer = null;
-    emojiEl.addEventListener('click', () => {
+    const GLITCH_EMOJIS = ['🥴','🫨','🌀','⚡','🤖','🤪','🔥'];
+    let glitchTimer = 0, glitchEnd = 0;
+    listen(emojiEl,'click',() => {
       shuffleCards();
-      if (reduced) return;
+      if (!chaos.enabled()) return;
+      chaos.avatar();
       document.body.classList.add('glitch-mode');
       let gi = 0;
-      clearInterval(glitchTimer);
-      glitchTimer = setInterval(() => { emojiEl.textContent = GLITCH_EMOJIS[gi % GLITCH_EMOJIS.length]; gi++; }, 140);
-      setTimeout(() => {
-        clearInterval(glitchTimer);
-        emojiEl.textContent = '🤓';
+      clearInterval(glitchTimer); clearTimeout(glitchEnd);
+      glitchTimer = setInterval(() => {
+        if (!chaos.enabled()) {
+          clearInterval(glitchTimer); emojiEl.textContent = '🤓';
+          document.body.classList.remove('glitch-mode'); return;
+        }
+        emojiEl.textContent = GLITCH_EMOJIS[gi++%GLITCH_EMOJIS.length];
+      },180);
+      glitchEnd = setTimeout(() => {
+        clearInterval(glitchTimer); emojiEl.textContent = '🤓';
         document.body.classList.remove('glitch-mode');
-      }, 2400);
+      },2400);
     });
 
     /* ── restore to normal mode ── */
@@ -1353,16 +2015,19 @@
       const btn = document.getElementById('normalModeBtn');
       if (btn) { btn.textContent = '[ RESTORING... ]'; btn.disabled = true; }
       const stash = window.name || '';
+      dispose();
       if (stash.indexOf('NORMAL_HTML::') === 0) {
         const html = stash.slice('NORMAL_HTML::'.length);
         document.open(); document.write(html); document.close();
       } else {
-        document.write('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0"></head><body></body></html>');
-        document.close();
+        window.location.reload();
       }
     };
   })();
-    </scr`+'ipt>\n</body>\n</html>';
+    <\/script>
+</body>
+</html>`;
+  })();
 
   </script>
 
