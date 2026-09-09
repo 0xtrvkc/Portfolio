@@ -1,104 +1,142 @@
-# portfolio
+# TRVKC Portfolio
 
-single-file portfolio page. no framework, no build step, no node_modules folder I have to remember to gitignore.
+Personal portfolio and launchpad for browser-based research tools, trading/quant experiments, utilities, and creative work.
 
-live: [https://0xtrvkc.github.io/Portfolio/]
+[Live site](https://0xtrvkc.github.io/Portfolio/) · [GitHub](https://github.com/0xtrvkc)
 
----
+![Static site check](https://github.com/0xtrvkc/Portfolio/actions/workflows/static-site-check.yml/badge.svg)
 
-## what it is
+## Overview
 
-static `portfolio.html` that lists my github pages tools and two instagram accounts. meant to be viewed on mobile in portrait. works on desktop too, it just looks a bit sparse because I didn't bother with a multi-column layout.
+This repo is intentionally simple: a static GitHub Pages site with no framework, package manager, bundler, or build step.
 
-aesthetic is terminal + cute game mashup because that's apparently my personality now.
+The portfolio has two personalities in one `index.html`:
 
----
+- **Normal mode** — editorial / terminal-inspired portfolio layout
+- **Fun mode** — an embedded high-energy alternate UI with interactive effects and animation
 
-## stack
+The tool list is auto-numbered in the browser, so adding, removing, or reordering project cards does not require manually fixing card numbers or the sidebar project count.
 
-literally nothing. one html file.
+## Featured tools
 
-- fonts pulled from google fonts at runtime (VT323, Press Start 2P, Nunito)
-- sparkle/particle animation is vanilla canvas, ~80 particles
-- zero dependencies, zero npm, zero webpack, zero regrets
+| Project | What it does |
+| --- | --- |
+| [BTC-MVRV Analytics](https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard/) | Dynamic BTC dashboard with MVRV visualisation and analytics |
+| [BTC-MVRV Analytics — Mobile](https://0xtrvkc.github.io/dynamic-btc-analytics-dashboard_mobile/) | Mobile-focused version of the BTC-MVRV dashboard |
+| [BTC-DXY Analytics](https://0xtrvkc.github.io/dynamic-btc-dxy-analytics-dashboard/) | BTC analytics with DXY visualisation |
+| [BTC 0DTE Signal](https://0xtrvkc.github.io/BTC-Daily-Short-Call-Premium-Income-Checklist/) | Daily short-call premium checklist and indicator suite |
+| [BTC Loan Analyzer](https://0xtrvkc.github.io/btcLoanAnalyzer/) | BTC-collateral loan modelling for LTV, liquidation, and cash flow |
+| [Gold SD Visualizer](https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer/) | Intraday Gold OI standard-deviation visualiser — under maintenance |
+| [Gold SD Visualizer — Mobile](https://0xtrvkc.github.io/Gold-OG-GC-intraday-oi-SD-Visualizer_mobile/) | Mobile version of the Gold OI visualiser — under maintenance |
+| [Vol2Vol Gold DB](https://0xtrvkc.github.io/itd-oi-db/) | Gold OG/GC volatility-to-volatility open-interest database |
+| [PVD vs Investment](https://0xtrvkc.github.io/pvd-vs-investment/) | Provident-fund vs investment-growth comparison |
+| [BTC EMA Cross Backtest](https://0xtrvkc.github.io/btcEmaCrossBacktest/) | Dual-EMA crossover backtest on historical BTC/USD data |
+| [Prop Challenge Sim](https://0xtrvkc.github.io/prop_challenge_simulator/) | Prop-challenge pass-probability simulator |
+| [FADE](https://0xtrvkc.github.io/Fade-self-erasing-clipboard/) | Cross-device clipboard that self-erases |
+| [BTC Options Sandbox](https://0xtrvkc.github.io/btc-options-sandbox/) | Browser-based BTC range-risk and options research terminal |
 
-if google fonts is down your font fallbacks are `monospace` and `sans-serif`. it'll look fine.
+## Creative work
 
----
+- [Videography — @expsr.v](https://instagram.com/expsr.v)
+- [Loop animation / 3D — @contrvkc](https://instagram.com/contrvkc)
 
-## file structure
+## Stack
 
-```
+- HTML, CSS, and vanilla JavaScript
+- Google Fonts loaded at runtime
+- Canvas / DOM-based visual effects in fun mode
+- Web app manifest with 192×192 and 512×512 icons
+- GitHub Pages for hosting
+- GitHub Actions for lightweight static-site validation
+
+No Node.js runtime, npm dependencies, framework, or compilation step is required.
+
+## Repository structure
+
+```text
 /
-├── portfolio.html    ← the whole thing
+├── .github/
+│   └── workflows/
+│       └── static-site-check.yml
+├── icons/
+│   ├── icon-192.png
+│   └── icon-512.png
+├── index.html
+├── manifest.json
 └── README.md
 ```
 
-that's it.
+## Run locally
 
----
+Because the site is static, you can open `index.html` directly. A local HTTP server is better for testing browser behaviour that depends on normal web origins.
 
-## deploy
-
-1. put `portfolio.html` in repo root
-2. repo settings → pages → deploy from branch → main → / (root)
-3. wait ~60 seconds
-4. done
-
-if you want it at `https://0xtrvkc.github.io` specifically (no `/repo-name`), the repo has to be named `0xtrvkc.github.io`. you probably already knew that.
-
----
-
-## adding a new tool card
-
-open `portfolio.html`, find the comment block that says `TEMPLATE — copy & uncomment to add a new tool card`. copy the commented-out `<a>` block, paste below the last card inside `#tools-list`, fill in the url/title/desc/tags/icon.
-
-available card color classes: `card-green` `card-blue` `card-yellow` `card-pink` `card-purple` `card-orange`
-
-pick whichever one isn't visually cluttering the card above it. no deeper logic than that.
-
-animation delay for the new card is handled automatically by nth-child selectors up to 8 cards. if you're adding a 9th+, throw a new line in the css:
-
-```css
-.card:nth-child(9) { animation-delay: 0.72s; }
+```bash
+python -m http.server 8000
 ```
 
----
+Then open:
 
-## color tokens (css variables)
+```text
+http://localhost:8000
+```
 
-| var | hex | used for |
-|---|---|---|
-| `--green` | `#00ff41` | primary terminal green |
-| `--pink` | `#ff2d78` | accent, dot indicator |
-| `--blue` | `#00cfff` | card variant |
-| `--yellow` | `#ffe400` | bio tag, card variant |
-| `--purple` | `#c77dff` | card variant, creative section |
-| `--orange` | `#ff7b00` | card variant, videography |
-| `--bg` | `#0d0d0d` | page background |
-| `--card-bg` | `#131813` | card background |
+## Add a new tool
 
-if you want to change a color, change the variable at the top of the `<style>` block. it propagates everywhere.
+Open `index.html`, find the **CARD BLANK TEMPLATE** inside `#tools-list`, and copy the template below the existing cards.
 
----
+```html
+<a class="card" href="YOUR_LINK_HERE" target="_blank" rel="noopener">
+  <span class="card-idx"></span>
+  <div class="card-main">
+    <div class="card-title">Tool Name Here</div>
+    <div class="card-desc">Short description of what this tool does</div>
+  </div>
+  <span class="card-tag">TAG · TAG · TAG</span>
+  <span class="card-arrow">↗</span>
+</a>
+```
 
-## things I didn't bother with
+Leave `.card-idx` empty. `autoNumberCards()` assigns the display number and updates the sidebar project count automatically.
 
-- **dark mode toggle** — it's already dark. done.
-- **analytics** — don't care about the numbers
-- **SEO meta tags** — not trying to rank for anything
-- **favicon** — added it to the list of things I'll do later
-- **accessibility audit** — reduced motion is respected via `prefers-reduced-motion`. keyboard focus works. that's probably enough for a personal page nobody is legally required to use.
-- **service worker / offline mode** — it's a portfolio page
+## PWA / home-screen metadata
 
----
+`manifest.json` defines the app name, theme/background colour, portrait orientation, start URL, scope, and icon metadata. The page also includes Apple touch-icon and theme-colour metadata.
 
-## known issues
+This repo does **not** use a service worker, so it should be treated as a static portfolio with install/home-screen metadata rather than an offline-first app.
 
-none that bother me enough to fix right now. the particle canvas resets on resize which causes a brief flicker, I know, it's fine.
+## Deployment
 
----
+The site is designed to be served directly from the repository root with GitHub Pages:
 
-## license
+1. Open **Settings → Pages** in the repository.
+2. Choose **Deploy from a branch**.
+3. Select `main` and `/ (root)`.
+4. Save.
 
-do whatever you want with the code. the links obviously go to my stuff so don't copy those. (just kidding, do what you want 😛)
+The live URL is:
+
+https://0xtrvkc.github.io/Portfolio/
+
+No build workflow is required because the deployed source is already static HTML/CSS/JS.
+
+## CI
+
+`.github/workflows/static-site-check.yml` runs on pushes to `main` and on pull requests. It intentionally stays dependency-free and checks that:
+
+- required site files exist
+- `manifest.json` is valid JSON
+- manifest icon files exist
+- local `href` / `src` references in `index.html` resolve to files in the repo
+- essential document metadata such as the doctype, viewport, title, and manifest link is present
+
+The workflow validates the source; GitHub Pages remains responsible for deployment.
+
+## Notes
+
+- The main page is responsive and includes mobile-specific performance adjustments in fun mode.
+- External fonts require network access; system fallbacks are used if they are unavailable.
+- Financial tools linked from this portfolio are research / informational projects, not investment advice.
+
+## License
+
+No explicit open-source license is currently included in this repository. Unless a license is added, normal copyright rules apply to the source code and assets.
