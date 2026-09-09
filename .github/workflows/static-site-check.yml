@@ -1,0 +1,126 @@
+name: Static Site Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate static portfolio
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Validate files, manifest, and local references
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import json
+          import sys
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urlsplit
+
+          root = Path('.')
+          required = [
+              Path('index.html'),
+              Path('manifest.json'),
+              Path('icons/icon-192.png'),
+              Path('icons/icon-512.png'),
+          ]
+
+          missing = [str(path) for path in required if not path.is_file()]
+          if missing:
+              print('Missing required files:')
+              for path in missing:
+                  print(f'  - {path}')
+              sys.exit(1)
+
+          try:
+              manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          except (OSError, json.JSONDecodeError) as exc:
+              print(f'Invalid manifest.json: {exc}')
+              sys.exit(1)
+
+          manifest_errors = []
+          for icon in manifest.get('icons', []):
+              src = icon.get('src', '')
+              if not src:
+                  manifest_errors.append('manifest icon is missing src')
+                  continue
+              icon_path = root / src.removeprefix('./')
+              if not icon_path.is_file():
+                  manifest_errors.append(f'manifest icon not found: {src}')
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          required_html = {
+              'doctype': '<!DOCTYPE html>',
+              'viewport meta': 'name="viewport"',
+              'page title': '<title>',
+              'manifest link': 'rel="manifest"',
+          }
+          for label, needle in required_html.items():
+              if needle.lower() not in html.lower():
+                  manifest_errors.append(f'missing essential HTML metadata: {label}')
+
+          class LocalRefParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.refs = []
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  for key in ('href', 'src'):
+                      value = attrs.get(key)
+                      if value:
+                          self.refs.append((tag, key, value.strip()))
+
+          parser = LocalRefParser()
+          parser.feed(html)
+
+          ignored_schemes = {'http', 'https', 'mailto', 'tel', 'data', 'javascript'}
+          broken_refs = []
+
+          for tag, attr, raw in parser.refs:
+              if not raw or raw.startswith('#') or raw.startswith('//'):
+                  continue
+
+              parsed = urlsplit(raw)
+              if parsed.scheme.lower() in ignored_schemes:
+                  continue
+              if parsed.scheme:
+                  continue
+
+              path = parsed.path
+              if not path or path == '/':
+                  continue
+
+              local = Path(path.lstrip('/')).as_posix()
+              local_path = root / local
+
+              if local_path.is_dir():
+                  local_path = local_path / 'index.html'
+
+              if not local_path.exists():
+                  broken_refs.append(f'<{tag}> {attr}="{raw}" -> {local_path}')
+
+          errors = manifest_errors + broken_refs
+          if errors:
+              print('Static-site validation failed:')
+              for error in errors:
+                  print(f'  - {error}')
+              sys.exit(1)
+
+          print('Static-site validation passed.')
+          print(f'Checked {len(required)} required files and {len(parser.refs)} HTML href/src references.')
+          PY
