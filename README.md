@@ -15,7 +15,7 @@ The portfolio has two personalities in one `index.html`:
 - **Normal mode** — editorial / terminal-inspired portfolio layout
 - **Fun mode** — an embedded high-energy alternate UI with interactive effects and animation
 
-The tool list is auto-numbered in the browser, so adding, removing, or reordering project cards does not require manually fixing card numbers or the sidebar project count.
+Both personalities render from the same `portfolio-data.js` source. The tool list is auto-numbered, and changes made with the hidden editor are reflected in Normal and Fun mode without duplicate editing.
 
 ## Featured tools
 
@@ -62,6 +62,8 @@ No Node.js runtime, npm dependencies, framework, or compilation step is required
 │   ├── icon-192.png
 │   └── icon-512.png
 ├── index.html
+├── portfolio-data.js
+├── portfolio-store.js
 ├── manifest.json
 └── README.md
 ```
@@ -80,23 +82,34 @@ Then open:
 http://localhost:8000
 ```
 
-## Add a new tool
+## Hidden editor
 
-Open `index.html`, find the **CARD BLANK TEMPLATE** inside `#tools-list`, and copy the template below the existing cards.
+Open **Normal mode**, then type `iii` within roughly one second. On a touch device, triple-tap the greeting in the top bar. No editor button or hint is shown to ordinary visitors.
 
-```html
-<a class="card" href="YOUR_LINK_HERE" target="_blank" rel="noopener">
-  <span class="card-idx"></span>
-  <div class="card-main">
-    <div class="card-title">Tool Name Here</div>
-    <div class="card-desc">Short description of what this tool does</div>
-  </div>
-  <span class="card-tag">TAG · TAG · TAG</span>
-  <span class="card-arrow">↗</span>
-</a>
-```
+The editor supports:
 
-Leave `.card-idx` empty. `autoNumberCards()` assigns the display number and updates the sidebar project count automatically.
+- adding, editing, and deleting projects and creative links
+- drag-and-drop ordering on desktop
+- accessible up/down ordering controls on desktop and mobile
+- project title, URL, description, tags, Fun-mode filename, status, and command
+- Fun-mode card accent selection: volt green, cyan, magenta, or amber
+- browser-local autosave, JSON backup, and JSON import
+- one shared result across Normal and Fun mode
+
+Press `Esc` or use the editor's `ESC` button to close it.
+
+### Local draft versus published content
+
+Editor changes are saved in `localStorage`, so they persist in that browser and immediately appear in both modes. A static GitHub Pages site cannot securely write to its own repository, so a browser draft is not public to other visitors until it is committed.
+
+To publish a draft:
+
+1. Select **Copy publish file** in the hidden editor.
+2. Open [`portfolio-data.js` on GitHub](https://github.com/0xtrvkc/Portfolio/edit/main/portfolio-data.js).
+3. Replace the complete file with the copied content.
+4. Commit the change. GitHub Pages will serve the shared data to both modes.
+
+The hidden gesture is an unobtrusive entrance, not authentication. This is safe because the editor only writes to the visitor's own browser; repository publishing still requires GitHub authorization.
 
 ## PWA / home-screen metadata
 
@@ -134,6 +147,7 @@ The workflow validates the source; GitHub Pages remains responsible for deployme
 ## Notes
 
 - The main page is responsive and includes mobile-specific performance adjustments in fun mode.
+- `portfolio-store.js` validates imported/editor data, restricts URLs to HTTP(S), and normalizes Fun-mode accent values before rendering.
 - External fonts require network access; system fallbacks are used if they are unavailable.
 - Financial tools linked from this portfolio are research / informational projects, not investment advice.
 

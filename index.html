@@ -20,6 +20,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+  <!-- One shared content source for Normal mode, Fun mode, and the hidden editor. -->
+  <script src="portfolio-data.js"></script>
+  <script src="portfolio-store.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
@@ -408,6 +412,126 @@
     }
 
     /* ════════════════════════════════════════════════
+       HIDDEN PORTFOLIO EDITOR — unlock by typing "iii"
+    ════════════════════════════════════════════════ */
+    body.edit-mode { overflow: hidden; }
+    .editor-backdrop {
+      position: fixed; inset: 0; z-index: 900;
+      background: rgba(12, 11, 9, 0.54);
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.2s linear, visibility 0.2s linear;
+      backdrop-filter: blur(3px);
+    }
+    .portfolio-editor {
+      --editor-panel: #171612;
+      --editor-panel-2: #201e19;
+      --editor-line: #494338;
+      --editor-copy: #f5f2eb;
+      --editor-dim: #aaa08e;
+      position: fixed; z-index: 901; top: 0; right: 0;
+      width: min(570px, 100vw); height: 100dvh;
+      background: var(--editor-panel); color: var(--editor-copy);
+      border-left: 1px solid var(--editor-line);
+      transform: translateX(102%);
+      transition: transform 0.24s cubic-bezier(.2,.8,.2,1);
+      box-shadow: -24px 0 70px rgba(0,0,0,0.28);
+      display: flex; flex-direction: column;
+      font-family: var(--mono);
+    }
+    body.edit-mode .editor-backdrop { opacity: 1; visibility: visible; }
+    body.edit-mode .portfolio-editor { transform: translateX(0); }
+    .editor-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 18px 20px; border-bottom: 1px solid var(--editor-line);
+      background: #11100d;
+    }
+    .editor-kicker { color: #d7ff69; font-size: 0.58rem; letter-spacing: 0.16em; margin-bottom: 4px; }
+    .editor-title { font-size: 0.86rem; letter-spacing: 0.08em; font-weight: 700; }
+    .editor-close {
+      min-width: 36px; min-height: 36px; border: 1px solid var(--editor-line);
+      background: transparent; color: var(--editor-copy); cursor: pointer;
+      font: 700 0.72rem var(--mono);
+    }
+    .editor-close:hover { border-color: #d7ff69; color: #d7ff69; }
+    .editor-body { min-height: 0; flex: 1; overflow: auto; overscroll-behavior: contain; }
+    .editor-list-view, .editor-form-view { padding: 18px 20px 28px; }
+    .editor-form-view[hidden], .editor-list-view[hidden] { display: none; }
+    .editor-note {
+      border: 1px solid var(--editor-line); background: var(--editor-panel-2);
+      padding: 10px 12px; color: var(--editor-dim); font-size: 0.62rem; line-height: 1.55;
+    }
+    .editor-note strong { color: var(--editor-copy); font-weight: 700; }
+    .editor-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 14px 0; background: var(--editor-line); border: 1px solid var(--editor-line); }
+    .editor-tab {
+      border: 0; padding: 10px 12px; background: var(--editor-panel);
+      color: var(--editor-dim); cursor: pointer; font: 700 0.64rem var(--mono);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .editor-tab[aria-selected="true"] { background: var(--editor-copy); color: #171612; }
+    .editor-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+    .editor-btn {
+      border: 1px solid var(--editor-line); background: transparent; color: var(--editor-copy);
+      padding: 8px 10px; min-height: 36px; cursor: pointer;
+      font: 700 0.58rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .editor-btn:hover { border-color: #d7ff69; color: #d7ff69; }
+    .editor-btn.primary { background: #d7ff69; color: #11100d; border-color: #d7ff69; }
+    .editor-btn.danger:hover { border-color: #ff867a; color: #ff867a; }
+    .editor-list { display: flex; flex-direction: column; gap: 8px; }
+    .editor-empty { border: 1px dashed var(--editor-line); padding: 28px 14px; text-align: center; color: var(--editor-dim); font-size: 0.64rem; }
+    .editor-item {
+      display: grid; grid-template-columns: 30px minmax(0,1fr) auto; gap: 9px;
+      align-items: center; border: 1px solid var(--editor-line); background: var(--editor-panel-2);
+      padding: 9px; transition: opacity .15s, border-color .15s, transform .15s;
+    }
+    .editor-item[draggable="true"] { cursor: grab; }
+    .editor-item.dragging { opacity: .35; }
+    .editor-item.drag-over { border-color: #d7ff69; transform: translateY(2px); }
+    .editor-grip { color: var(--editor-dim); font-size: 0.8rem; letter-spacing: -0.12em; user-select: none; text-align: center; }
+    .editor-item-copy { min-width: 0; }
+    .editor-item-line { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .editor-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.68rem; font-weight: 700; }
+    .editor-item-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 4px; color: var(--editor-dim); font-size: 0.57rem; }
+    .editor-swatch { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; box-shadow: 0 0 8px currentColor; background: currentColor; }
+    .editor-swatch[data-accent="volt"] { color: #c6ff3d; }
+    .editor-swatch[data-accent="cyan"] { color: #33e6ff; }
+    .editor-swatch[data-accent="magenta"] { color: #ff3ec8; }
+    .editor-swatch[data-accent="amber"] { color: #ffb43d; }
+    .editor-item-controls { display: flex; gap: 4px; }
+    .editor-icon-btn {
+      width: 30px; height: 30px; display: grid; place-items: center;
+      border: 1px solid var(--editor-line); background: #171612; color: var(--editor-dim);
+      cursor: pointer; font: 700 0.62rem var(--mono);
+    }
+    .editor-icon-btn:hover:not(:disabled) { color: #d7ff69; border-color: #d7ff69; }
+    .editor-icon-btn:disabled { opacity: .25; cursor: not-allowed; }
+    .editor-form-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .editor-form-head h2 { font-size: 0.8rem; letter-spacing: 0.08em; }
+    .editor-fields { display: grid; gap: 13px; }
+    .editor-field { display: grid; gap: 6px; }
+    .editor-field label { color: var(--editor-dim); font-size: 0.57rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .editor-field input, .editor-field textarea, .editor-field select {
+      width: 100%; border: 1px solid var(--editor-line); border-radius: 0;
+      background: #0e0d0b; color: var(--editor-copy); padding: 10px 11px;
+      font: 0.68rem/1.45 var(--mono); outline: none;
+    }
+    .editor-field textarea { resize: vertical; min-height: 82px; }
+    .editor-field input:focus, .editor-field textarea:focus, .editor-field select:focus { border-color: #d7ff69; }
+    .editor-field small { color: var(--editor-dim); font-size: 0.54rem; line-height: 1.45; }
+    .editor-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .editor-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--editor-line); }
+    .editor-footer {
+      border-top: 1px solid var(--editor-line); background: #11100d;
+      padding: 10px 20px; color: var(--editor-dim); font-size: 0.56rem;
+      display: flex; justify-content: space-between; gap: 12px;
+    }
+    .editor-status[data-tone="ok"] { color: #d7ff69; }
+    .editor-status[data-tone="warn"] { color: #ffb43d; }
+    .editor-status[data-tone="bad"] { color: #ff867a; }
+    .editor-publish-help { margin-top: 14px; font-size: 0.56rem; color: var(--editor-dim); line-height: 1.55; }
+    .editor-publish-help a { color: var(--editor-copy); text-decoration: underline; text-underline-offset: 2px; }
+
+    /* ════════════════════════════════════════════════
        MOBILE — recompose, don't shrink
     ════════════════════════════════════════════════ */
     @media (max-width: 880px) {
@@ -444,6 +568,12 @@
       .mode-btn { min-width: 118px; font-size: 0.56rem; padding: 5px 10px; }
       .creative-grid { grid-template-columns: 1fr 1fr; }
       .creative-card { padding: 16px 10px; }
+      .portfolio-editor { border-left: 0; }
+      .editor-head, .editor-list-view, .editor-form-view { padding-left: 14px; padding-right: 14px; }
+      .editor-form-grid { grid-template-columns: 1fr; }
+      .editor-item { grid-template-columns: 24px minmax(0,1fr) auto; gap: 6px; padding: 8px 7px; }
+      .editor-item-controls { display: grid; grid-template-columns: repeat(2, 30px); }
+      .editor-footer { padding-left: 14px; padding-right: 14px; }
     }
   </style>
 </head>
@@ -628,21 +758,8 @@
             <span class="card-arrow">↗</span>
           </a>
           
-          <!--
-          ══ CARD BLANK TEMPLATE — copy & paste to add a new tool ══
-          Leave card-idx empty — numbers and the sidebar count are
-          filled in automatically by autoNumberCards() on page load.
-
-          <a class="card" href="YOUR_LINK_HERE" target="_blank" rel="noopener">
-            <span class="card-idx"></span>
-            <div class="card-main">
-              <div class="card-title">Tool Name Here</div>
-              <div class="card-desc">Short description of what this tool does</div>
-            </div>
-            <span class="card-tag">TAG · TAG · TAG</span>
-            <span class="card-arrow">↗</span>
-          </a>
-          -->
+          <!-- Static no-JavaScript fallback only. Runtime cards come from
+               portfolio-data.js and the hidden editor; do not add cards here. -->
 
         </div>
       </div>
@@ -651,7 +768,7 @@
       <div class="section-block">
         <div class="section-label"><span class="count">02</span> creative output</div>
 
-        <div class="creative-grid">
+        <div class="creative-grid" id="creative-list">
           <a class="creative-card" href="https://instagram.com/expsr.v" target="_blank" rel="noopener">
             <span class="creative-tag">[ IG · VIDEO ]</span>
             <div class="creative-title">Videography</div>
@@ -683,6 +800,68 @@
   <script>
   (function () {
   if (typeof window.__trvkcDispose === 'function') window.__trvkcDispose();
+  const normalHtmlSnapshot = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const normalEvents = new AbortController();
+  const portfolioStore = window.TRVKCPortfolio;
+  let portfolioData = portfolioStore
+    ? portfolioStore.get()
+    : { schemaVersion: 1, tools: [], creative: [] };
+
+  function makeElement(tagName, className, content) {
+    const node = document.createElement(tagName);
+    if (className) node.className = className;
+    if (content !== undefined) node.textContent = content;
+    return node;
+  }
+
+  function makeNormalToolCard(item) {
+    const card = makeElement('a', 'card');
+    card.href = item.url;
+    card.target = '_blank';
+    card.rel = 'noopener';
+
+    const idx = makeElement('span', 'card-idx');
+    const main = makeElement('div', 'card-main');
+    main.append(
+      makeElement('div', 'card-title', item.title),
+      makeElement('div', 'card-desc', item.description)
+    );
+    card.append(
+      idx,
+      main,
+      makeElement('span', 'card-tag', item.tags.join(' · ')),
+      makeElement('span', 'card-arrow', '↗')
+    );
+    return card;
+  }
+
+  function makeNormalCreativeCard(item) {
+    const card = makeElement('a', 'creative-card');
+    card.href = item.url;
+    card.target = '_blank';
+    card.rel = 'noopener';
+    card.append(
+      makeElement('span', 'creative-tag', '[ ' + item.label + ' ]'),
+      makeElement('div', 'creative-title', item.title),
+      makeElement('div', 'creative-sub', item.subtitle)
+    );
+    return card;
+  }
+
+  function renderNormalPortfolio(nextData) {
+    if (!portfolioStore) {
+      autoNumberCards();
+      return;
+    }
+    portfolioData = portfolioStore.normalize(nextData || portfolioStore.get());
+    const tools = document.getElementById('tools-list');
+    const creative = document.getElementById('creative-list');
+    if (tools) tools.replaceChildren(...portfolioData.tools.map(makeNormalToolCard));
+    if (creative) creative.replaceChildren(...portfolioData.creative.map(makeNormalCreativeCard));
+    autoNumberCards();
+  }
+
+  renderNormalPortfolio(portfolioData);
   /* ═══════════════════════════════════════════════════════════════
      TOGGLE LOGIC
      The button cycles through 3 phases before redirecting:
@@ -722,12 +901,436 @@
     cardsObserver.observe(toolsListEl, { childList: true });
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     HIDDEN EDITOR
+     Type i-i-i in Normal mode (or triple-tap the greeting on touch
+     screens). Drafts are stored in this browser. Both visual modes
+     always render from the same normalized data object.
+  ═══════════════════════════════════════════════════════════════ */
+  let editorKind = 'tools';
+  let dragIndex = -1;
+  let editorReturnFocus = null;
+
+  const editorBackdrop = makeElement('div', 'editor-backdrop');
+  editorBackdrop.id = 'editorBackdrop';
+  editorBackdrop.setAttribute('aria-hidden', 'true');
+
+  const editor = makeElement('aside', 'portfolio-editor');
+  editor.id = 'portfolioEditor';
+  editor.setAttribute('aria-hidden', 'true');
+  editor.setAttribute('aria-label', 'Portfolio editor');
+  editor.inert = true;
+  editor.innerHTML = [
+    '<div class="editor-head">',
+      '<div><div class="editor-kicker">HIDDEN ACCESS // III</div><div class="editor-title">PORTFOLIO EDITOR</div></div>',
+      '<button class="editor-close" id="editorClose" type="button" aria-label="Close editor">ESC</button>',
+    '</div>',
+    '<div class="editor-body">',
+      '<section class="editor-list-view" id="editorListView">',
+        '<div class="editor-note"><strong id="editorDraftState">LOCAL DRAFT</strong> · Changes save on this device and instantly sync Normal + Fun mode.</div>',
+        '<div class="editor-tabs" role="tablist" aria-label="Content type">',
+          '<button class="editor-tab" id="editorToolsTab" type="button" role="tab" aria-selected="true">Projects <span id="editorToolsCount"></span></button>',
+          '<button class="editor-tab" id="editorCreativeTab" type="button" role="tab" aria-selected="false">Creative <span id="editorCreativeCount"></span></button>',
+        '</div>',
+        '<div class="editor-actions">',
+          '<button class="editor-btn primary" id="editorAdd" type="button">+ Add project</button>',
+          '<button class="editor-btn" id="editorBackup" type="button">Backup JSON</button>',
+          '<button class="editor-btn" id="editorImport" type="button">Import</button>',
+          '<button class="editor-btn" id="editorPublish" type="button">Copy publish file</button>',
+          '<button class="editor-btn danger" id="editorReset" type="button">Reset</button>',
+        '</div>',
+        '<div class="editor-list" id="editorItems"></div>',
+        '<p class="editor-publish-help">Drag rows on desktop or use ↑/↓ on mobile. To make a draft public, copy the publish file, open <a href="https://github.com/0xtrvkc/Portfolio/edit/main/portfolio-data.js" target="_blank" rel="noopener">portfolio-data.js on GitHub</a>, replace all, and commit.</p>',
+      '</section>',
+      '<section class="editor-form-view" id="editorFormView" hidden>',
+        '<div class="editor-form-head"><button class="editor-btn" id="editorBack" type="button">← Back</button><h2 id="editorFormTitle">ADD PROJECT</h2></div>',
+        '<form id="editorForm">',
+          '<div class="editor-fields">',
+            '<div class="editor-field"><label for="editTitle">Title</label><input id="editTitle" name="title" maxlength="120" required></div>',
+            '<div class="editor-field"><label for="editUrl">Link</label><input id="editUrl" name="url" type="url" maxlength="1000" placeholder="https://…" required></div>',
+            '<div class="editor-field" data-tool-field><label for="editDescription">Description</label><textarea id="editDescription" name="description" maxlength="320" required></textarea></div>',
+            '<div class="editor-field" data-tool-field><label for="editTags">Tags</label><input id="editTags" name="tags" maxlength="240" placeholder="BTC, OPTIONS, RESEARCH"><small>Separate tags with commas. Normal mode uses the dots; Fun mode uses chips.</small></div>',
+            '<div class="editor-form-grid" data-tool-field>',
+              '<div class="editor-field"><label for="editFilename">Fun filename</label><input id="editFilename" name="filename" maxlength="100" placeholder="project.run"></div>',
+              '<div class="editor-field"><label for="editStatus">Fun status</label><input id="editStatus" name="status" maxlength="30" placeholder="LIVE"></div>',
+            '</div>',
+            '<div class="editor-form-grid" data-tool-field>',
+              '<div class="editor-field"><label for="editAction">Fun command</label><input id="editAction" name="action" maxlength="30" placeholder="./launch"></div>',
+              '<div class="editor-field"><label for="editToolAccent">Fun card accent</label><select id="editToolAccent" name="toolAccent"><option value="volt">Volt green</option><option value="cyan">Cyan</option><option value="magenta">Magenta</option><option value="amber">Amber</option></select><small>Edits the card class accent in Fun mode.</small></div>',
+            '</div>',
+            '<div class="editor-field" data-creative-field hidden><label for="editSubtitle">Subtitle / handle</label><input id="editSubtitle" name="subtitle" maxlength="160" placeholder="@handle"></div>',
+            '<div class="editor-form-grid" data-creative-field hidden>',
+              '<div class="editor-field"><label for="editPlatform">Platform</label><input id="editPlatform" name="platform" maxlength="80" placeholder="Instagram"></div>',
+              '<div class="editor-field"><label for="editLabel">Normal label</label><input id="editLabel" name="label" maxlength="60" placeholder="IG · ART"></div>',
+            '</div>',
+            '<div class="editor-form-grid" data-creative-field hidden>',
+              '<div class="editor-field"><label for="editIcon">Fun icon</label><input id="editIcon" name="icon" maxlength="16" placeholder="✦"></div>',
+              '<div class="editor-field"><label for="editCreativeAccent">Fun card accent</label><select id="editCreativeAccent" name="creativeAccent"><option value="volt">Volt green</option><option value="cyan">Cyan</option><option value="magenta">Magenta</option><option value="amber">Amber</option></select></div>',
+            '</div>',
+          '</div>',
+          '<div class="editor-form-actions"><button class="editor-btn" id="editorCancel" type="button">Cancel</button><button class="editor-btn primary" type="submit">Save item</button></div>',
+        '</form>',
+      '</section>',
+    '</div>',
+    '<div class="editor-footer"><span id="editorStatus" class="editor-status" aria-live="polite">READY</span><span>III TO UNLOCK · ESC TO CLOSE</span></div>'
+  ].join('');
+
+  const editorImportInput = makeElement('input');
+  editorImportInput.type = 'file';
+  editorImportInput.accept = 'application/json,.json';
+  editorImportInput.hidden = true;
+  document.body.append(editorBackdrop, editor, editorImportInput);
+
+  const editorItems = editor.querySelector('#editorItems');
+  const editorListView = editor.querySelector('#editorListView');
+  const editorFormView = editor.querySelector('#editorFormView');
+  const editorForm = editor.querySelector('#editorForm');
+  const editorStatus = editor.querySelector('#editorStatus');
+  const editorAdd = editor.querySelector('#editorAdd');
+
+  function setEditorStatus(message, tone) {
+    editorStatus.textContent = message;
+    editorStatus.dataset.tone = tone || '';
+  }
+
+  function updateEditorMeta() {
+    editor.querySelector('#editorToolsCount').textContent = '(' + portfolioData.tools.length + ')';
+    editor.querySelector('#editorCreativeCount').textContent = '(' + portfolioData.creative.length + ')';
+    editor.querySelector('#editorDraftState').textContent = portfolioStore && portfolioStore.hasDraft() ? 'LOCAL DRAFT' : 'PUBLISHED DATA';
+  }
+
+  function editorCollection() {
+    return editorKind === 'tools' ? portfolioData.tools : portfolioData.creative;
+  }
+
+  function button(label, title, action, disabled) {
+    const control = makeElement('button', 'editor-icon-btn', label);
+    control.type = 'button';
+    control.title = title;
+    control.setAttribute('aria-label', title);
+    control.disabled = Boolean(disabled);
+    control.addEventListener('click', action);
+    return control;
+  }
+
+  function moveEditorItem(from, to) {
+    const items = editorCollection();
+    if (from < 0 || to < 0 || from >= items.length || to >= items.length || from === to) return;
+    const moved = items.splice(from, 1)[0];
+    items.splice(to, 0, moved);
+    commitEditorData('ORDER SAVED');
+  }
+
+  function deleteEditorItem(index) {
+    const items = editorCollection();
+    const item = items[index];
+    if (!item || !window.confirm('Remove “' + item.title + '” from both modes?')) return;
+    items.splice(index, 1);
+    commitEditorData('ITEM REMOVED');
+  }
+
+  function renderEditorList() {
+    updateEditorMeta();
+    editor.querySelector('#editorToolsTab').setAttribute('aria-selected', String(editorKind === 'tools'));
+    editor.querySelector('#editorCreativeTab').setAttribute('aria-selected', String(editorKind === 'creative'));
+    editorAdd.textContent = editorKind === 'tools' ? '+ Add project' : '+ Add creative';
+    editorItems.replaceChildren();
+
+    const items = editorCollection();
+    if (!items.length) {
+      editorItems.append(makeElement('div', 'editor-empty', 'Nothing here yet. Add the first item.'));
+      return;
+    }
+
+    items.forEach(function (item, index) {
+      const row = makeElement('div', 'editor-item');
+      row.draggable = true;
+      row.dataset.index = String(index);
+
+      const grip = makeElement('div', 'editor-grip', '⠿');
+      grip.title = 'Drag to reorder';
+      const copy = makeElement('div', 'editor-item-copy');
+      const line = makeElement('div', 'editor-item-line');
+      const swatch = makeElement('span', 'editor-swatch');
+      swatch.dataset.accent = item.accent;
+      line.append(swatch, makeElement('div', 'editor-item-title', item.title));
+      copy.append(line, makeElement('div', 'editor-item-sub', editorKind === 'tools' ? item.tags.join(' · ') : item.label + ' · ' + item.subtitle));
+
+      const controls = makeElement('div', 'editor-item-controls');
+      controls.append(
+        button('↑', 'Move up', function () { moveEditorItem(index, index - 1); }, index === 0),
+        button('↓', 'Move down', function () { moveEditorItem(index, index + 1); }, index === items.length - 1),
+        button('✎', 'Edit ' + item.title, function () { openEditorForm(index); }),
+        button('×', 'Delete ' + item.title, function () { deleteEditorItem(index); })
+      );
+      row.append(grip, copy, controls);
+
+      row.addEventListener('dragstart', function (event) {
+        dragIndex = index;
+        row.classList.add('dragging');
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move';
+          event.dataTransfer.setData('text/plain', String(index));
+        }
+      });
+      row.addEventListener('dragend', function () {
+        dragIndex = -1;
+        row.classList.remove('dragging');
+        editorItems.querySelectorAll('.drag-over').forEach(function (node) { node.classList.remove('drag-over'); });
+      });
+      row.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        row.classList.add('drag-over');
+      });
+      row.addEventListener('dragleave', function () { row.classList.remove('drag-over'); });
+      row.addEventListener('drop', function (event) {
+        event.preventDefault();
+        row.classList.remove('drag-over');
+        const source = dragIndex >= 0 ? dragIndex : Number(event.dataTransfer && event.dataTransfer.getData('text/plain'));
+        moveEditorItem(source, index);
+      });
+      editorItems.append(row);
+    });
+  }
+
+  function commitEditorData(message) {
+    if (!portfolioStore) return setEditorStatus('STORAGE UNAVAILABLE', 'bad');
+    const result = portfolioStore.save(portfolioData);
+    portfolioData = result.data;
+    renderNormalPortfolio(portfolioData);
+    renderEditorList();
+    setEditorStatus(result.persisted ? message : 'COULD NOT SAVE IN THIS BROWSER', result.persisted ? 'ok' : 'bad');
+  }
+
+  function value(name) {
+    const field = editorForm.elements.namedItem(name);
+    return field ? field.value.trim() : '';
+  }
+
+  function setValue(name, nextValue) {
+    const field = editorForm.elements.namedItem(name);
+    if (field) field.value = nextValue == null ? '' : nextValue;
+  }
+
+  function generatedId(prefix) {
+    return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+  }
+
+  function openEditorForm(index) {
+    const isTool = editorKind === 'tools';
+    const item = index >= 0 ? editorCollection()[index] : null;
+    editorForm.dataset.index = String(index);
+    editorForm.dataset.kind = editorKind;
+    editor.querySelector('#editorFormTitle').textContent = (item ? 'EDIT ' : 'ADD ') + (isTool ? 'PROJECT' : 'CREATIVE ITEM');
+    editor.querySelectorAll('[data-tool-field]').forEach(function (node) {
+      node.hidden = !isTool;
+      node.querySelectorAll('input,textarea,select').forEach(function (field) { field.disabled = !isTool; });
+    });
+    editor.querySelectorAll('[data-creative-field]').forEach(function (node) {
+      node.hidden = isTool;
+      node.querySelectorAll('input,textarea,select').forEach(function (field) { field.disabled = isTool; });
+    });
+
+    setValue('title', item && item.title);
+    setValue('url', item && item.url !== '#' ? item.url : '');
+    setValue('description', item && item.description);
+    setValue('tags', item && item.tags ? item.tags.join(', ') : '');
+    setValue('filename', item && item.filename);
+    setValue('status', item && item.status || 'LIVE');
+    setValue('action', item && item.action || './launch');
+    setValue('toolAccent', item && item.accent || 'volt');
+    setValue('subtitle', item && item.subtitle);
+    setValue('platform', item && item.platform);
+    setValue('label', item && item.label);
+    setValue('icon', item && item.icon || '✦');
+    setValue('creativeAccent', item && item.accent || 'magenta');
+
+    editorListView.hidden = true;
+    editorFormView.hidden = false;
+    setEditorStatus(item ? 'EDITING ITEM' : 'NEW ITEM', '');
+    requestAnimationFrame(function () { editor.querySelector('#editTitle').focus(); });
+  }
+
+  function closeEditorForm() {
+    editorFormView.hidden = true;
+    editorListView.hidden = false;
+    editorForm.reset();
+    renderEditorList();
+    setEditorStatus('READY', '');
+  }
+
+  function openEditor() {
+    if (document.body.classList.contains('edit-mode')) return;
+    editorReturnFocus = document.activeElement;
+    closeEditorForm();
+    document.body.classList.add('edit-mode');
+    editorBackdrop.setAttribute('aria-hidden', 'false');
+    editor.setAttribute('aria-hidden', 'false');
+    editor.inert = false;
+    setEditorStatus('EDITOR UNLOCKED', 'ok');
+    requestAnimationFrame(function () { editor.querySelector('#editorClose').focus(); });
+  }
+
+  function closeEditor() {
+    document.body.classList.remove('edit-mode');
+    editorBackdrop.setAttribute('aria-hidden', 'true');
+    editor.setAttribute('aria-hidden', 'true');
+    editor.inert = true;
+    closeEditorForm();
+    if (editorReturnFocus && editorReturnFocus.focus) editorReturnFocus.focus();
+  }
+
+  function downloadFile(name, content, type) {
+    const blob = new Blob([content], { type: type });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+  }
+
+  async function copyPublishFile() {
+    if (!portfolioStore) return;
+    const source = portfolioStore.publishSource(portfolioData);
+    try {
+      await navigator.clipboard.writeText(source);
+      setEditorStatus('PUBLISH FILE COPIED — PASTE IT ON GITHUB', 'ok');
+    } catch (_) {
+      downloadFile('portfolio-data.js', source, 'text/javascript');
+      setEditorStatus('CLIPBOARD BLOCKED — FILE DOWNLOADED', 'warn');
+    }
+  }
+
+  editorForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const kind = editorForm.dataset.kind;
+    const index = Number(editorForm.dataset.index);
+    const oldItem = index >= 0 ? editorCollection()[index] : null;
+    let item;
+
+    if (kind === 'tools') {
+      item = {
+        id: oldItem ? oldItem.id : generatedId('tool'),
+        title: value('title'),
+        description: value('description'),
+        url: value('url'),
+        tags: value('tags').split(/[,·\n]+/).map(function (tag) { return tag.trim(); }).filter(Boolean),
+        filename: value('filename'),
+        status: value('status'),
+        action: value('action'),
+        accent: value('toolAccent')
+      };
+    } else {
+      item = {
+        id: oldItem ? oldItem.id : generatedId('creative'),
+        title: value('title'),
+        subtitle: value('subtitle'),
+        platform: value('platform'),
+        url: value('url'),
+        label: value('label'),
+        icon: value('icon'),
+        accent: value('creativeAccent')
+      };
+    }
+
+    const items = editorCollection();
+    if (index >= 0) items[index] = item;
+    else items.push(item);
+    commitEditorData(index >= 0 ? 'ITEM UPDATED' : 'ITEM ADDED TO BOTH MODES');
+    closeEditorForm();
+  });
+
+  editor.querySelector('#editorClose').addEventListener('click', closeEditor);
+  editorBackdrop.addEventListener('click', closeEditor);
+  editor.querySelector('#editorBack').addEventListener('click', closeEditorForm);
+  editor.querySelector('#editorCancel').addEventListener('click', closeEditorForm);
+  editorAdd.addEventListener('click', function () { openEditorForm(-1); });
+  editor.querySelector('#editorToolsTab').addEventListener('click', function () { editorKind = 'tools'; renderEditorList(); });
+  editor.querySelector('#editorCreativeTab').addEventListener('click', function () { editorKind = 'creative'; renderEditorList(); });
+  editor.querySelector('#editorBackup').addEventListener('click', function () {
+    downloadFile('trvkc-portfolio-backup.json', JSON.stringify(portfolioData, null, 2), 'application/json');
+    setEditorStatus('BACKUP DOWNLOADED', 'ok');
+  });
+  editor.querySelector('#editorImport').addEventListener('click', function () { editorImportInput.click(); });
+  editor.querySelector('#editorPublish').addEventListener('click', copyPublishFile);
+  editor.querySelector('#editorReset').addEventListener('click', function () {
+    if (!portfolioStore || !window.confirm('Discard this browser draft and restore the published portfolio?')) return;
+    const result = portfolioStore.reset();
+    portfolioData = result.data;
+    renderNormalPortfolio(portfolioData);
+    renderEditorList();
+    setEditorStatus(result.persisted ? 'PUBLISHED DATA RESTORED' : 'RESET FAILED', result.persisted ? 'ok' : 'bad');
+  });
+  editorImportInput.addEventListener('change', async function () {
+    const file = editorImportInput.files && editorImportInput.files[0];
+    if (!file || !portfolioStore) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (!parsed || (!Array.isArray(parsed.tools) && !Array.isArray(parsed.creative))) throw new Error('Unsupported portfolio file');
+      if (!window.confirm('Replace the current browser draft with “' + file.name + '”?')) return;
+      portfolioData = portfolioStore.normalize(parsed);
+      commitEditorData('BACKUP IMPORTED');
+    } catch (error) {
+      setEditorStatus('IMPORT FAILED — INVALID JSON', 'bad');
+    } finally {
+      editorImportInput.value = '';
+    }
+  });
+
+  let unlockKeys = '';
+  let unlockTimer = 0;
+  window.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && document.body.classList.contains('edit-mode')) {
+      if (!editorFormView.hidden) closeEditorForm();
+      else closeEditor();
+      return;
+    }
+    const target = event.target;
+    if (event.ctrlKey || event.metaKey || event.altKey || (target && target.closest && target.closest('input,textarea,select,[contenteditable="true"]'))) return;
+    clearTimeout(unlockTimer);
+    if (event.key.toLowerCase() === 'i') {
+      unlockKeys = (unlockKeys + 'i').slice(-3);
+      if (unlockKeys === 'iii') {
+        unlockKeys = '';
+        openEditor();
+      }
+      unlockTimer = setTimeout(function () { unlockKeys = ''; }, 1100);
+    } else {
+      unlockKeys = '';
+    }
+  }, { signal: normalEvents.signal });
+
+  let secretTapCount = 0;
+  let secretTapTimer = 0;
+  const secretTapTarget = document.querySelector('.term-path');
+  if (secretTapTarget) secretTapTarget.addEventListener('click', function () {
+    clearTimeout(secretTapTimer);
+    secretTapCount += 1;
+    if (secretTapCount >= 3) {
+      secretTapCount = 0;
+      openEditor();
+    }
+    secretTapTimer = setTimeout(function () { secretTapCount = 0; }, 900);
+  }, { signal: normalEvents.signal });
+
+  window.addEventListener('storage', function (event) {
+    if (!portfolioStore || event.key !== portfolioStore.storageKey) return;
+    portfolioData = portfolioStore.get();
+    renderNormalPortfolio(portfolioData);
+    renderEditorList();
+    setEditorStatus('SYNCED FROM ANOTHER TAB', 'ok');
+  }, { signal: normalEvents.signal });
+
+  renderEditorList();
+
   const btn   = document.getElementById('modeBtn');
   const label = document.getElementById('modeBtnLabel');
 
   // Stash the pristine "normal mode" HTML so fun mode can restore it later.
   // window.name survives document.write/document.open/close in the same tab.
-  window.name = 'NORMAL_HTML::<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  window.name = 'NORMAL_HTML::' + normalHtmlSnapshot;
 
   const PHASES = [
     { cls: 'phase-formal', text: '[ TOGGLE VIEW ]',          duration: 1800 },
@@ -765,6 +1368,9 @@
 
   window.__trvkcDispose = function () {
     clearTimeout(loopTimer);
+    clearTimeout(unlockTimer);
+    clearTimeout(secretTapTimer);
+    normalEvents.abort();
     if (cardsObserver) cardsObserver.disconnect();
   };
   runLoop();
@@ -791,6 +1397,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="portfolio-data.js"><\/script>
+  <script src="portfolio-store.js"><\/script>
   <style>
     :root {
       --void:    #05060a;
@@ -1217,21 +1825,13 @@
         <div class="card-body"><span class="card-idx"></span><div class="card-title">BTC Options Sandbox</div><div class="card-desc">A browser-based BTC range-risk research terminal</div><div class="card-tags"><span class="chip">BTC</span><span class="chip">OPTIONS</span><span class="chip">SANDBOX</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
       </a>
 
-      <!--
-      ══ CARD BLANK TEMPLATE — copy & paste to add a new tool ══
-      Leave card-idx empty and the "/ 9" counter above updates itself.
-      Accent options: var(--volt) var(--cyan) var(--magenta) var(--amber)
-
-      <a class="card" style="--accent:var(--cyan)" href="YOUR_LINK_HERE" target="_blank" rel="noopener">
-        <div class="card-bar"><span class="dots"><span></span><span></span><span></span></span><span class="fname">new_tool.run</span><span class="live">LIVE</span></div>
-        <div class="card-body"><span class="card-idx"></span><div class="card-title">Tool Name Here</div><div class="card-desc">Short description</div><div class="card-tags"><span class="chip">TAG<1/span><span class="chip">TAG2</span><span class="chip">TAG3</span></div><div class="card-launch"><span>./launch</span><span class="go">run &rarr;</span></div></div>
-      </a>
-      -->
+      <!-- Static no-JavaScript fallback only. Runtime cards and their
+           --accent values come from the shared portfolio data. -->
 
     </div>
 
-    <div class="sec-head"><span class="n">02</span><span class="tag">SIGNAL OUT</span><span class="rule"></span><span class="tag dim">/ 2</span></div>
-    <div class="reels">
+    <div class="sec-head"><span class="n">02</span><span class="tag">SIGNAL OUT</span><span class="rule"></span><span class="tag dim" id="creativeCount">/ 2</span></div>
+    <div class="reels" id="creative-list">
       <a class="creative-card" style="--accent:var(--magenta)" href="https://instagram.com/expsr.v" target="_blank" rel="noopener">
         <span class="reel-badge">REEL 01</span>
         <span class="reel-icon" aria-hidden="true">&#127902;</span>
@@ -1291,6 +1891,82 @@
     }
     window.__trvkcDispose = dispose;
     listen(window,'pagehide',event => { if (!event.persisted) dispose(); });
+
+    /* One data source, two skins. Accent is normalized by portfolio-store.js
+       and applied to each Fun-mode card through its --accent custom property. */
+    const funPortfolioStore = window.TRVKCPortfolio;
+    const funPortfolioData = funPortfolioStore
+      ? funPortfolioStore.get()
+      : { tools: [], creative: [] };
+
+    function funElement(tagName, className, content) {
+      const node = document.createElement(tagName);
+      if (className) node.className = className;
+      if (content !== undefined) node.textContent = content;
+      return node;
+    }
+
+    function makeFunToolCard(item) {
+      const card = funElement('a', 'card');
+      card.href = item.url;
+      card.target = '_blank';
+      card.rel = 'noopener';
+      card.style.setProperty('--accent', 'var(--' + item.accent + ')');
+
+      const bar = funElement('div', 'card-bar');
+      const dots = funElement('span', 'dots');
+      dots.append(document.createElement('span'), document.createElement('span'), document.createElement('span'));
+      bar.append(dots, funElement('span', 'fname', item.filename), funElement('span', 'live', item.status));
+
+      const body = funElement('div', 'card-body');
+      const chips = funElement('div', 'card-tags');
+      item.tags.forEach(function (tag) { chips.append(funElement('span', 'chip', tag)); });
+      const launch = funElement('div', 'card-launch');
+      launch.append(funElement('span', '', item.action), funElement('span', 'go', 'run →'));
+      body.append(
+        funElement('span', 'card-idx'),
+        funElement('div', 'card-title', item.title),
+        funElement('div', 'card-desc', item.description),
+        chips,
+        launch
+      );
+      card.append(bar, body);
+      return card;
+    }
+
+    function makeFunCreativeCard(item, index) {
+      const card = funElement('a', 'creative-card');
+      card.href = item.url;
+      card.target = '_blank';
+      card.rel = 'noopener';
+      card.style.setProperty('--accent', 'var(--' + item.accent + ')');
+      const details = item.platform ? item.subtitle + ' — ' + item.platform : item.subtitle;
+      const icon = funElement('span', 'reel-icon', item.icon);
+      icon.setAttribute('aria-hidden', 'true');
+      card.append(
+        funElement('span', 'reel-badge', 'REEL ' + String(index + 1).padStart(2, '0')),
+        icon,
+        funElement('div', 'creative-title', item.title),
+        funElement('div', 'creative-sub', details)
+      );
+      return card;
+    }
+
+    function renderFunPortfolio() {
+      if (!funPortfolioStore) {
+        numberProcs();
+        return;
+      }
+      const tools = document.getElementById('tools-list');
+      const creative = document.getElementById('creative-list');
+      if (tools) tools.replaceChildren(...funPortfolioData.tools.map(makeFunToolCard));
+      if (creative) creative.replaceChildren(...funPortfolioData.creative.map(makeFunCreativeCard));
+      const creativeCount = document.getElementById('creativeCount');
+      if (creativeCount) creativeCount.textContent = '/ ' + funPortfolioData.creative.length;
+      numberProcs();
+    }
+
+    renderFunPortfolio();
 
     /* ── boot sequence ── */
     function typeInto(el, text, speed, cb) {

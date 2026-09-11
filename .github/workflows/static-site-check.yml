@@ -34,6 +34,8 @@ jobs:
           root = Path('.')
           required = [
               Path('index.html'),
+              Path('portfolio-data.js'),
+              Path('portfolio-store.js'),
               Path('manifest.json'),
               Path('icons/icon-192.png'),
               Path('icons/icon-512.png'),
@@ -124,3 +126,53 @@ jobs:
           print('Static-site validation passed.')
           print(f'Checked {len(required)} required files and {len(parser.refs)} HTML href/src references.')
           PY
+
+      - name: Validate JavaScript and shared portfolio data
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node --check portfolio-data.js
+          node --check portfolio-store.js
+
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+
+          const dataSource = fs.readFileSync('portfolio-data.js', 'utf8');
+          const sandbox = { window: {} };
+          vm.createContext(sandbox);
+          vm.runInContext(dataSource, sandbox);
+
+          const data = sandbox.window.TRVKC_PORTFOLIO_DEFAULTS;
+          if (!data || data.schemaVersion !== 1) throw new Error('Invalid portfolio schema version');
+          if (!Array.isArray(data.tools) || !Array.isArray(data.creative)) throw new Error('Portfolio collections must be arrays');
+
+          const accents = new Set(['volt', 'cyan', 'magenta', 'amber']);
+          for (const item of [...data.tools, ...data.creative]) {
+            if (!item.id || !item.title || !item.url) throw new Error('Every portfolio item needs id, title, and url');
+            if (!accents.has(item.accent)) throw new Error(`Unsupported accent on ${item.id}: ${item.accent}`);
+            const url = new URL(item.url);
+            if (!['http:', 'https:'].includes(url.protocol)) throw new Error(`Unsafe URL on ${item.id}`);
+          }
+
+          const html = fs.readFileSync('index.html', 'utf8');
+          const outerMarker = '  <script>\n  (function () {';
+          const outerStart = html.indexOf(outerMarker);
+          const outerEnd = html.lastIndexOf('\n  </script>');
+          if (outerStart < 0 || outerEnd <= outerStart) throw new Error('Main inline script not found');
+          new Function(html.slice(outerStart + '  <script>\n'.length, outerEnd));
+
+          const funMarker = 'const funnyPortfolioHTML = `';
+          const funStart = html.indexOf(funMarker);
+          const funEnd = html.indexOf('`;\n  })();', funStart);
+          if (funStart < 0 || funEnd <= funStart) throw new Error('Embedded Fun-mode document not found');
+          const literal = html.slice(funStart + funMarker.length, funEnd);
+          const funHtml = new Function('return `' + literal + '`;')();
+          const scriptStart = funHtml.lastIndexOf('<script>');
+          const scriptEnd = funHtml.lastIndexOf('</script>');
+          if (scriptStart < 0 || scriptEnd <= scriptStart) throw new Error('Fun-mode inline script not found');
+          new Function(funHtml.slice(scriptStart + '<script>'.length, scriptEnd));
+
+          console.log(`JavaScript validation passed for ${data.tools.length} projects and ${data.creative.length} creative links.`);
+          NODE
