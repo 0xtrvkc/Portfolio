@@ -23,6 +23,7 @@
   <!-- One shared content source for Normal mode, Fun mode, and the hidden editor. -->
   <script src="portfolio-data.js"></script>
   <script src="portfolio-store.js"></script>
+  <script src="firebase-sync.js" defer></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -904,8 +905,8 @@
   /* ═══════════════════════════════════════════════════════════════
      HIDDEN EDITOR
      Type i-i-i in Normal mode (or triple-tap the greeting on touch
-     screens). Drafts are stored in this browser. Both visual modes
-     always render from the same normalized data object.
+     screens). Google Auth protects the editor; Firestore is the
+     global source of truth and localStorage is only an offline cache.
   ═══════════════════════════════════════════════════════════════ */
   let editorKind = 'tools';
   let dragIndex = -1;
@@ -927,7 +928,7 @@
     '</div>',
     '<div class="editor-body">',
       '<section class="editor-list-view" id="editorListView">',
-        '<div class="editor-note"><strong id="editorDraftState">LOCAL DRAFT</strong> · Changes save on this device and instantly sync Normal + Fun mode.</div>',
+        '<div class="editor-note"><strong id="editorDraftState">CONNECTING</strong> · <span id="editorCloudNote">Loading the global portfolio from Firestore.</span></div>',
         '<div class="editor-tabs" role="tablist" aria-label="Content type">',
           '<button class="editor-tab" id="editorToolsTab" type="button" role="tab" aria-selected="true">Projects <span id="editorToolsCount"></span></button>',
           '<button class="editor-tab" id="editorCreativeTab" type="button" role="tab" aria-selected="false">Creative <span id="editorCreativeCount"></span></button>',
@@ -936,11 +937,11 @@
           '<button class="editor-btn primary" id="editorAdd" type="button">+ Add project</button>',
           '<button class="editor-btn" id="editorBackup" type="button">Backup JSON</button>',
           '<button class="editor-btn" id="editorImport" type="button">Import</button>',
-          '<button class="editor-btn" id="editorPublish" type="button">Copy publish file</button>',
+          '<button class="editor-btn" id="editorSignOut" type="button">Sign out</button>',
           '<button class="editor-btn danger" id="editorReset" type="button">Reset</button>',
         '</div>',
         '<div class="editor-list" id="editorItems"></div>',
-        '<p class="editor-publish-help">Drag rows on desktop or use ↑/↓ on mobile. To make a draft public, copy the publish file, open <a href="https://github.com/0xtrvkc/Portfolio/edit/main/portfolio-data.js" target="_blank" rel="noopener">portfolio-data.js on GitHub</a>, replace all, and commit.</p>',
+        '<p class="editor-publish-help">Drag rows on desktop or use ↑/↓ on mobile. Every successful save updates Firestore and appears on every device in Normal and Fun mode.</p>',
       '</section>',
       '<section class="editor-form-view" id="editorFormView" hidden>',
         '<div class="editor-form-head"><button class="editor-btn" id="editorBack" type="button">← Back</button><h2 id="editorFormTitle">ADD PROJECT</h2></div>',
@@ -987,6 +988,11 @@
   const editorForm = editor.querySelector('#editorForm');
   const editorStatus = editor.querySelector('#editorStatus');
   const editorAdd = editor.querySelector('#editorAdd');
+  let editorAccessPending = false;
+
+  function firebaseBridge() {
+    return window.TRVKCFirebase || null;
+  }
 
   function setEditorStatus(message, tone) {
     editorStatus.textContent = message;
@@ -996,7 +1002,25 @@
   function updateEditorMeta() {
     editor.querySelector('#editorToolsCount').textContent = '(' + portfolioData.tools.length + ')';
     editor.querySelector('#editorCreativeCount').textContent = '(' + portfolioData.creative.length + ')';
-    editor.querySelector('#editorDraftState').textContent = portfolioStore && portfolioStore.hasDraft() ? 'LOCAL DRAFT' : 'PUBLISHED DATA';
+    const bridge = firebaseBridge();
+    const state = bridge && bridge.getState ? bridge.getState() : null;
+    const title = editor.querySelector('#editorDraftState');
+    const note = editor.querySelector('#editorCloudNote');
+    if (!state || !state.ready) {
+      title.textContent = state && state.cloudStatus === 'error' ? 'CLOUD ERROR' : 'CONNECTING';
+      note.textContent = state && state.lastError || 'Loading the global portfolio from Firestore.';
+    } else if (state.cloudStatus === 'saving') {
+      title.textContent = 'SAVING';
+      note.textContent = 'Uploading this change to every device.';
+    } else if (state.cloudStatus === 'error') {
+      title.textContent = 'CLOUD ERROR';
+      note.textContent = state.lastError || 'Firestore is unavailable; the cached copy is still visible.';
+    } else {
+      title.textContent = state.documentExists ? 'FIRESTORE LIVE' : 'FIRESTORE READY';
+      note.textContent = state.documentExists
+        ? 'Every edit autosaves globally and feeds both Normal and Fun mode.'
+        : 'The first authenticated edit will create the global portfolio document.';
+    }
   }
 
   function editorCollection() {
@@ -1099,7 +1123,22 @@
     portfolioData = result.data;
     renderNormalPortfolio(portfolioData);
     renderEditorList();
-    setEditorStatus(result.persisted ? message : 'COULD NOT SAVE IN THIS BROWSER', result.persisted ? 'ok' : 'bad');
+    const bridge = firebaseBridge();
+    if (!bridge || !bridge.save) {
+      setEditorStatus('FIREBASE IS STILL CONNECTING — TRY AGAIN', 'bad');
+      return Promise.resolve(null);
+    }
+    setEditorStatus('SAVING TO FIRESTORE…', 'warn');
+    updateEditorMeta();
+    return bridge.save(result.data).then(function () {
+      updateEditorMeta();
+      setEditorStatus(message + ' · GLOBAL', 'ok');
+      return result.data;
+    }).catch(function (error) {
+      updateEditorMeta();
+      setEditorStatus('NOT SAVED GLOBALLY — ' + bridge.friendlyError(error), 'bad');
+      return null;
+    });
   }
 
   function value(name) {
@@ -1161,6 +1200,9 @@
 
   function openEditor() {
     if (document.body.classList.contains('edit-mode')) return;
+    const bridge = firebaseBridge();
+    const state = bridge && bridge.getState ? bridge.getState() : null;
+    if (!state || !state.authorized) return requestEditorAccess();
     editorReturnFocus = document.activeElement;
     closeEditorForm();
     document.body.classList.add('edit-mode');
@@ -1169,6 +1211,29 @@
     editor.inert = false;
     setEditorStatus('EDITOR UNLOCKED', 'ok');
     requestAnimationFrame(function () { editor.querySelector('#editorClose').focus(); });
+  }
+
+  function requestEditorAccess() {
+    if (editorAccessPending || document.body.classList.contains('edit-mode')) return;
+    const bridge = firebaseBridge();
+    const state = bridge && bridge.getState ? bridge.getState() : null;
+    if (!bridge || !state || !state.ready) {
+      window.alert(state && state.lastError
+        ? 'Firebase error: ' + state.lastError
+        : 'Editor security is still connecting. Wait a moment, then type iii again.');
+      return;
+    }
+
+    editorAccessPending = true;
+    bridge.signInAdmin().then(function () {
+      return bridge.ensureDocument(portfolioData);
+    }).then(function () {
+      editorAccessPending = false;
+      openEditor();
+    }).catch(function (error) {
+      editorAccessPending = false;
+      window.alert(bridge.friendlyError(error));
+    });
   }
 
   function closeEditor() {
@@ -1189,18 +1254,6 @@
     link.click();
     link.remove();
     setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
-  }
-
-  async function copyPublishFile() {
-    if (!portfolioStore) return;
-    const source = portfolioStore.publishSource(portfolioData);
-    try {
-      await navigator.clipboard.writeText(source);
-      setEditorStatus('PUBLISH FILE COPIED — PASTE IT ON GITHUB', 'ok');
-    } catch (_) {
-      downloadFile('portfolio-data.js', source, 'text/javascript');
-      setEditorStatus('CLIPBOARD BLOCKED — FILE DOWNLOADED', 'warn');
-    }
   }
 
   editorForm.addEventListener('submit', function (event) {
@@ -1238,8 +1291,8 @@
     const items = editorCollection();
     if (index >= 0) items[index] = item;
     else items.push(item);
-    commitEditorData(index >= 0 ? 'ITEM UPDATED' : 'ITEM ADDED TO BOTH MODES');
     closeEditorForm();
+    commitEditorData(index >= 0 ? 'ITEM UPDATED' : 'ITEM ADDED TO BOTH MODES');
   });
 
   editor.querySelector('#editorClose').addEventListener('click', closeEditor);
@@ -1254,14 +1307,20 @@
     setEditorStatus('BACKUP DOWNLOADED', 'ok');
   });
   editor.querySelector('#editorImport').addEventListener('click', function () { editorImportInput.click(); });
-  editor.querySelector('#editorPublish').addEventListener('click', copyPublishFile);
+  editor.querySelector('#editorSignOut').addEventListener('click', function () {
+    const bridge = firebaseBridge();
+    if (!bridge || !window.confirm('Sign out of global Edit mode?')) return;
+    bridge.signOutAdmin().then(function () {
+      closeEditor();
+    }).catch(function (error) {
+      setEditorStatus('SIGN OUT FAILED — ' + bridge.friendlyError(error), 'bad');
+    });
+  });
   editor.querySelector('#editorReset').addEventListener('click', function () {
-    if (!portfolioStore || !window.confirm('Discard this browser draft and restore the published portfolio?')) return;
+    if (!portfolioStore || !window.confirm('Replace the GLOBAL portfolio with the original repository content?')) return;
     const result = portfolioStore.reset();
     portfolioData = result.data;
-    renderNormalPortfolio(portfolioData);
-    renderEditorList();
-    setEditorStatus(result.persisted ? 'PUBLISHED DATA RESTORED' : 'RESET FAILED', result.persisted ? 'ok' : 'bad');
+    commitEditorData('GLOBAL PORTFOLIO RESET');
   });
   editorImportInput.addEventListener('change', async function () {
     const file = editorImportInput.files && editorImportInput.files[0];
@@ -1269,7 +1328,7 @@
     try {
       const parsed = JSON.parse(await file.text());
       if (!parsed || (!Array.isArray(parsed.tools) && !Array.isArray(parsed.creative))) throw new Error('Unsupported portfolio file');
-      if (!window.confirm('Replace the current browser draft with “' + file.name + '”?')) return;
+      if (!window.confirm('Replace the GLOBAL portfolio with “' + file.name + '”?')) return;
       portfolioData = portfolioStore.normalize(parsed);
       commitEditorData('BACKUP IMPORTED');
     } catch (error) {
@@ -1315,12 +1374,42 @@
     secretTapTimer = setTimeout(function () { secretTapCount = 0; }, 900);
   }, { signal: normalEvents.signal });
 
+  window.addEventListener('trvkc:cloud-data', function (event) {
+    if (!portfolioStore || !event.detail || !event.detail.data) return;
+    if (event.detail.hasPendingWrites) {
+      updateEditorMeta();
+      return;
+    }
+    portfolioData = portfolioStore.normalize(event.detail.data);
+    portfolioStore.save(portfolioData);
+    renderNormalPortfolio(portfolioData);
+    if (editorFormView.hidden) renderEditorList();
+    else updateEditorMeta();
+    if (document.body.classList.contains('edit-mode')) setEditorStatus('FIRESTORE SYNCED', 'ok');
+  }, { signal: normalEvents.signal });
+
+  window.addEventListener('trvkc:firebase-ready', updateEditorMeta, { signal: normalEvents.signal });
+  window.addEventListener('trvkc:firebase-bridge-ready', updateEditorMeta, { signal: normalEvents.signal });
+  window.addEventListener('trvkc:cloud-empty', updateEditorMeta, { signal: normalEvents.signal });
+  window.addEventListener('trvkc:cloud-saving', updateEditorMeta, { signal: normalEvents.signal });
+  window.addEventListener('trvkc:cloud-saved', updateEditorMeta, { signal: normalEvents.signal });
+  window.addEventListener('trvkc:cloud-error', function (event) {
+    updateEditorMeta();
+    if (document.body.classList.contains('edit-mode')) {
+      setEditorStatus('CLOUD ERROR — ' + (event.detail && event.detail.message || 'USING CACHE'), 'bad');
+    }
+  }, { signal: normalEvents.signal });
+  window.addEventListener('trvkc:auth-state', function (event) {
+    updateEditorMeta();
+    if (document.body.classList.contains('edit-mode') && event.detail && !event.detail.authorized) closeEditor();
+  }, { signal: normalEvents.signal });
+
   window.addEventListener('storage', function (event) {
-    if (!portfolioStore || event.key !== portfolioStore.storageKey) return;
+    if (!portfolioStore || (event.key !== portfolioStore.storageKey && event.key !== portfolioStore.legacyStorageKey)) return;
     portfolioData = portfolioStore.get();
     renderNormalPortfolio(portfolioData);
     renderEditorList();
-    setEditorStatus('SYNCED FROM ANOTHER TAB', 'ok');
+    setEditorStatus('CACHE UPDATED FROM ANOTHER TAB', 'ok');
   }, { signal: normalEvents.signal });
 
   renderEditorList();
@@ -1382,6 +1471,9 @@
 
   function loadFunPortfolio() {
     window.__trvkcDispose();
+    if (window.TRVKCFirebase && typeof window.TRVKCFirebase.dispose === 'function') {
+      window.TRVKCFirebase.dispose();
+    }
     document.open();
     document.write(funnyPortfolioHTML);
     document.close();
@@ -1399,6 +1491,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="portfolio-data.js"><\/script>
   <script src="portfolio-store.js"><\/script>
+  <script src="firebase-sync.js" defer><\/script>
   <style>
     :root {
       --void:    #05060a;
@@ -1895,7 +1988,7 @@
     /* One data source, two skins. Accent is normalized by portfolio-store.js
        and applied to each Fun-mode card through its --accent custom property. */
     const funPortfolioStore = window.TRVKCPortfolio;
-    const funPortfolioData = funPortfolioStore
+    let funPortfolioData = funPortfolioStore
       ? funPortfolioStore.get()
       : { tools: [], creative: [] };
 
@@ -1952,11 +2045,12 @@
       return card;
     }
 
-    function renderFunPortfolio() {
+    function renderFunPortfolio(nextData) {
       if (!funPortfolioStore) {
         numberProcs();
         return;
       }
+      if (nextData) funPortfolioData = funPortfolioStore.normalize(nextData);
       const tools = document.getElementById('tools-list');
       const creative = document.getElementById('creative-list');
       if (tools) tools.replaceChildren(...funPortfolioData.tools.map(makeFunToolCard));
@@ -1967,6 +2061,7 @@
     }
 
     renderFunPortfolio();
+    let funDataSignature = JSON.stringify(funPortfolioData);
 
     /* ── boot sequence ── */
     function typeInto(el, text, speed, cb) {
@@ -2168,7 +2263,7 @@
       const MAX = coarse ? 260 : 620;
       const particles = [], rings = [], words = [];
       const visibleCards = new Set();
-      const cards = Array.from(document.querySelectorAll('.card,.creative-card'));
+      let cards = Array.from(document.querySelectorAll('.card,.creative-card'));
       const entryAnimations = new Map();
       const animations = new Set();
       let width = 1, height = 1, dpr = 1, raf = 0, lastPaint = 0;
@@ -2503,10 +2598,6 @@
         else { nextIdle = performance.now()+600; status.textContent = idleMessage; start(); }
       }
 
-      cards.forEach((card,i) => {
-        card.style.setProperty('--float-time',(4.2+i%5*.6)+'s');
-        card.style.setProperty('--float-delay',(-i*.61)+'s');
-      });
       let observer = null;
       if ('IntersectionObserver' in window) {
         observer = new IntersectionObserver(entries => entries.forEach(entry => {
@@ -2524,8 +2615,21 @@
             }
           } else { visibleCards.delete(el); }
         }),{threshold:.08});
-        cards.forEach(card => observer.observe(card));
-      } else cards.forEach(card => { visibleCards.add(card); card.classList.add('fx-visible'); });
+      }
+
+      function refreshCards() {
+        visibleCards.forEach(card => { if (!card.isConnected) visibleCards.delete(card); });
+        cards = Array.from(document.querySelectorAll('.card,.creative-card'));
+        cards.forEach((card,i) => {
+          card.style.setProperty('--float-time',(4.2+i%5*.6)+'s');
+          card.style.setProperty('--float-delay',(-i*.61)+'s');
+          if (observer) observer.observe(card);
+          else { visibleCards.add(card); card.classList.add('fx-visible'); }
+        });
+        featureDirty = true;
+        updateProgress();
+      }
+      refreshCards();
 
       listen(window,'resize',queueResize,{passive:true});
       listen(document,'pointermove',e => {
@@ -2627,10 +2731,20 @@
           heat = Math.min(100,heat+30); overload(r.left+r.width/2,r.top+r.height/2,true);
           animate(el,[{scale:'1',rotate:'0deg'},{scale:'1.6',rotate:'-25deg',offset:.25},{scale:'.8',rotate:'375deg',offset:.8},{scale:'1',rotate:'360deg'}],{duration:900});
         },
-        animate, enabled,
+        animate, enabled, refreshCards,
         visibleCards
       };
     })();
+
+    listen(window,'trvkc:cloud-data',event => {
+      if (!funPortfolioStore || !event.detail || !event.detail.data || event.detail.hasPendingWrites) return;
+      const nextData = funPortfolioStore.normalize(event.detail.data);
+      const nextSignature = JSON.stringify(nextData);
+      if (nextSignature === funDataSignature) return;
+      funDataSignature = nextSignature;
+      renderFunPortfolio(nextData);
+      chaos.refreshCards();
+    });
 
 
     /* ── process numbering (auto, mirrors the normal-mode behaviour) ── */
@@ -2708,6 +2822,9 @@
       if (btn) { btn.textContent = '[ RESTORING... ]'; btn.disabled = true; }
       const stash = window.name || '';
       dispose();
+      if (window.TRVKCFirebase && typeof window.TRVKCFirebase.dispose === 'function') {
+        window.TRVKCFirebase.dispose();
+      }
       if (stash.indexOf('NORMAL_HTML::') === 0) {
         const html = stash.slice('NORMAL_HTML::'.length);
         document.open(); document.write(html); document.close();

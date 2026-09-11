@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'trvkc.portfolio.draft.v1';
+  const STORAGE_KEY = 'trvkc.portfolio.cloud-cache.v2';
+  const LEGACY_STORAGE_KEY = 'trvkc.portfolio.draft.v1';
   const SCHEMA_VERSION = 1;
   const ACCENTS = ['volt', 'cyan', 'magenta', 'amber'];
 
@@ -99,6 +100,8 @@
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) return normalize(JSON.parse(raw));
+      const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) return normalize(JSON.parse(legacy));
     } catch (_) {}
     return defaults();
   }
@@ -117,13 +120,17 @@
     let persisted = false;
     try {
       window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
       persisted = true;
     } catch (_) {}
     return { data: defaults(), persisted: persisted };
   }
 
   function hasDraft() {
-    try { return window.localStorage.getItem(STORAGE_KEY) !== null; }
+    try {
+      return window.localStorage.getItem(STORAGE_KEY) !== null ||
+        window.localStorage.getItem(LEGACY_STORAGE_KEY) !== null;
+    }
     catch (_) { return false; }
   }
 
@@ -146,6 +153,7 @@
     publishSource: publishSource,
     reset: reset,
     save: save,
-    storageKey: STORAGE_KEY
+    storageKey: STORAGE_KEY,
+    legacyStorageKey: LEGACY_STORAGE_KEY
   });
 })();

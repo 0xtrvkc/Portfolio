@@ -34,6 +34,8 @@ jobs:
           root = Path('.')
           required = [
               Path('index.html'),
+              Path('firebase-sync.js'),
+              Path('firestore.rules'),
               Path('portfolio-data.js'),
               Path('portfolio-store.js'),
               Path('manifest.json'),
@@ -134,6 +136,7 @@ jobs:
 
           node --check portfolio-data.js
           node --check portfolio-store.js
+          node --check firebase-sync.js
 
           node <<'NODE'
           const fs = require('fs');
@@ -157,6 +160,13 @@ jobs:
           }
 
           const html = fs.readFileSync('index.html', 'utf8');
+          const firebase = fs.readFileSync('firebase-sync.js', 'utf8');
+          const rules = fs.readFileSync('firestore.rules', 'utf8');
+          if (!html.includes('firebase-sync.js')) throw new Error('Firebase bridge is not loaded by index.html');
+          if (!firebase.includes("const ADMIN_EMAIL = 'cryptotrvkc@gmail.com'")) throw new Error('Approved editor email is missing');
+          if (!firebase.includes("const DOCUMENT_PATH = ['portfolio', 'public']")) throw new Error('Firestore document path is missing');
+          if (!rules.includes('match /portfolio/public')) throw new Error('Firestore public document rule is missing');
+          if (!rules.includes("request.auth.token.email == 'cryptotrvkc@gmail.com'")) throw new Error('Firestore editor allowlist is missing');
           const outerMarker = '  <script>\n  (function () {';
           const outerStart = html.indexOf(outerMarker);
           const outerEnd = html.lastIndexOf('\n  </script>');

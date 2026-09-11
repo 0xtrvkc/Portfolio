@@ -15,7 +15,7 @@ The portfolio has two personalities in one `index.html`:
 - **Normal mode** — editorial / terminal-inspired portfolio layout
 - **Fun mode** — an embedded high-energy alternate UI with interactive effects and animation
 
-Both personalities render from the same `portfolio-data.js` source. The tool list is auto-numbered, and changes made with the hidden editor are reflected in Normal and Fun mode without duplicate editing.
+Both personalities render from one normalized content model. `portfolio-data.js` provides the repository fallback, while Cloud Firestore is the live source of truth. Changes made with the hidden editor are reflected in Normal and Fun mode without duplicate editing and persist across browsers and devices.
 
 ## Featured tools
 
@@ -45,6 +45,8 @@ Both personalities render from the same `portfolio-data.js` source. The tool lis
 - HTML, CSS, and vanilla JavaScript
 - Google Fonts loaded at runtime
 - Canvas / DOM-based visual effects in fun mode
+- Firebase Authentication with Google sign-in
+- Cloud Firestore for global portfolio content and real-time sync
 - Web app manifest with 192×192 and 512×512 icons
 - GitHub Pages for hosting
 - GitHub Actions for lightweight static-site validation
@@ -62,6 +64,8 @@ No Node.js runtime, npm dependencies, framework, or compilation step is required
 │   ├── icon-192.png
 │   └── icon-512.png
 ├── index.html
+├── firebase-sync.js
+├── firestore.rules
 ├── portfolio-data.js
 ├── portfolio-store.js
 ├── manifest.json
@@ -84,7 +88,7 @@ http://localhost:8000
 
 ## Hidden editor
 
-Open **Normal mode**, then type `iii` within roughly one second. On a touch device, triple-tap the greeting in the top bar. No editor button or hint is shown to ordinary visitors.
+Open **Normal mode**, then type `iii` within roughly one second. On a touch device, triple-tap the greeting in the top bar. No editor button or hint is shown to ordinary visitors. The hidden gesture opens Google sign-in; Edit mode is unlocked only for the verified `cryptotrvkc@gmail.com` account.
 
 The editor supports:
 
@@ -93,23 +97,24 @@ The editor supports:
 - accessible up/down ordering controls on desktop and mobile
 - project title, URL, description, tags, Fun-mode filename, status, and command
 - Fun-mode card accent selection: volt green, cyan, magenta, or amber
-- browser-local autosave, JSON backup, and JSON import
+- automatic global Firestore saving, JSON backup, and JSON import
 - one shared result across Normal and Fun mode
+- a sign-out control for ending the authenticated edit session
 
 Press `Esc` or use the editor's `ESC` button to close it.
 
-### Local draft versus published content
+### Global content and security
 
-Editor changes are saved in `localStorage`, so they persist in that browser and immediately appear in both modes. A static GitHub Pages site cannot securely write to its own repository, so a browser draft is not public to other visitors until it is committed.
+Public visitors read the single Firestore document at `portfolio/public`. The site caches the last valid content locally for fast startup and temporary offline fallback, but Firestore replaces that cache as soon as the live document loads.
 
-To publish a draft:
+The `iii` gesture is only the hidden entrance. Actual authorization is enforced twice:
 
-1. Select **Copy publish file** in the hidden editor.
-2. Open [`portfolio-data.js` on GitHub](https://github.com/0xtrvkc/Portfolio/edit/main/portfolio-data.js).
-3. Replace the complete file with the copied content.
-4. Commit the change. GitHub Pages will serve the shared data to both modes.
+- the browser unlocks Edit mode only after Google verifies `cryptotrvkc@gmail.com`
+- Firestore Security Rules allow public reads of `portfolio/public`, deny every other document, and allow writes only when the same verified email is present in the Firebase authentication token
 
-The hidden gesture is an unobtrusive entrance, not authentication. This is safe because the editor only writes to the visitor's own browser; repository publishing still requires GitHub authorization.
+The Firebase web configuration in `firebase-sync.js` is intentionally public, as required for browser Firebase apps. Security comes from Authentication and Firestore Security Rules, not from hiding the API key.
+
+Every editor action writes the complete normalized portfolio to Firestore. Other browsers receive the updated data automatically. Normal mode and Fun mode both read that shared content, including each card's Fun-mode accent.
 
 ## PWA / home-screen metadata
 
@@ -132,6 +137,10 @@ https://0xtrvkc.github.io/Portfolio/
 
 No build workflow is required because the deployed source is already static HTML/CSS/JS.
 
+Firebase must have Cloud Firestore and Google Authentication enabled. The GitHub Pages host `0xtrvkc.github.io` must remain in **Authentication → Settings → Authorized domains**, and the deployed Firestore rules must continue restricting writes to the approved email.
+
+`firestore.rules` is the version-controlled copy of the production rules. If the file changes later, publish the same rules in **Firebase Console → Firestore Database → Rules** (or deploy them with the Firebase CLI).
+
 ## CI
 
 `.github/workflows/static-site-check.yml` runs on pushes to `main` and on pull requests. It intentionally stays dependency-free and checks that:
@@ -147,7 +156,8 @@ The workflow validates the source; GitHub Pages remains responsible for deployme
 ## Notes
 
 - The main page is responsive and includes mobile-specific performance adjustments in fun mode.
-- `portfolio-store.js` validates imported/editor data, restricts URLs to HTTP(S), and normalizes Fun-mode accent values before rendering.
+- `portfolio-store.js` validates imported/editor data, restricts URLs to HTTP(S), normalizes Fun-mode accent values, and maintains the local fallback cache.
+- `firebase-sync.js` owns authentication, real-time Firestore reads, and serialized global writes.
 - External fonts require network access; system fallbacks are used if they are unavailable.
 - Financial tools linked from this portfolio are research / informational projects, not investment advice.
 
