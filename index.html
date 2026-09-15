@@ -1678,7 +1678,30 @@
     .profile-emoji { border: 0; padding: 6px; background: transparent; line-height: 1.3; font-family: inherit; animation: avatar-bop 2.8s ease-in-out infinite; -webkit-tap-highlight-color: transparent; }
     @keyframes avatar-bop { 0%,100% { translate: 0 0; rotate: -8deg; } 25% { translate: 0 -9px; rotate: 5deg; } 50% { translate: 0 0; rotate: 9deg; } 75% { translate: 0 -5px; rotate: -4deg; } }
     .profile-emoji:hover { transform: scale(1.25) rotate(-12deg); }
-    .chaos-hint { margin-top: 24px; color: var(--cyan); font-size: .65rem; letter-spacing: .14em; }
+    .chaos-hint { display: inline-block; margin-top: 24px; padding: 11px 18px; border: 1px solid var(--cyan); border-radius: 999px; background: rgba(51,230,255,.12); color: #fff; font-size: .82rem; font-weight: 800; letter-spacing: .08em; box-shadow: 0 0 24px rgba(51,230,255,.35); animation: hint-pop 1.8s ease-in-out infinite; }
+    @keyframes hint-pop { 50% { transform: scale(1.09); box-shadow: 0 0 38px rgba(255,62,200,.65); border-color: var(--magenta); } }
+    .chaos-hint::before { content: '✦  '; color: var(--volt); }
+    .chaos-hint::after { content: '  ✦'; color: var(--magenta); }
+    .combo-party { position: fixed; inset: 0; z-index: 150; overflow: hidden; display: grid; place-items: center; isolation: isolate; background: radial-gradient(circle at 50% 42%,#592074 0%,#14152f 55%,#05060a 100%); cursor: wait; }
+    .combo-party[hidden] { display: none; }
+    .combo-party::before { content: ''; position: absolute; inset: -70%; background: conic-gradient(from 0deg,transparent 0 12%,rgba(51,230,255,.35) 15%,transparent 21% 32%,rgba(255,62,200,.45) 35%,transparent 43% 53%,rgba(255,180,61,.4) 57%,transparent 64% 78%,rgba(198,255,61,.35) 82%,transparent 90%); animation: party-spin 2.4s linear infinite; }
+    .combo-party::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 100px 30px #05060a; animation: party-flash .6s ease-in-out infinite alternate; }
+    @keyframes party-spin { to { transform: rotate(360deg); } }
+    @keyframes party-flash { to { opacity: .4; } }
+    .party-ball { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 2; width: clamp(95px,15vw,210px); aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(from 20deg,#e8f7ff 0deg 12deg,#6d9bc6 12deg 19deg,#fff 19deg 27deg,#567194 27deg 33deg); box-shadow: 0 0 40px 15px #fff8,0 0 110px 35px #33e6ff88; animation: ball-bop .8s ease-in-out infinite alternate; }
+    .party-ball::before { content: ''; position: absolute; left: 50%; bottom: 100%; height: 80px; border-left: 3px solid #fff; }
+    @keyframes ball-bop { to { transform: translateX(-50%) rotate(22deg) scale(1.08); } }
+    .party-hat { position: absolute; top: 14%; z-index: 3; font-size: clamp(3rem,8vw,8rem); filter: drop-shadow(0 0 18px #ff3ec8); animation: hat-bounce .55s ease-in-out infinite alternate; }
+    .party-hat.left { left: 7%; rotate: -20deg; } .party-hat.right { right: 7%; rotate: 20deg; animation-delay: -.3s; }
+    @keyframes hat-bounce { to { translate: 0 -24px; rotate: 15deg; } }
+    .party-dog { position: relative; z-index: 4; width: min(94vw,calc(78vh * 1.17)); aspect-ratio: 339 / 290; background-image: url('assets/chihuahua-dance.webp'); background-repeat: no-repeat; background-size: 400% 400%; image-rendering: pixelated; filter: drop-shadow(0 0 28px #fff9) drop-shadow(0 0 65px #ff3ec8); animation: dog-bop .34s ease-in-out infinite alternate; }
+    @keyframes dog-bop { to { transform: translateY(-20px) rotate(3deg) scale(1.07); } }
+    .party-title { position: absolute; z-index: 6; top: 17%; width: 100%; text-align: center; color: white; font-size: clamp(2.3rem,8vw,8rem); font-weight: 1000; letter-spacing: -.06em; text-shadow: 5px 5px #ff3ec8,-5px -5px #33e6ff,0 0 50px #fff; animation: title-slam .42s ease-in-out infinite alternate; pointer-events: none; }
+    @keyframes title-slam { to { transform: scale(1.13) rotate(-3deg); } }
+    .party-caption { position: absolute; z-index: 6; bottom: 6%; color: white; font-weight: 900; font-size: clamp(1rem,3vw,2.2rem); text-align: center; text-shadow: 0 0 22px #ff3ec8; }
+    .party-ribbon { position: absolute; z-index: 5; top: -12%; width: 8px; height: 35px; border-radius: 4px; background: var(--ribbon-color); transform: rotate(var(--ribbon-rotate)); animation: ribbon-fall var(--ribbon-time) linear var(--ribbon-delay) infinite; box-shadow: 0 0 9px var(--ribbon-color); }
+    @keyframes ribbon-fall { to { translate: var(--ribbon-drift) 125vh; rotate: 900deg; } }
+    @media (prefers-reduced-motion: reduce) { .combo-party *, .combo-party::before, .combo-party::after { animation: none !important; } }
     .ticker-wrap { border-image: linear-gradient(90deg,transparent,var(--magenta),var(--cyan),transparent) 1; }
     .ticker-wrap::before { content: ''; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg,transparent,rgba(51,230,255,.06),transparent); animation: poem-shimmer 9s linear infinite; pointer-events: none; }
     @keyframes poem-shimmer { from { translate: -100% 0; } to { translate: 350% 0; } }
@@ -1717,6 +1740,8 @@
     .chaos-hud { position: fixed; right: 18px; bottom: 18px; z-index: 101; width: 228px; max-width: calc(100vw - 24px); padding: 12px 14px; border: 1px solid rgba(198,255,61,.4); border-radius: 10px; background: rgba(5,6,10,.93); box-shadow: 0 6px 35px rgba(0,0,0,.35); pointer-events: none; }
     .chaos-hud-top { display: flex; justify-content: space-between; gap: 12px; font-size: .64rem; letter-spacing: .06em; color: var(--volt); }
     #chaosCombo { color: var(--magenta); font-weight: 700; }
+    .chaos-hud { transform: scale(var(--combo-scale,1)); transform-origin: right bottom; transition: transform .18s ease-out,box-shadow .18s; }
+    .fx-combo-party .chaos-hud { box-shadow: 0 0 45px #ff3ec888,0 0 65px #33e6ff55; border-color: var(--magenta); }
     .chaos-meter { height: 4px; background: #202a39; margin: 8px 0; overflow: hidden; }
     .chaos-meter-fill { display: block; width: 100%; height: 100%; transform: scaleX(.08); transform-origin: left; background: linear-gradient(90deg,var(--volt),var(--cyan),var(--magenta)); }
     #chaosStatus { font-size: .6rem; color: #c0cee0; letter-spacing: .08em; }
@@ -1818,6 +1843,13 @@
     <div class="chaos-meter"><span class="chaos-meter-fill" id="chaosMeter"></span></div>
     <div id="chaosStatus">HOVER · SCROLL · TAP THE VOID</div>
   </div>
+  <div class="combo-party" id="comboParty" hidden role="dialog" aria-modal="true" aria-label="99 combo Chihuahua dance" tabindex="-1">
+    <div class="party-ball" aria-hidden="true"></div>
+    <span class="party-hat left" aria-hidden="true">🎉</span><span class="party-hat right" aria-hidden="true">🥳</span>
+    <div class="party-dog" id="partyDog" aria-hidden="true"></div>
+    <div class="party-title" id="partyTitle">OH MY GOSH!</div>
+    <div class="party-caption">×99 COMBO · CHIHUAHUA PARTY!</div>
+  </div>
   <div class="aurora" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
   <div class="scan-overlay" aria-hidden="true"></div>
   <div class="spotlight" aria-hidden="true"></div>
@@ -1842,7 +1874,7 @@
       <span class="badge-ring" aria-hidden="true"></span>
       <button class="profile-emoji" type="button" title="Unleash chaos, shuffle tools, and change the poem" aria-label="Unleash chaos, shuffle tools, and change the poem">🤓</button>
     </div>
-    <div class="chaos-hint">HOVER. SCROLL. TAP THE VOID.</div>
+    <div class="chaos-hint">TAP THE BACKGROUND OR SCROLL TO MAKE A SCENE · KEEP TAPPING FOR COMBOS</div>
   </header>
 
   <div class="ticker-wrap">
@@ -2255,10 +2287,13 @@
       const coarse = window.matchMedia('(pointer: coarse)').matches;
       const idleMessage = coarse ? 'SWIPE · TAP · REPEAT' : 'HOVER · SCROLL · TAP THE VOID';
       const hint = document.querySelector('.chaos-hint');
-      if (hint && coarse) hint.textContent = 'SWIPE. TAP. MAKE A SCENE.';
+      if (hint && coarse) hint.textContent = 'TAP THE BACKGROUND OR SWIPE TO MAKE A SCENE · KEEP TAPPING FOR COMBOS';
       const COLORS = ['#c6ff3d','#33e6ff','#ff3ec8','#ffb43d','#b18cff','#f0f8ff'];
       const GLYPHS = ['✦','✧','⚡','★','+','×','₿','!'];
-      const WORDS = ['WOAHHH!','BOOM.','MORE? MORE.','ABSOLUTE CHAOS','LET IT RIP','ZERO CHILL'];
+      const WORDS = ['WOAH!','WTF!','OH MY GOSH!','BOOM.','MORE? MORE.','ABSOLUTE CHAOS','LET IT RIP','ZERO CHILL'];
+      const party = document.getElementById('comboParty');
+      const partyDog = document.getElementById('partyDog');
+      const partyTitle = document.getElementById('partyTitle');
       const HOT = '.card,.creative-card,.profile-emoji,.wordmark,.normal-mode-btn';
       const MAX = coarse ? 260 : 620;
       const particles = [], rings = [], words = [];
@@ -2275,6 +2310,8 @@
       let tap = null, suppressClickUntil = 0, explosionIndex = 0, pointerDirty = false;
       let quakeTimer = 0;
       let touchCard = null, touchReleaseTimer = 0, lastInputWasTouch = false;
+      let partyTimer = 0, partyFrameTimer = 0, partyBurstTimer = 0, partyActive = false;
+      let partyFocus = null, partyOverflow = '', partyInert = [];
       let featuredCard = null, featureDirty = true, lastFeatureUpdate = 0, resizeTimer = 0;
       const random = (min,max) => min + Math.random() * (max-min);
       const pick = list => list[Math.floor(Math.random() * list.length)];
@@ -2335,6 +2372,54 @@
             drag:variant === 'spiral' ? .96 : .987});
         }
       }
+      function endParty() {
+        if (!partyActive) return;
+        partyActive = false;
+        clearTimeout(partyTimer); clearInterval(partyFrameTimer); clearInterval(partyBurstTimer);
+        party.hidden = true;
+        party.querySelectorAll('.party-ribbon').forEach(el => el.remove());
+        partyInert.forEach(([el,wasInert]) => { el.inert = wasInert; }); partyInert = [];
+        body.style.overflow = partyOverflow;
+        if (partyFocus && partyFocus.isConnected) partyFocus.focus({preventScroll:true});
+        partyFocus = null;
+        combo = 0; comboEl.textContent = '';
+      }
+      function startParty() {
+        if (partyActive || !enabled()) return;
+        partyActive = true;
+        partyFocus = document.activeElement;
+        partyOverflow = body.style.overflow;
+        partyInert = Array.from(body.children).filter(el => el !== party && el.tagName !== 'SCRIPT').map(el => [el,el.inert]);
+        partyInert.forEach(([el]) => { el.inert = true; });
+        body.style.overflow = 'hidden';
+        party.hidden = false; party.focus({preventScroll:true});
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches && !body.classList.contains('fx-manual-motion');
+        let frame = 0, title = 0;
+        partyDog.style.backgroundPosition = '0% 0%';
+        partyTitle.textContent = 'WOAH!';
+        if (!reducedMotion) {
+          for (let i=0;i<(coarse ? 75 : 140);i++) {
+            const ribbon = document.createElement('span'); ribbon.className = 'party-ribbon';
+            ribbon.style.left = random(0,100)+'%';
+            ribbon.style.setProperty('--ribbon-color',pick(COLORS));
+            ribbon.style.setProperty('--ribbon-rotate',random(-180,180)+'deg');
+            ribbon.style.setProperty('--ribbon-drift',random(-180,180)+'px');
+            ribbon.style.setProperty('--ribbon-time',random(1.3,3.5)+'s');
+            ribbon.style.setProperty('--ribbon-delay',random(-3,0)+'s');
+            party.appendChild(ribbon);
+          }
+          partyFrameTimer = setInterval(() => {
+            frame = (frame+1)%16;
+            partyDog.style.backgroundPosition = (frame%4*100/3)+'% '+(Math.floor(frame/4)*100/3)+'%';
+          },95);
+          partyBurstTimer = setInterval(() => {
+            title = (title+1)%3; partyTitle.textContent = ['WOAH!','WTF!','OH MY GOSH!'][title];
+            spawn(random(width*.15,width*.85),random(height*.15,height*.8),coarse ? 45 : 90,1.8,'confetti');
+            ring(width/2,height/2,1.5);
+          },650);
+        }
+        partyTimer = setTimeout(endParty,reducedMotion ? 2500 : 7000);
+      }
       function ring(x,y,power) {
         if (!enabled()) return;
         if (rings.length >= 14) rings.shift();
@@ -2343,7 +2428,7 @@
       function shout(text,x,y,big) {
         if (!enabled()) return;
         if (words.length >= (coarse ? 4 : 7)) words.shift();
-        words.push({text,x,y,age:0,total:big ? 1.4 : .95,size:big ? Math.min(width*.10,72) : random(19,28),
+        words.push({text,x,y,age:0,total:big ? 1.4 : .95,size:big ? Math.min(width*.10,72)*(1+Math.min(combo,98)/60) : random(19,28),
           angle:random(-.16,.16),color:pick(COLORS)});
       }
       function shake() {
@@ -2544,6 +2629,8 @@
         if (slowFrames>35) { quality = Math.max(.45,quality-.15); slowFrames = 0; }
         heat = Math.max(8,heat-dt*4); scrollSpeed *= Math.pow(.90,dt*60);
         if (combo && now-lastClick>1600) { combo = 0; comboEl.textContent = ''; }
+        body.classList.toggle('fx-combo-party',combo>=20);
+        root.style.setProperty('--combo-scale',(1+Math.min(combo,98)*.0035).toFixed(3));
         if (superUntil && now>superUntil) { superUntil = 0; body.classList.remove('fx-overdrive'); }
         if (heat>=84 && now-lastSuper>7000) { overload(width/2,height*.36,false); heat = 50; }
         applyPointer();
@@ -2576,6 +2663,7 @@
       }
       function start() { if (!raf && enabled()) raf = requestAnimationFrame(render); }
       function stop() {
+        endParty();
         cancelAnimationFrame(raf); raf = 0; lastPaint = 0;
         particles.length = 0; rings.length = 0; words.length = 0;
         if (ctx) ctx.clearRect(0,0,width,height);
@@ -2674,6 +2762,7 @@
       },{passive:true});
       listen(document,'pointercancel',() => { clearTouch(); tap = null; suppressClickUntil = performance.now()+400; },{passive:true});
       listen(document,'click',e => {
+        if (partyActive) { e.preventDefault(); e.stopImmediatePropagation(); return; }
         if (!enabled() || e.target.closest('#normalModeBtn,#fxPauseBtn') || (e.detail && performance.now()<suppressClickUntil)) return;
         const now = performance.now();
         const target = e.target.closest('a,button,input,select,textarea,summary,[role="button"]');
@@ -2682,20 +2771,28 @@
         combo = now-lastClick<950 ? Math.min(99,combo+1) : 1; lastClick = now;
         heat = Math.min(100,heat+(target ? 8 : 16));
         comboEl.textContent = combo>1 ? '×'+combo+' COMBO' : '+1 VIBE';
+        if (combo === 99) { e.preventDefault(); e.stopImmediatePropagation(); startParty(); return; }
         if (target && target.matches('.profile-emoji')) return;
         if (!target) {
-          const power = 1.15+Math.min(combo,8)*.1;
-          spawn(x,y,coarse ? 85 : 155,power,explosionIndex%2 ? 'confetti' : 'spiral');
+          const power = 1.15+Math.min(combo,98)*.023;
+          spawn(x,y,(coarse ? 65 : 105)+Math.min(combo,98)*(coarse ? 2 : 4),power,explosionIndex%2 ? 'confetti' : 'spiral');
           ring(x,y,power); ring(x,y,power*.55); shake();
           shout(combo>2 ? '×'+combo+' '+WORDS[explosionIndex%WORDS.length] : WORDS[explosionIndex%WORDS.length],x,y-28,true);
           explosionIndex++;
+          if (combo>=10) spawn(random(0,width),-20,coarse ? 18 : 35,1+combo*.01,'confetti');
           if (combo%5 === 0) overload(x,y,false);
         } else {
           spawn(x,y,coarse ? 44 : 80,1,'confetti'); ring(x,y,.55);
           shout(target.matches('a') ? 'LAUNCH!' : 'LET’S GO',x,y-30,false);
           animate(target,[{scale:'1'},{scale:'.96',offset:.3},{scale:'1.025',offset:.7},{scale:'1'}],{duration:380});
         }
-      },{capture:true,passive:true});
+      },{capture:true,passive:false});
+      listen(document,'keydown',e => {
+        if (!partyActive) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+      },{capture:true});
+      listen(window,'wheel',e => { if (partyActive) e.preventDefault(); },{capture:true,passive:false});
+      listen(window,'touchmove',e => { if (partyActive) e.preventDefault(); },{capture:true,passive:false});
       listen(window,'scroll',() => {
         const current = window.scrollY, delta = current-lastScroll; lastScroll = current;
         updateProgress(); hoverRect = null; featureDirty = true;
