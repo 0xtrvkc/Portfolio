@@ -1690,6 +1690,8 @@
     @keyframes party-flash { to { opacity: .4; } }
     .party-ball { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 2; width: clamp(95px,15vw,210px); aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(from 20deg,#e8f7ff 0deg 12deg,#6d9bc6 12deg 19deg,#fff 19deg 27deg,#567194 27deg 33deg); box-shadow: 0 0 40px 15px #fff8,0 0 110px 35px #33e6ff88; animation: ball-bop .8s ease-in-out infinite alternate; }
     .party-ball::before { content: ''; position: absolute; left: 50%; bottom: 100%; height: 80px; border-left: 3px solid #fff; }
+    .party-ball.secondary { left: 12%; top: 22%; width: clamp(55px,8vw,120px); animation-duration: 1.1s; }
+    .party-ball.tertiary { left: 88%; top: 65%; width: clamp(48px,7vw,100px); animation-duration: .9s; }
     @keyframes ball-bop { to { transform: translateX(-50%) rotate(22deg) scale(1.08); } }
     .party-hat { position: absolute; top: 14%; z-index: 3; font-size: clamp(3rem,8vw,8rem); filter: drop-shadow(0 0 18px #ff3ec8); animation: hat-bounce .55s ease-in-out infinite alternate; }
     .party-hat.left { left: 7%; rotate: -20deg; } .party-hat.right { right: 7%; rotate: 20deg; animation-delay: -.3s; }
@@ -1698,12 +1700,26 @@
     .party-dog { position: absolute; width: 34%; aspect-ratio: 1; background-repeat: no-repeat; background-size: 400% 400%; image-rendering: pixelated; filter: drop-shadow(0 0 22px #fff9) drop-shadow(0 0 40px #ff3ec8); animation: party-counter-spin 4s linear infinite; }
     .party-dog:nth-child(1) { top: 0; left: 33%; } .party-dog:nth-child(2) { top: 33%; right: 0; }
     .party-dog:nth-child(3) { bottom: 0; left: 33%; } .party-dog:nth-child(4) { top: 33%; left: 0; }
+    .party-satellite { position: absolute; z-index: 5; width: var(--satellite-size); aspect-ratio: 1; background-size: 400% 400%; background-repeat: no-repeat; image-rendering: pixelated; pointer-events: none; filter: drop-shadow(0 0 15px var(--satellite-glow)); animation: satellite-frenzy var(--satellite-time) ease-in-out var(--satellite-delay) infinite alternate; }
+    @keyframes satellite-frenzy { 0% { transform: translate(-50%,-50%) rotate(-18deg) scale(.82); } 100% { transform: translate(calc(-50% + var(--drift-x)),calc(-50% + var(--drift-y))) rotate(var(--satellite-twist)) scale(1.28); } }
+    .party-laser { position: absolute; z-index: 3; left: 50%; top: 50%; width: min(85vw,900px); height: clamp(9px,2vw,22px); transform-origin: 0 50%; background: linear-gradient(90deg,white,var(--laser-color) 12%,transparent 100%); filter: drop-shadow(0 0 16px var(--laser-color)); opacity: .58; pointer-events: none; animation: laser-sweep var(--laser-time) linear var(--laser-delay) infinite alternate; }
+    @keyframes laser-sweep { 0% { transform: rotate(var(--laser-start)) scaleX(.45); } 100% { transform: rotate(var(--laser-end)) scaleX(1.15); } }
+    .party-prop { position: absolute; z-index: 8; font-size: var(--prop-size); line-height: 1; pointer-events: none; filter: drop-shadow(0 0 12px #fff8); animation: prop-tumble var(--prop-time) ease-in-out var(--prop-delay) infinite alternate; }
+    @keyframes prop-tumble { 0% { transform: translate(-50%,-50%) rotate(-25deg) scale(.75); } 100% { transform: translate(calc(-50% + var(--prop-x)),calc(-50% + var(--prop-y))) rotate(35deg) scale(1.32); } }
+    .party-sticker { position: absolute; z-index: 9; color: white; font-weight: 1000; font-size: var(--sticker-size); white-space: nowrap; pointer-events: none; text-shadow: 3px 3px var(--sticker-color),-3px -3px #33e6ff,0 0 24px #fff; animation: sticker-bounce var(--sticker-time) ease-in-out var(--sticker-delay) infinite alternate; }
+    @keyframes sticker-bounce { 0% { transform: translate(-50%,-50%) rotate(-18deg) scale(.75); } 100% { transform: translate(-50%,-70%) rotate(18deg) scale(1.25); } }
+    .party-pop { position: absolute; z-index: 11; color: white; font-size: clamp(2rem,8vw,6rem); font-weight: 1000; white-space: nowrap; pointer-events: none; text-shadow: 5px 4px var(--pop-color),-4px -4px var(--cyan),0 0 35px white; animation: party-pop .8s ease-out both; }
+    @keyframes party-pop { from { opacity: 0; transform: translate(-50%,-50%) rotate(-25deg) scale(.2); } 35% { opacity: 1; transform: translate(-50%,-50%) rotate(10deg) scale(1.25); } to { opacity: 0; transform: translate(-50%,-100%) rotate(-8deg) scale(1.55); } }
+    .combo-party.party-maxed::before { animation-duration: 1.4s; }
+    .combo-party.party-maxed .party-orbit,.combo-party.party-maxed .party-dog { animation-duration: 2.3s; }
+    .combo-party.party-maxed .party-satellite { animation-duration: .7s; }
+    .combo-party.party-maxed .party-ball { box-shadow: 0 0 60px 25px #fff9,0 0 140px 45px #ff3ec899; }
     @keyframes party-orbit-spin { to { transform: rotate(360deg); } }
     @keyframes party-counter-spin { to { transform: rotate(-360deg); } }
-    .party-title { position: absolute; z-index: 6; top: 17%; width: 100%; text-align: center; color: white; font-size: clamp(2.3rem,8vw,8rem); font-weight: 1000; letter-spacing: -.06em; text-shadow: 5px 5px #ff3ec8,-5px -5px #33e6ff,0 0 50px #fff; animation: title-slam .42s ease-in-out infinite alternate; pointer-events: none; }
+    .party-title { position: absolute; z-index: 10; top: 17%; width: 100%; text-align: center; color: white; font-size: clamp(2.3rem,8vw,8rem); font-weight: 1000; letter-spacing: -.06em; text-shadow: 5px 5px #ff3ec8,-5px -5px #33e6ff,0 0 50px #fff; animation: title-slam .42s ease-in-out infinite alternate; pointer-events: none; }
     @keyframes title-slam { to { transform: scale(1.13) rotate(-3deg); } }
     .party-caption { position: absolute; z-index: 6; bottom: 6%; color: white; font-weight: 900; font-size: clamp(1rem,3vw,2.2rem); text-align: center; text-shadow: 0 0 22px #ff3ec8; }
-    .party-ribbon { position: absolute; z-index: 5; top: -12%; width: 8px; height: 35px; border-radius: 4px; background: var(--ribbon-color); transform: rotate(var(--ribbon-rotate)); animation: ribbon-fall var(--ribbon-time) linear var(--ribbon-delay) infinite; box-shadow: 0 0 9px var(--ribbon-color); }
+    .party-ribbon { position: absolute; z-index: 8; top: -12%; width: 8px; height: 35px; border-radius: 4px; background: var(--ribbon-color); transform: rotate(var(--ribbon-rotate)); animation: ribbon-fall var(--ribbon-time) linear var(--ribbon-delay) infinite; box-shadow: 0 0 9px var(--ribbon-color); }
     @keyframes ribbon-fall { to { translate: var(--ribbon-drift) 125vh; rotate: 900deg; } }
     @media (prefers-reduced-motion: reduce) { .combo-party *, .combo-party::before, .combo-party::after { animation: none !important; } }
     .ticker-wrap { border-image: linear-gradient(90deg,transparent,var(--magenta),var(--cyan),transparent) 1; }
@@ -1863,6 +1879,7 @@
   </div>
   <div class="combo-party" id="comboParty" hidden role="dialog" aria-modal="true" aria-label="99 combo Chihuahua dance" tabindex="-1">
     <div class="party-ball" aria-hidden="true"></div>
+    <div class="party-ball secondary" aria-hidden="true"></div><div class="party-ball tertiary" aria-hidden="true"></div>
     <span class="party-hat left" aria-hidden="true">🎉</span><span class="party-hat right" aria-hidden="true">🥳</span>
     <div class="party-orbit" aria-hidden="true"><div class="party-dog"></div><div class="party-dog"></div><div class="party-dog"></div><div class="party-dog"></div></div>
     <div class="party-title" id="partyTitle">OH MY GOSH!</div>
@@ -2314,6 +2331,7 @@
       const WORDS = ['WOAH!','WTF!','OH MY GOSH!','BOOM.','MORE? MORE.','ABSOLUTE CHAOS','LET IT RIP','ZERO CHILL'];
       const party = document.getElementById('comboParty');
       const partyDogs = Array.from(document.querySelectorAll('.party-dog'));
+      let satelliteDogs = [];
       const DANCES = ['dance','disco','hip-hop','salsa'];
       const danceUrl = style => 'assets/chihuahua-'+style+'.webp';
       partyDogs.forEach((dog,i) => { dog.style.backgroundImage = 'url("'+danceUrl(DANCES[i])+'")'; });
@@ -2334,7 +2352,7 @@
       let tap = null, suppressClickUntil = 0, explosionIndex = 0, pointerDirty = false;
       let quakeTimer = 0;
       let touchCard = null, touchReleaseTimer = 0, lastInputWasTouch = false;
-      let partyTimer = 0, partyFrameTimer = 0, partyBurstTimer = 0, partyActive = false;
+      let partyTimer = 0, partyFrameTimer = 0, partyBurstTimer = 0, partyPhaseTimer = 0, partyActive = false;
       let partyFocus = null, partyOverflow = '', partyInert = [];
       let cameoTimer = 0, cameoFrameTimer = 0;
       let milestoneTimer = 0;
@@ -2406,9 +2424,11 @@
       function endParty() {
         if (!partyActive) return;
         partyActive = false;
-        clearTimeout(partyTimer); clearInterval(partyFrameTimer); clearInterval(partyBurstTimer);
+        clearTimeout(partyTimer); clearTimeout(partyPhaseTimer); clearInterval(partyFrameTimer); clearInterval(partyBurstTimer);
         party.hidden = true;
-        party.querySelectorAll('.party-ribbon').forEach(el => el.remove());
+        party.classList.remove('party-maxed');
+        party.querySelectorAll('.party-generated').forEach(el => el.remove());
+        satelliteDogs = [];
         partyInert.forEach(([el,wasInert]) => { el.inert = wasInert; }); partyInert = [];
         body.style.overflow = partyOverflow;
         if (partyFocus && partyFocus.isConnected) partyFocus.focus({preventScroll:true});
@@ -2454,6 +2474,64 @@
         hud.classList.add('fx-milestone-glitch');
         milestoneTimer = setTimeout(() => hud.classList.remove('fx-milestone-glitch'),1200);
       }
+      function partyDecoration(className) {
+        const el = document.createElement('span');
+        el.className = className+' party-generated';
+        el.setAttribute('aria-hidden','true');
+        party.appendChild(el);
+        return el;
+      }
+      function buildPartyCrowd() {
+        const satelliteCount = coarse ? 8 : 18;
+        for (let i=0;i<satelliteCount;i++) {
+          const dog = partyDecoration('party-satellite');
+          const style = DANCES[i%4];
+          dog.style.backgroundImage = 'url("'+danceUrl(style)+'")';
+          dog.style.left = random(7,93)+'%'; dog.style.top = random(10,90)+'%';
+          dog.style.setProperty('--satellite-size',random(coarse ? 62 : 85,coarse ? 110 : 190)+'px');
+          dog.style.setProperty('--satellite-glow',pick(COLORS));
+          dog.style.setProperty('--satellite-time',random(.55,1.8)+'s');
+          dog.style.setProperty('--satellite-delay',random(-2,0)+'s');
+          dog.style.setProperty('--drift-x',random(-65,65)+'px');
+          dog.style.setProperty('--drift-y',random(-60,60)+'px');
+          dog.style.setProperty('--satellite-twist',random(-45,45)+'deg');
+          satelliteDogs.push(dog);
+        }
+        for (let i=0;i<(coarse ? 7 : 13);i++) {
+          const laser = partyDecoration('party-laser');
+          laser.style.setProperty('--laser-color',pick(COLORS));
+          laser.style.setProperty('--laser-time',random(1.2,3.2)+'s');
+          laser.style.setProperty('--laser-delay',random(-3,0)+'s');
+          laser.style.setProperty('--laser-start',random(0,360)+'deg');
+          laser.style.setProperty('--laser-end',random(0,360)+'deg');
+        }
+        for (let i=0;i<(coarse ? 18 : 36);i++) {
+          const prop = partyDecoration('party-prop');
+          prop.textContent = pick(['🎉','🥳','🎊','🪩','🎈','✨','⭐','💥']);
+          prop.style.left = random(3,97)+'%'; prop.style.top = random(5,95)+'%';
+          prop.style.setProperty('--prop-size',random(coarse ? 24 : 32,coarse ? 60 : 90)+'px');
+          prop.style.setProperty('--prop-time',random(.5,1.9)+'s');
+          prop.style.setProperty('--prop-delay',random(-2,0)+'s');
+          prop.style.setProperty('--prop-x',random(-45,45)+'px');
+          prop.style.setProperty('--prop-y',random(-55,55)+'px');
+        }
+        for (let i=0;i<(coarse ? 7 : 14);i++) {
+          const sticker = partyDecoration('party-sticker');
+          sticker.textContent = pick(['×99!','WHAT?!','CHAOS!','OH MY GOSH!','UNREAL!','TOO MUCH!']);
+          sticker.style.left = random(6,94)+'%'; sticker.style.top = random(8,92)+'%';
+          sticker.style.setProperty('--sticker-size',random(coarse ? 14 : 18,coarse ? 24 : 38)+'px');
+          sticker.style.setProperty('--sticker-color',pick(COLORS));
+          sticker.style.setProperty('--sticker-time',random(.6,1.5)+'s');
+          sticker.style.setProperty('--sticker-delay',random(-2,0)+'s');
+        }
+      }
+      function partyReaction() {
+        const pop = partyDecoration('party-pop');
+        pop.textContent = pick(['WHAT IS HAPPENING?!','×99!','OH MY GOSH!','CHAOS!','UNREAL!']);
+        pop.style.left = random(15,85)+'%'; pop.style.top = random(23,78)+'%';
+        pop.style.setProperty('--pop-color',pick(COLORS));
+        setTimeout(() => pop.remove(),820);
+      }
       function startParty() {
         if (partyActive || !enabled()) return;
         partyActive = true;
@@ -2468,25 +2546,30 @@
         partyDogs.forEach((dog,i) => paintFrame(dog,i*4));
         partyTitle.textContent = 'WOAH!';
         if (!reducedMotion) {
-          for (let i=0;i<(coarse ? 75 : 140);i++) {
-            const ribbon = document.createElement('span'); ribbon.className = 'party-ribbon';
+          buildPartyCrowd();
+          satelliteDogs.forEach((dog,i) => paintFrame(dog,i%16));
+          for (let i=0;i<(coarse ? 105 : 195);i++) {
+            const ribbon = partyDecoration('party-ribbon');
             ribbon.style.left = random(0,100)+'%';
             ribbon.style.setProperty('--ribbon-color',pick(COLORS));
             ribbon.style.setProperty('--ribbon-rotate',random(-180,180)+'deg');
             ribbon.style.setProperty('--ribbon-drift',random(-180,180)+'px');
             ribbon.style.setProperty('--ribbon-time',random(1.3,3.5)+'s');
             ribbon.style.setProperty('--ribbon-delay',random(-3,0)+'s');
-            party.appendChild(ribbon);
           }
           partyFrameTimer = setInterval(() => {
             frame = (frame+1)%16;
             partyDogs.forEach((dog,i) => paintFrame(dog,(frame+i*4)%16));
+            satelliteDogs.forEach((dog,i) => paintFrame(dog,(frame+i*3)%16));
           },100);
           partyBurstTimer = setInterval(() => {
             title = (title+1)%3; partyTitle.textContent = ['WOAH!','WTF!','OH MY GOSH!'][title];
-            spawn(random(width*.15,width*.85),random(height*.15,height*.8),coarse ? 45 : 90,1.8,'confetti');
-            ring(width/2,height/2,1.5);
-          },650);
+            partyReaction();
+          },coarse ? 640 : 460);
+          partyPhaseTimer = setTimeout(() => {
+            if (!partyActive) return;
+            party.classList.add('party-maxed'); partyReaction(); partyReaction();
+          },2500);
         }
         partyTimer = setTimeout(endParty,reducedMotion ? 2500 : 7000);
       }
@@ -2702,6 +2785,7 @@
         body.classList.toggle('fx-combo-party',combo>=20);
         root.style.setProperty('--combo-scale',(1+.85*Math.pow(Math.min(combo,98)/98,2.15)).toFixed(3));
         if (superUntil && now>superUntil) { superUntil = 0; body.classList.remove('fx-overdrive'); }
+        if (partyActive) { start(); return; }
         if (heat>=84 && now-lastSuper>7000) { overload(width/2,height*.36,false); heat = 50; }
         applyPointer();
         if (coarse && featureDirty && now-lastFeatureUpdate>150) {
