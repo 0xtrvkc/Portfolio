@@ -1694,8 +1694,12 @@
     .party-hat { position: absolute; top: 14%; z-index: 3; font-size: clamp(3rem,8vw,8rem); filter: drop-shadow(0 0 18px #ff3ec8); animation: hat-bounce .55s ease-in-out infinite alternate; }
     .party-hat.left { left: 7%; rotate: -20deg; } .party-hat.right { right: 7%; rotate: 20deg; animation-delay: -.3s; }
     @keyframes hat-bounce { to { translate: 0 -24px; rotate: 15deg; } }
-    .party-dog { position: relative; z-index: 4; width: min(94vw,calc(78vh * 1.17)); aspect-ratio: 339 / 290; background-image: url('assets/chihuahua-dance.webp'); background-repeat: no-repeat; background-size: 400% 400%; image-rendering: pixelated; filter: drop-shadow(0 0 28px #fff9) drop-shadow(0 0 65px #ff3ec8); animation: dog-bop .34s ease-in-out infinite alternate; }
-    @keyframes dog-bop { to { transform: translateY(-20px) rotate(3deg) scale(1.07); } }
+    .party-orbit { position: relative; z-index: 4; width: min(78vw,65vh); aspect-ratio: 1; animation: party-orbit-spin 4s linear infinite; }
+    .party-dog { position: absolute; width: 34%; aspect-ratio: 1; background-repeat: no-repeat; background-size: 400% 400%; image-rendering: pixelated; filter: drop-shadow(0 0 22px #fff9) drop-shadow(0 0 40px #ff3ec8); animation: party-counter-spin 4s linear infinite; }
+    .party-dog:nth-child(1) { top: 0; left: 33%; } .party-dog:nth-child(2) { top: 33%; right: 0; }
+    .party-dog:nth-child(3) { bottom: 0; left: 33%; } .party-dog:nth-child(4) { top: 33%; left: 0; }
+    @keyframes party-orbit-spin { to { transform: rotate(360deg); } }
+    @keyframes party-counter-spin { to { transform: rotate(-360deg); } }
     .party-title { position: absolute; z-index: 6; top: 17%; width: 100%; text-align: center; color: white; font-size: clamp(2.3rem,8vw,8rem); font-weight: 1000; letter-spacing: -.06em; text-shadow: 5px 5px #ff3ec8,-5px -5px #33e6ff,0 0 50px #fff; animation: title-slam .42s ease-in-out infinite alternate; pointer-events: none; }
     @keyframes title-slam { to { transform: scale(1.13) rotate(-3deg); } }
     .party-caption { position: absolute; z-index: 6; bottom: 6%; color: white; font-weight: 900; font-size: clamp(1rem,3vw,2.2rem); text-align: center; text-shadow: 0 0 22px #ff3ec8; }
@@ -1741,13 +1745,16 @@
     .chaos-hud-top { display: flex; justify-content: space-between; gap: 12px; font-size: .64rem; letter-spacing: .06em; color: var(--volt); }
     #chaosCombo { color: var(--magenta); font-weight: 700; }
     #chaosCombo { position: relative; display: inline-block; color: var(--combo-color,var(--magenta)); text-shadow: 1px 0 var(--cyan),-1px 0 var(--magenta); }
-    .chaos-hud.fx-milestone-glitch { animation: hud-glitch var(--glitch-speed,.42s) steps(2,end) 5; }
+    .chaos-hud.fx-milestone-glitch { border: 3px solid var(--combo-color,var(--magenta)); box-shadow: 0 0 35px 12px var(--combo-color,var(--magenta)),0 0 80px 25px #33e6ff80,inset 0 0 30px var(--combo-color,var(--magenta)); animation: hud-glitch var(--glitch-speed,.14s) steps(2,end) infinite; }
     .chaos-hud.fx-milestone-glitch::before,.chaos-hud.fx-milestone-glitch::after { content: ''; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none; }
-    .chaos-hud.fx-milestone-glitch::before { border: 1px solid var(--cyan); clip-path: inset(0 0 55% 0); animation: border-split var(--glitch-speed,.42s) steps(2,end) 5; }
-    .chaos-hud.fx-milestone-glitch::after { border: 1px solid var(--magenta); clip-path: inset(45% 0 0 0); animation: border-split var(--glitch-speed,.42s) steps(2,end) 5 reverse; }
+    .chaos-hud.fx-milestone-glitch::before { border: 4px solid var(--cyan); clip-path: inset(0 0 55% 0); box-shadow: 0 0 30px var(--cyan); animation: border-split var(--glitch-speed,.14s) steps(2,end) infinite; }
+    .chaos-hud.fx-milestone-glitch::after { border: 4px solid var(--magenta); clip-path: inset(45% 0 0 0); box-shadow: 0 0 30px var(--magenta); animation: border-split var(--glitch-speed,.14s) steps(2,end) infinite reverse; }
+    #comboDigits { display: inline-block; font-size: 1em; line-height: 1; transition: font-size .12s ease-out; }
+    .fx-milestone-glitch #comboDigits { font-size: 5em; font-weight: 1000; color: white; text-shadow: 2px 2px var(--magenta),-2px -2px var(--cyan),0 0 20px var(--combo-color,var(--magenta)); }
+    .fx-milestone-glitch #comboSuffix { display: none; }
     @keyframes hud-glitch { 0%,55%,100% { transform: scale(var(--combo-scale,1)) translate(0); } 62% { transform: scale(var(--combo-scale,1)) translate(var(--combo-offset),-2px); } 70% { transform: scale(var(--combo-scale,1)) translate(calc(-1 * var(--combo-offset)),2px); } }
     @keyframes border-split { 0%,55%,100% { transform: translate(0); opacity: .2; } 62%,76% { transform: translate(var(--combo-offset),-2px); opacity: 1; } 69% { transform: translate(calc(-1 * var(--combo-offset)),2px); opacity: .8; } }
-    .combo-cameo { position: fixed; z-index: 125; left: 0; top: 0; width: clamp(130px,21vw,290px); aspect-ratio: 339 / 290; pointer-events: none; background: url('assets/chihuahua-dance.webp') 0% 0% / 400% 400% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 0 16px #fff) drop-shadow(0 0 36px #ff3ec8); transform: translate(-50%,-50%) scale(.2) rotate(-15deg); opacity: 0; }
+    .combo-cameo { position: fixed; z-index: 125; left: 0; top: 0; width: clamp(130px,21vw,290px); aspect-ratio: 1; pointer-events: none; background-size: 400% 400%; background-repeat: no-repeat; image-rendering: pixelated; filter: drop-shadow(0 0 16px #fff) drop-shadow(0 0 36px #ff3ec8); transform: translate(-50%,-50%) scale(.2) rotate(-15deg); opacity: 0; }
     .combo-cameo.fx-visible { animation: cameo-pop .88s cubic-bezier(.18,.9,.22,1) both; }
     @keyframes cameo-pop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.2) rotate(-15deg); } 18%,65% { opacity: 1; transform: translate(-50%,-50%) scale(var(--cameo-scale,1.2)) rotate(8deg); } 82% { opacity: 1; transform: translate(-50%,-50%) scale(calc(var(--cameo-scale,1.2) * .84)) rotate(-8deg); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(.15) rotate(20deg); } }
     .chaos-hud { transform: scale(var(--combo-scale,1)); transform-origin: right bottom; transition: transform .18s ease-out,box-shadow .18s; }
@@ -1850,14 +1857,14 @@
   <div class="chaos-cursor" id="chaosCursor" aria-hidden="true"></div>
   <div class="combo-cameo" id="comboCameo" aria-hidden="true"></div>
   <div class="chaos-hud" aria-hidden="true">
-    <div class="chaos-hud-top"><span>CHAOS LEVEL</span><span id="chaosCombo"></span></div>
+    <div class="chaos-hud-top"><span>CHAOS LEVEL</span><span id="chaosCombo"><span id="comboDigits"></span><span id="comboSuffix"></span></span></div>
     <div class="chaos-meter"><span class="chaos-meter-fill" id="chaosMeter"></span></div>
     <div id="chaosStatus">HOVER · SCROLL · TAP THE VOID</div>
   </div>
   <div class="combo-party" id="comboParty" hidden role="dialog" aria-modal="true" aria-label="99 combo Chihuahua dance" tabindex="-1">
     <div class="party-ball" aria-hidden="true"></div>
     <span class="party-hat left" aria-hidden="true">🎉</span><span class="party-hat right" aria-hidden="true">🥳</span>
-    <div class="party-dog" id="partyDog" aria-hidden="true"></div>
+    <div class="party-orbit" aria-hidden="true"><div class="party-dog"></div><div class="party-dog"></div><div class="party-dog"></div><div class="party-dog"></div></div>
     <div class="party-title" id="partyTitle">OH MY GOSH!</div>
     <div class="party-caption">×99 COMBO · CHIHUAHUA PARTY!</div>
   </div>
@@ -2293,6 +2300,8 @@
       const cursor = document.getElementById('chaosCursor');
       const meter = document.getElementById('chaosMeter');
       const comboEl = document.getElementById('chaosCombo');
+      const comboDigits = document.getElementById('comboDigits');
+      const comboSuffix = document.getElementById('comboSuffix');
       const cameo = document.getElementById('comboCameo');
       const status = document.getElementById('chaosStatus');
       const progress = document.getElementById('chaosProgress');
@@ -2304,7 +2313,10 @@
       const GLYPHS = ['✦','✧','⚡','★','+','×','₿','!'];
       const WORDS = ['WOAH!','WTF!','OH MY GOSH!','BOOM.','MORE? MORE.','ABSOLUTE CHAOS','LET IT RIP','ZERO CHILL'];
       const party = document.getElementById('comboParty');
-      const partyDog = document.getElementById('partyDog');
+      const partyDogs = Array.from(document.querySelectorAll('.party-dog'));
+      const DANCES = ['dance','disco','hip-hop','salsa'];
+      const danceUrl = style => 'assets/chihuahua-'+style+'.webp';
+      partyDogs.forEach((dog,i) => { dog.style.backgroundImage = 'url("'+danceUrl(DANCES[i])+'")'; });
       const partyTitle = document.getElementById('partyTitle');
       const HOT = '.card,.creative-card,.profile-emoji,.wordmark,.normal-mode-btn';
       const MAX = coarse ? 260 : 620;
@@ -2330,6 +2342,11 @@
       const random = (min,max) => min + Math.random() * (max-min);
       const pick = list => list[Math.floor(Math.random() * list.length)];
       const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
+      const paintFrame = (el,frame) => { el.style.backgroundPosition = (frame%4*100/3)+'% '+(Math.floor(frame/4)*100/3)+'%'; };
+      function setComboLabel() {
+        comboDigits.textContent = combo ? combo>1 ? '×'+combo : '+1' : '';
+        comboSuffix.textContent = combo ? combo>1 ? ' COMBO' : ' VIBE' : '';
+      }
       const enabled = () => !reduced && !document.hidden && scopeAlive && !!ctx && !!bg;
       const stars = Array.from({length: coarse ? 54 : 110}, () => ({
         x: Math.random(), y: Math.random(), r: random(.6,2), speed: random(12,36),
@@ -2396,25 +2413,27 @@
         body.style.overflow = partyOverflow;
         if (partyFocus && partyFocus.isConnected) partyFocus.focus({preventScroll:true});
         partyFocus = null;
-        combo = 0; comboEl.textContent = ''; updateComboStyle();
+        combo = 0; setComboLabel(); updateComboStyle();
       }
       function hideCameo() {
         clearTimeout(cameoTimer); clearInterval(cameoFrameTimer);
         cameoTimer = cameoFrameTimer = 0;
         cameo.classList.remove('fx-visible');
       }
-      function showCameo(x,y) {
+      function showCameo() {
         hideCameo();
+        const hud = comboEl.closest('.chaos-hud');
+        const bar = hud.getBoundingClientRect();
         const growth = 1 + 2.8 * Math.pow(combo / 90, 2.25);
-        const size = Math.min(Math.max(130,width*.21*growth),width*.72,height*.62*339/290);
+        const size = Math.min(Math.max(110,width*.21*growth),width*.72,height*.6,Math.max(110,bar.top*.9));
         cameo.style.width = size+'px';
         cameo.style.setProperty('--cameo-scale','1.15');
-        cameo.style.left = clamp(x,size*.55,width-size*.55)+'px';
-        cameo.style.top = clamp(y,size*.5,height-size*.5)+'px';
+        cameo.style.left = clamp(bar.left+bar.width/2,size*.55,width-size*.55)+'px';
+        cameo.style.top = Math.max(size*.55,bar.top-size*.54-10)+'px';
+        cameo.style.backgroundImage = 'url("'+danceUrl(pick(DANCES))+'")';
         let frame = (combo/10-1)%16;
-        const paint = () => { cameo.style.backgroundPosition = (frame%4*100/3)+'% '+(Math.floor(frame/4)*100/3)+'%'; };
-        paint(); void cameo.offsetWidth; cameo.classList.add('fx-visible');
-        cameoFrameTimer = setInterval(() => { frame = (frame+1)%16; paint(); },75);
+        paintFrame(cameo,frame); void cameo.offsetWidth; cameo.classList.add('fx-visible');
+        cameoFrameTimer = setInterval(() => { frame = (frame+1)%16; paintFrame(cameo,frame); },100);
         cameoTimer = setTimeout(hideCameo,900);
       }
       function updateComboStyle() {
@@ -2422,8 +2441,10 @@
         const exponential = Math.pow(intensity,2.15);
         const colors = ['#ff3ec8','#33e6ff','#ffb43d','#c6ff3d','#b18cff'];
         comboEl.style.setProperty('--combo-color',colors[Math.min(4,Math.floor(combo/20))]);
-        comboEl.style.setProperty('--combo-offset',(1+exponential*9).toFixed(1)+'px');
-        comboEl.style.setProperty('--glitch-speed',(.55-exponential*.42).toFixed(2)+'s');
+        const hud = comboEl.closest('.chaos-hud');
+        hud.style.setProperty('--combo-color',colors[Math.min(4,Math.floor(combo/20))]);
+        hud.style.setProperty('--combo-offset',(8+exponential*24).toFixed(1)+'px');
+        hud.style.setProperty('--glitch-speed',(.20-exponential*.09).toFixed(2)+'s');
       }
       function milestoneGlitch() {
         clearTimeout(milestoneTimer);
@@ -2444,7 +2465,7 @@
         party.hidden = false; party.focus({preventScroll:true});
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches && !body.classList.contains('fx-manual-motion');
         let frame = 0, title = 0;
-        partyDog.style.backgroundPosition = '0% 0%';
+        partyDogs.forEach((dog,i) => paintFrame(dog,i*4));
         partyTitle.textContent = 'WOAH!';
         if (!reducedMotion) {
           for (let i=0;i<(coarse ? 75 : 140);i++) {
@@ -2459,8 +2480,8 @@
           }
           partyFrameTimer = setInterval(() => {
             frame = (frame+1)%16;
-            partyDog.style.backgroundPosition = (frame%4*100/3)+'% '+(Math.floor(frame/4)*100/3)+'%';
-          },95);
+            partyDogs.forEach((dog,i) => paintFrame(dog,(frame+i*4)%16));
+          },100);
           partyBurstTimer = setInterval(() => {
             title = (title+1)%3; partyTitle.textContent = ['WOAH!','WTF!','OH MY GOSH!'][title];
             spawn(random(width*.15,width*.85),random(height*.15,height*.8),coarse ? 45 : 90,1.8,'confetti');
@@ -2677,7 +2698,7 @@
         if (elapsed>34 && elapsed<200) slowFrames++; else slowFrames = Math.max(0,slowFrames-1);
         if (slowFrames>35) { quality = Math.max(.45,quality-.15); slowFrames = 0; }
         heat = Math.max(8,heat-dt*4); scrollSpeed *= Math.pow(.90,dt*60);
-        if (combo && now-lastClick>1600) { combo = 0; comboEl.textContent = ''; updateComboStyle(); }
+        if (combo && now-lastClick>1600) { combo = 0; setComboLabel(); updateComboStyle(); }
         body.classList.toggle('fx-combo-party',combo>=20);
         root.style.setProperty('--combo-scale',(1+.85*Math.pow(Math.min(combo,98)/98,2.15)).toFixed(3));
         if (superUntil && now>superUntil) { superUntil = 0; body.classList.remove('fx-overdrive'); }
@@ -2820,10 +2841,10 @@
         if (!e.detail && target) { const r = target.getBoundingClientRect(); x = r.left+r.width/2; y = r.top+r.height/2; }
         combo = now-lastClick<950 ? Math.min(99,combo+1) : 1; lastClick = now;
         heat = Math.min(100,heat+(target ? 8 : 16));
-        comboEl.textContent = combo>1 ? '×'+combo+' COMBO' : '+1 VIBE';
+        setComboLabel();
         updateComboStyle();
         if (combo === 99) { e.preventDefault(); e.stopImmediatePropagation(); startParty(); return; }
-        if (combo >= 10 && combo < 99 && combo % 10 === 0) { milestoneGlitch(); showCameo(x,y-100); spawn(x,y,coarse ? 65 : 120,1.5,'confetti'); ring(x,y,1.1); }
+        if (combo >= 10 && combo < 99 && combo % 10 === 0) { milestoneGlitch(); showCameo(); spawn(x,y,coarse ? 65 : 120,1.5,'confetti'); ring(x,y,1.1); }
         if (target && target.matches('.profile-emoji')) return;
         if (!target) {
           const exponential = Math.pow(Math.min(combo,98)/98,2.15);
