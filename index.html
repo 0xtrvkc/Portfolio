@@ -1740,17 +1740,16 @@
     .chaos-hud { position: fixed; right: 18px; bottom: 18px; z-index: 101; width: 228px; max-width: calc(100vw - 24px); padding: 12px 14px; border: 1px solid rgba(198,255,61,.4); border-radius: 10px; background: rgba(5,6,10,.93); box-shadow: 0 6px 35px rgba(0,0,0,.35); pointer-events: none; }
     .chaos-hud-top { display: flex; justify-content: space-between; gap: 12px; font-size: .64rem; letter-spacing: .06em; color: var(--volt); }
     #chaosCombo { color: var(--magenta); font-weight: 700; }
-    #chaosCombo { position: relative; display: inline-block; color: var(--combo-color,var(--magenta)); text-shadow: var(--combo-offset,1px) 0 var(--cyan),calc(-1 * var(--combo-offset,1px)) 0 var(--magenta); }
-    #chaosCombo.fx-glitch { animation: combo-glitch var(--glitch-speed,.42s) steps(2,end) infinite; }
-    #chaosCombo.fx-glitch::before,#chaosCombo.fx-glitch::after { content: attr(data-combo); position: absolute; inset: 0; white-space: nowrap; opacity: .65; pointer-events: none; }
-    #chaosCombo.fx-glitch::before { color: var(--cyan); clip-path: inset(0 0 52% 0); animation: combo-split var(--glitch-speed,.42s) steps(2,end) infinite; }
-    #chaosCombo.fx-glitch::after { color: var(--magenta); clip-path: inset(48% 0 0 0); animation: combo-split var(--glitch-speed,.42s) steps(2,end) infinite reverse; }
-    @keyframes combo-glitch { 0%,58%,100% { transform: translate(0); } 60% { transform: translate(var(--combo-offset),-2px); } 67% { transform: translate(calc(-1 * var(--combo-offset)),2px); } 74% { transform: translate(var(--combo-offset),0); } }
-    @keyframes combo-split { 0%,55%,100% { transform: translate(0); } 60%,75% { transform: translate(var(--combo-offset),-2px); } 68% { transform: translate(calc(-1 * var(--combo-offset)),2px); } }
+    #chaosCombo { position: relative; display: inline-block; color: var(--combo-color,var(--magenta)); text-shadow: 1px 0 var(--cyan),-1px 0 var(--magenta); }
+    .chaos-hud.fx-milestone-glitch { animation: hud-glitch var(--glitch-speed,.42s) steps(2,end) 5; }
+    .chaos-hud.fx-milestone-glitch::before,.chaos-hud.fx-milestone-glitch::after { content: ''; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none; }
+    .chaos-hud.fx-milestone-glitch::before { border: 1px solid var(--cyan); clip-path: inset(0 0 55% 0); animation: border-split var(--glitch-speed,.42s) steps(2,end) 5; }
+    .chaos-hud.fx-milestone-glitch::after { border: 1px solid var(--magenta); clip-path: inset(45% 0 0 0); animation: border-split var(--glitch-speed,.42s) steps(2,end) 5 reverse; }
+    @keyframes hud-glitch { 0%,55%,100% { transform: scale(var(--combo-scale,1)) translate(0); } 62% { transform: scale(var(--combo-scale,1)) translate(var(--combo-offset),-2px); } 70% { transform: scale(var(--combo-scale,1)) translate(calc(-1 * var(--combo-offset)),2px); } }
+    @keyframes border-split { 0%,55%,100% { transform: translate(0); opacity: .2; } 62%,76% { transform: translate(var(--combo-offset),-2px); opacity: 1; } 69% { transform: translate(calc(-1 * var(--combo-offset)),2px); opacity: .8; } }
     .combo-cameo { position: fixed; z-index: 125; left: 0; top: 0; width: clamp(130px,21vw,290px); aspect-ratio: 339 / 290; pointer-events: none; background: url('assets/chihuahua-dance.webp') 0% 0% / 400% 400% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 0 16px #fff) drop-shadow(0 0 36px #ff3ec8); transform: translate(-50%,-50%) scale(.2) rotate(-15deg); opacity: 0; }
     .combo-cameo.fx-visible { animation: cameo-pop .88s cubic-bezier(.18,.9,.22,1) both; }
-    .combo-cameo::after { content: attr(data-shout); position: absolute; left: 55%; top: 68%; color: white; font-size: clamp(1.4rem,4vw,3.3rem); font-weight: 1000; text-shadow: 3px 3px #ff3ec8,-3px -3px #33e6ff,0 0 20px white; rotate: -12deg; }
-    @keyframes cameo-pop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.2) rotate(-15deg); } 18%,65% { opacity: 1; transform: translate(-50%,-50%) scale(1.2) rotate(8deg); } 82% { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(-8deg); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(.15) rotate(20deg); } }
+    @keyframes cameo-pop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.2) rotate(-15deg); } 18%,65% { opacity: 1; transform: translate(-50%,-50%) scale(var(--cameo-scale,1.2)) rotate(8deg); } 82% { opacity: 1; transform: translate(-50%,-50%) scale(calc(var(--cameo-scale,1.2) * .84)) rotate(-8deg); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(.15) rotate(20deg); } }
     .chaos-hud { transform: scale(var(--combo-scale,1)); transform-origin: right bottom; transition: transform .18s ease-out,box-shadow .18s; }
     .fx-combo-party .chaos-hud { box-shadow: 0 0 45px #ff3ec888,0 0 65px #33e6ff55; border-color: var(--magenta); }
     .chaos-meter { height: 4px; background: #202a39; margin: 8px 0; overflow: hidden; }
@@ -2326,6 +2325,7 @@
       let partyTimer = 0, partyFrameTimer = 0, partyBurstTimer = 0, partyActive = false;
       let partyFocus = null, partyOverflow = '', partyInert = [];
       let cameoTimer = 0, cameoFrameTimer = 0;
+      let milestoneTimer = 0;
       let featuredCard = null, featureDirty = true, lastFeatureUpdate = 0, resizeTimer = 0;
       const random = (min,max) => min + Math.random() * (max-min);
       const pick = list => list[Math.floor(Math.random() * list.length)];
@@ -2405,10 +2405,12 @@
       }
       function showCameo(x,y) {
         hideCameo();
-        const size = clamp(width*.21,130,290);
+        const growth = 1 + 2.8 * Math.pow(combo / 90, 2.25);
+        const size = Math.min(Math.max(130,width*.21*growth),width*.72,height*.62*339/290);
+        cameo.style.width = size+'px';
+        cameo.style.setProperty('--cameo-scale','1.15');
         cameo.style.left = clamp(x,size*.55,width-size*.55)+'px';
         cameo.style.top = clamp(y,size*.5,height-size*.5)+'px';
-        cameo.dataset.shout = combo%20 === 0 ? 'BAM!' : 'POW!';
         let frame = (combo/10-1)%16;
         const paint = () => { cameo.style.backgroundPosition = (frame%4*100/3)+'% '+(Math.floor(frame/4)*100/3)+'%'; };
         paint(); void cameo.offsetWidth; cameo.classList.add('fx-visible');
@@ -2417,13 +2419,19 @@
       }
       function updateComboStyle() {
         const intensity = Math.min(combo/99,1);
+        const exponential = Math.pow(intensity,2.15);
         const colors = ['#ff3ec8','#33e6ff','#ffb43d','#c6ff3d','#b18cff'];
         comboEl.style.setProperty('--combo-color',colors[Math.min(4,Math.floor(combo/20))]);
-        comboEl.style.setProperty('--combo-offset',(1+intensity*9).toFixed(1)+'px');
-        comboEl.style.setProperty('--glitch-speed',(.55-intensity*.42).toFixed(2)+'s');
-        comboEl.dataset.combo = comboEl.textContent;
-        comboEl.classList.toggle('fx-glitch',combo>=3);
-        if (combo>=3) animate(comboEl,[{scale:1},{scale:1+intensity*.48,rotate:(intensity*8)+'deg',offset:.35},{scale:1,rotate:'0deg'}],{duration:220});
+        comboEl.style.setProperty('--combo-offset',(1+exponential*9).toFixed(1)+'px');
+        comboEl.style.setProperty('--glitch-speed',(.55-exponential*.42).toFixed(2)+'s');
+      }
+      function milestoneGlitch() {
+        clearTimeout(milestoneTimer);
+        const hud = comboEl.closest('.chaos-hud');
+        hud.classList.remove('fx-milestone-glitch');
+        void hud.offsetWidth;
+        hud.classList.add('fx-milestone-glitch');
+        milestoneTimer = setTimeout(() => hud.classList.remove('fx-milestone-glitch'),1200);
       }
       function startParty() {
         if (partyActive || !enabled()) return;
@@ -2671,7 +2679,7 @@
         heat = Math.max(8,heat-dt*4); scrollSpeed *= Math.pow(.90,dt*60);
         if (combo && now-lastClick>1600) { combo = 0; comboEl.textContent = ''; updateComboStyle(); }
         body.classList.toggle('fx-combo-party',combo>=20);
-        root.style.setProperty('--combo-scale',(1+Math.min(combo,98)*.0035).toFixed(3));
+        root.style.setProperty('--combo-scale',(1+.85*Math.pow(Math.min(combo,98)/98,2.15)).toFixed(3));
         if (superUntil && now>superUntil) { superUntil = 0; body.classList.remove('fx-overdrive'); }
         if (heat>=84 && now-lastSuper>7000) { overload(width/2,height*.36,false); heat = 50; }
         applyPointer();
@@ -2705,7 +2713,7 @@
       function start() { if (!raf && enabled()) raf = requestAnimationFrame(render); }
       function stop() {
         endParty();
-        hideCameo(); comboEl.classList.remove('fx-glitch');
+        hideCameo(); clearTimeout(milestoneTimer); comboEl.closest('.chaos-hud').classList.remove('fx-milestone-glitch');
         cancelAnimationFrame(raf); raf = 0; lastPaint = 0;
         particles.length = 0; rings.length = 0; words.length = 0;
         if (ctx) ctx.clearRect(0,0,width,height);
@@ -2815,15 +2823,16 @@
         comboEl.textContent = combo>1 ? '×'+combo+' COMBO' : '+1 VIBE';
         updateComboStyle();
         if (combo === 99) { e.preventDefault(); e.stopImmediatePropagation(); startParty(); return; }
-        if (combo%10 === 0) { showCameo(x,y-100); spawn(x,y,coarse ? 65 : 120,1.5,'confetti'); ring(x,y,1.1); }
+        if (combo >= 10 && combo < 99 && combo % 10 === 0) { milestoneGlitch(); showCameo(x,y-100); spawn(x,y,coarse ? 65 : 120,1.5,'confetti'); ring(x,y,1.1); }
         if (target && target.matches('.profile-emoji')) return;
         if (!target) {
-          const power = 1.15+Math.min(combo,98)*.023;
-          spawn(x,y,(coarse ? 65 : 105)+Math.min(combo,98)*(coarse ? 2 : 4),power,explosionIndex%2 ? 'confetti' : 'spiral');
+          const exponential = Math.pow(Math.min(combo,98)/98,2.15);
+          const power = 1.15 + exponential*4.8;
+          spawn(x,y,(coarse ? 65 : 105)+Math.round(exponential*(coarse ? 190 : 420)),power,explosionIndex%2 ? 'confetti' : 'spiral');
           ring(x,y,power); ring(x,y,power*.55); shake();
           shout(combo>2 ? '×'+combo+' '+WORDS[explosionIndex%WORDS.length] : WORDS[explosionIndex%WORDS.length],x,y-28,true);
           explosionIndex++;
-          if (combo>=10) spawn(random(0,width),-20,coarse ? 18 : 35,1+combo*.01,'confetti');
+          if (combo>=10) spawn(random(0,width),-20,coarse ? 18 : 35,1+exponential*2.5,'confetti');
           if (combo%5 === 0) overload(x,y,false);
         } else {
           spawn(x,y,coarse ? 44 : 80,1,'confetti'); ring(x,y,.55);
