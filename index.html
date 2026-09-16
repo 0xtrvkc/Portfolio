@@ -1698,6 +1698,7 @@
     .party-hat { position: absolute; top: 14%; z-index: 3; font-size: clamp(3rem,8vw,8rem); filter: drop-shadow(0 0 18px #ff3ec8); animation: hat-bounce .55s ease-in-out infinite alternate; }
     .party-hat.left { left: 7%; rotate: -20deg; } .party-hat.right { right: 7%; rotate: 20deg; animation-delay: -.3s; }
     @keyframes hat-bounce { to { translate: 0 -24px; rotate: 15deg; } }
+    .party-canvas { position: absolute; inset: 0; z-index: 8; width: 100%; height: 100%; pointer-events: none; }
     .party-orbit { position: relative; z-index: 4; width: min(78vw,65vh); aspect-ratio: 1; animation: party-orbit-spin 4s linear infinite; }
     .party-dog { position: absolute; width: 34%; aspect-ratio: 1; background-repeat: no-repeat; background-size: 400% 400%; image-rendering: pixelated; filter: drop-shadow(0 0 22px #fff9) drop-shadow(0 0 40px #ff3ec8); animation: party-counter-spin 4s linear infinite; }
     .party-dog:nth-child(1) { top: 0; left: 33%; } .party-dog:nth-child(2) { top: 33%; right: 0; }
@@ -1882,6 +1883,7 @@
     <div id="chaosStatus">HOVER · SCROLL · TAP THE VOID</div>
   </div>
   <div class="combo-party" id="comboParty" hidden role="dialog" aria-modal="true" aria-label="99 combo Chihuahua dance" tabindex="-1">
+    <canvas class="party-canvas" id="partyCanvas" aria-hidden="true"></canvas>
     <div class="party-ball" aria-hidden="true"></div>
     <div class="party-ball secondary" aria-hidden="true"></div><div class="party-ball tertiary" aria-hidden="true"></div>
     <span class="party-hat left" aria-hidden="true">🎉</span><span class="party-hat right" aria-hidden="true">🥳</span>
@@ -2334,8 +2336,11 @@
       const GLYPHS = ['✦','✧','⚡','★','+','×','₿','!'];
       const WORDS = ['WOAH!','WTF!','OH MY GOSH!','BOOM.','MORE? MORE.','ABSOLUTE CHAOS','LET IT RIP','ZERO CHILL'];
       const party = document.getElementById('comboParty');
+      const partyCanvas = document.getElementById('partyCanvas');
+      const partyCtx = partyCanvas.getContext('2d');
       const partyDogs = Array.from(document.querySelectorAll('.party-dog'));
       let satelliteDogs = [];
+      let partyFx = {ribbons:[],lasers:[],props:[],stickers:[]}, partyCanvasRaf = 0, partyCanvasDpr = 1, partyLastPaint = 0;
       const DANCES = ['dance','disco','hip-hop','salsa'];
       const danceUrl = style => 'assets/chihuahua-'+style+'.webp';
       partyDogs.forEach((dog,i) => { dog.style.backgroundImage = 'url("'+danceUrl(DANCES[i])+'")'; });
@@ -2400,6 +2405,7 @@
         if (bg) bg.setTransform(dpr,0,0,dpr,0,0);
         hoverRect = null; featureDirty = true;
         updateProgress();
+        if (partyActive) sizePartyCanvas();
       }
       function queueResize() {
         if (!coarse) { resize(); return; }
@@ -2428,11 +2434,13 @@
       function endParty() {
         if (!partyActive) return;
         partyActive = false;
-        clearTimeout(partyTimer); clearTimeout(partyPhaseTimer); clearInterval(partyFrameTimer); clearInterval(partyBurstTimer);
+        clearTimeout(partyTimer); clearTimeout(partyPhaseTimer); clearInterval(partyFrameTimer); clearInterval(partyBurstTimer); cancelAnimationFrame(partyCanvasRaf); partyCanvasRaf = 0;
         party.hidden = true;
         party.classList.remove('party-maxed');
         party.querySelectorAll('.party-generated').forEach(el => el.remove());
         satelliteDogs = [];
+        partyFx = {ribbons:[],lasers:[],props:[],stickers:[]}; partyLastPaint = 0;
+        partyCtx.clearRect(0,0,partyCanvas.width,partyCanvas.height);
         partyInert.forEach(([el,wasInert]) => { el.inert = wasInert; }); partyInert = [];
         body.style.overflow = partyOverflow;
         if (partyFocus && partyFocus.isConnected) partyFocus.focus({preventScroll:true});
@@ -2485,6 +2493,53 @@
         party.appendChild(el);
         return el;
       }
+      function sizePartyCanvas() {
+        partyCanvasDpr = Math.min(window.devicePixelRatio || 1,coarse ? 1 : 1.35,Math.sqrt(2200000/Math.max(1,width*height)));
+        const w = Math.round(width*partyCanvasDpr), h = Math.round(height*partyCanvasDpr);
+        if (partyCanvas.width !== w) partyCanvas.width = w;
+        if (partyCanvas.height !== h) partyCanvas.height = h;
+        partyCtx.setTransform(partyCanvasDpr,0,0,partyCanvasDpr,0,0);
+      }
+      function buildCanvasChaos() {
+        partyFx = {ribbons:[],lasers:[],props:[],stickers:[]};
+        for (let i=0;i<(coarse ? 105 : 195);i++) partyFx.ribbons.push({x:random(0,width),offset:random(0,height+100),speed:random(220,620),drift:random(18,95),phase:random(0,6.28),spin:random(-8,8),size:random(4,10),color:pick(COLORS)});
+        for (let i=0;i<(coarse ? 7 : 13);i++) partyFx.lasers.push({start:random(0,6.28),range:random(.8,3.2),speed:random(.7,1.8),phase:random(0,6.28),color:pick(COLORS),thick:random(7,22)});
+        for (let i=0;i<(coarse ? 18 : 36);i++) partyFx.props.push({text:pick(['🎉','🥳','🎊','🪩','🎈','✨','⭐','💥']),x:random(0,width),y:random(0,height),ax:random(25,95),ay:random(25,90),speed:random(1.8,5),phase:random(0,6.28),size:random(coarse?24:32,coarse?60:90),spin:random(-5,5)});
+        for (let i=0;i<(coarse ? 7 : 14);i++) partyFx.stickers.push({text:pick(['×99!','WHAT?!','CHAOS!','OH MY GOSH!','UNREAL!','TOO MUCH!']),x:random(width*.08,width*.92),y:random(height*.08,height*.92),speed:random(2,5),phase:random(0,6.28),size:random(coarse?14:18,coarse?24:38),color:pick(COLORS)});
+      }
+      function renderPartyCanvas(now) {
+        if (!partyActive) { partyCanvasRaf = 0; return; }
+        const interval = 1000/(coarse ? 40 : 60);
+        if (partyLastPaint && now-partyLastPaint<interval-1) { partyCanvasRaf=requestAnimationFrame(renderPartyCanvas); return; }
+        partyLastPaint = now;
+        const t = now/1000, boost = party.classList.contains('party-maxed') ? 1.85 : 1;
+        partyCtx.clearRect(0,0,width,height);
+        partyCtx.globalCompositeOperation = 'screen';
+        partyFx.lasers.forEach(l => {
+          const wave=(Math.sin(t*l.speed*boost+l.phase)+1)/2, angle=l.start+(wave-.5)*l.range, length=Math.hypot(width,height)*(.7+wave*.5);
+          partyCtx.save(); partyCtx.translate(width/2,height/2); partyCtx.rotate(angle);
+          const g=partyCtx.createLinearGradient(0,0,length,0); g.addColorStop(0,'#fff'); g.addColorStop(.09,l.color); g.addColorStop(1,'transparent');
+          partyCtx.globalAlpha=.42+wave*.45; partyCtx.fillStyle=g; partyCtx.fillRect(0,-l.thick/2,length,l.thick*(.6+wave)); partyCtx.restore();
+        });
+        partyCtx.globalCompositeOperation = 'source-over'; partyCtx.globalAlpha=1;
+        partyFx.ribbons.forEach(r => {
+          const y=(r.offset+t*r.speed*boost)%(height+120)-60, x=r.x+Math.sin(t*4+r.phase)*r.drift;
+          partyCtx.save(); partyCtx.translate(x,y); partyCtx.rotate(t*r.spin*boost+r.phase); partyCtx.fillStyle=r.color; partyCtx.fillRect(-r.size/2,-r.size*2,r.size,r.size*4); partyCtx.restore();
+        });
+        partyFx.props.forEach(p => {
+          const x=p.x+Math.sin(t*p.speed*boost+p.phase)*p.ax, y=p.y+Math.cos(t*p.speed*1.27*boost+p.phase)*p.ay, scale=.75+(Math.sin(t*p.speed*1.8+p.phase)+1)*.32;
+          partyCtx.save(); partyCtx.translate(x,y); partyCtx.rotate(t*p.spin*boost); partyCtx.scale(scale,scale); partyCtx.font=p.size+'px system-ui'; partyCtx.textAlign='center'; partyCtx.textBaseline='middle'; partyCtx.fillText(p.text,0,0); partyCtx.restore();
+        });
+        drawPartyStickers(t,boost);
+        partyCtx.globalAlpha=1; partyCtx.shadowBlur=0; partyCanvasRaf=requestAnimationFrame(renderPartyCanvas);
+      }
+      function drawPartyStickers(t,boost) {
+        partyFx.stickers.forEach(s => {
+          const scale=.8+(Math.sin(t*s.speed*boost+s.phase)+1)*.3, x=s.x+Math.sin(t*s.speed*.7+s.phase)*45, y=s.y+Math.cos(t*s.speed+s.phase)*35;
+          partyCtx.save(); partyCtx.translate(x,y); partyCtx.rotate(Math.sin(t*s.speed+s.phase)*.28); partyCtx.scale(scale,scale); partyCtx.font='1000 '+s.size+'px system-ui'; partyCtx.textAlign='center'; partyCtx.textBaseline='middle';
+          partyCtx.lineWidth=7; partyCtx.strokeStyle='#05060a'; partyCtx.strokeText(s.text,0,0); partyCtx.lineWidth=3; partyCtx.strokeStyle=s.color; partyCtx.strokeText(s.text,0,0); partyCtx.fillStyle='#fff'; partyCtx.fillText(s.text,0,0); partyCtx.restore();
+        });
+      }
       function buildPartyCrowd() {
         const satelliteCount = coarse ? 8 : 18;
         for (let i=0;i<satelliteCount;i++) {
@@ -2501,33 +2556,7 @@
           dog.style.setProperty('--satellite-twist',random(-45,45)+'deg');
           satelliteDogs.push(dog);
         }
-        for (let i=0;i<(coarse ? 7 : 13);i++) {
-          const laser = partyDecoration('party-laser');
-          laser.style.setProperty('--laser-color',pick(COLORS));
-          laser.style.setProperty('--laser-time',random(1.2,3.2)+'s');
-          laser.style.setProperty('--laser-delay',random(-3,0)+'s');
-          laser.style.setProperty('--laser-start',random(0,360)+'deg');
-          laser.style.setProperty('--laser-end',random(0,360)+'deg');
-        }
-        for (let i=0;i<(coarse ? 18 : 36);i++) {
-          const prop = partyDecoration('party-prop');
-          prop.textContent = pick(['🎉','🥳','🎊','🪩','🎈','✨','⭐','💥']);
-          prop.style.left = random(3,97)+'%'; prop.style.top = random(5,95)+'%';
-          prop.style.setProperty('--prop-size',random(coarse ? 24 : 32,coarse ? 60 : 90)+'px');
-          prop.style.setProperty('--prop-time',random(.5,1.9)+'s');
-          prop.style.setProperty('--prop-delay',random(-2,0)+'s');
-          prop.style.setProperty('--prop-x',random(-45,45)+'px');
-          prop.style.setProperty('--prop-y',random(-55,55)+'px');
-        }
-        for (let i=0;i<(coarse ? 7 : 14);i++) {
-          const sticker = partyDecoration('party-sticker');
-          sticker.textContent = pick(['×99!','WHAT?!','CHAOS!','OH MY GOSH!','UNREAL!','TOO MUCH!']);
-          sticker.style.left = random(6,94)+'%'; sticker.style.top = random(8,92)+'%';
-          sticker.style.setProperty('--sticker-size',random(coarse ? 14 : 18,coarse ? 24 : 38)+'px');
-          sticker.style.setProperty('--sticker-color',pick(COLORS));
-          sticker.style.setProperty('--sticker-time',random(.6,1.5)+'s');
-          sticker.style.setProperty('--sticker-delay',random(-2,0)+'s');
-        }
+        buildCanvasChaos();
       }
       function partyReaction() {
         const pop = partyDecoration('party-pop');
@@ -2550,15 +2579,7 @@
         partyTitle.textContent = 'WOAH!';
         buildPartyCrowd();
         satelliteDogs.forEach((dog,i) => paintFrame(dog,i%16));
-        for (let i=0;i<(coarse ? 105 : 195);i++) {
-          const ribbon = partyDecoration('party-ribbon');
-          ribbon.style.left = random(0,100)+'%';
-          ribbon.style.setProperty('--ribbon-color',pick(COLORS));
-          ribbon.style.setProperty('--ribbon-rotate',random(-180,180)+'deg');
-          ribbon.style.setProperty('--ribbon-drift',random(-180,180)+'px');
-          ribbon.style.setProperty('--ribbon-time',random(.65,1.8)+'s');
-          ribbon.style.setProperty('--ribbon-delay',random(-3,0)+'s');
-        }
+        sizePartyCanvas(); partyCanvasRaf=requestAnimationFrame(renderPartyCanvas);
         partyFrameTimer = setInterval(() => {
           frame = (frame+1)%16;
           partyDogs.forEach((dog,i) => paintFrame(dog,(frame+i*4)%16));
