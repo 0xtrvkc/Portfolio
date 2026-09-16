@@ -1682,17 +1682,19 @@
     @keyframes hint-pop { 50% { transform: scale(1.09); box-shadow: 0 0 38px rgba(255,62,200,.65); border-color: var(--magenta); } }
     .chaos-hint::before { content: '✦  '; color: var(--volt); }
     .chaos-hint::after { content: '  ✦'; color: var(--magenta); }
-    .combo-party { position: fixed; inset: 0; z-index: 150; overflow: hidden; display: grid; place-items: center; isolation: isolate; background: radial-gradient(circle at 50% 42%,#592074 0%,#14152f 55%,#05060a 100%); cursor: wait; }
+    .combo-party { position: fixed; inset: 0; z-index: 150; overflow: hidden; display: grid; place-items: center; isolation: isolate; background: radial-gradient(circle at 50% 42%,#592074 0%,#14152f 55%,#05060a 100%); cursor: wait; animation: party-screen-pulse .24s steps(2,end) infinite; }
     .combo-party[hidden] { display: none; }
+    .combo-party:not([hidden]) *,.combo-party:not([hidden])::before,.combo-party:not([hidden])::after { animation-play-state: running !important; }
     .combo-party::before { content: ''; position: absolute; inset: -70%; background: conic-gradient(from 0deg,transparent 0 12%,rgba(51,230,255,.35) 15%,transparent 21% 32%,rgba(255,62,200,.45) 35%,transparent 43% 53%,rgba(255,180,61,.4) 57%,transparent 64% 78%,rgba(198,255,61,.35) 82%,transparent 90%); animation: party-spin 2.4s linear infinite; }
     .combo-party::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 100px 30px #05060a; animation: party-flash .6s ease-in-out infinite alternate; }
     @keyframes party-spin { to { transform: rotate(360deg); } }
-    @keyframes party-flash { to { opacity: .4; } }
+    @keyframes party-flash { 0% { opacity: .18; } 35% { opacity: .9; } 68% { opacity: .35; } 100% { opacity: .72; } }
+    @keyframes party-screen-pulse { 0% { background-color: #16091f; } 33% { background-color: #06242b; } 66% { background-color: #281807; } 100% { background-color: #25051d; } }
     .party-ball { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 2; width: clamp(95px,15vw,210px); aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(from 20deg,#e8f7ff 0deg 12deg,#6d9bc6 12deg 19deg,#fff 19deg 27deg,#567194 27deg 33deg); box-shadow: 0 0 40px 15px #fff8,0 0 110px 35px #33e6ff88; animation: ball-bop .8s ease-in-out infinite alternate; }
     .party-ball::before { content: ''; position: absolute; left: 50%; bottom: 100%; height: 80px; border-left: 3px solid #fff; }
     .party-ball.secondary { left: 12%; top: 22%; width: clamp(55px,8vw,120px); animation-duration: 1.1s; }
     .party-ball.tertiary { left: 88%; top: 65%; width: clamp(48px,7vw,100px); animation-duration: .9s; }
-    @keyframes ball-bop { to { transform: translateX(-50%) rotate(22deg) scale(1.08); } }
+    @keyframes ball-bop { 0% { transform: translate3d(-50%,-8px,0) rotate(-24deg) scale(.82); } 40% { transform: translate3d(-50%,24px,0) rotate(18deg) scale(1.25); } 72% { transform: translate3d(-50%,-18px,0) rotate(45deg) scale(.92); } 100% { transform: translate3d(-50%,12px,0) rotate(80deg) scale(1.2); } }
     .party-hat { position: absolute; top: 14%; z-index: 3; font-size: clamp(3rem,8vw,8rem); filter: drop-shadow(0 0 18px #ff3ec8); animation: hat-bounce .55s ease-in-out infinite alternate; }
     .party-hat.left { left: 7%; rotate: -20deg; } .party-hat.right { right: 7%; rotate: 20deg; animation-delay: -.3s; }
     @keyframes hat-bounce { to { translate: 0 -24px; rotate: 15deg; } }
@@ -1701,18 +1703,21 @@
     .party-dog:nth-child(1) { top: 0; left: 33%; } .party-dog:nth-child(2) { top: 33%; right: 0; }
     .party-dog:nth-child(3) { bottom: 0; left: 33%; } .party-dog:nth-child(4) { top: 33%; left: 0; }
     .party-satellite { position: absolute; z-index: 5; width: var(--satellite-size); aspect-ratio: 1; background-size: 400% 400%; background-repeat: no-repeat; image-rendering: pixelated; pointer-events: none; filter: drop-shadow(0 0 15px var(--satellite-glow)); animation: satellite-frenzy var(--satellite-time) ease-in-out var(--satellite-delay) infinite alternate; }
-    @keyframes satellite-frenzy { 0% { transform: translate(-50%,-50%) rotate(-18deg) scale(.82); } 100% { transform: translate(calc(-50% + var(--drift-x)),calc(-50% + var(--drift-y))) rotate(var(--satellite-twist)) scale(1.28); } }
+    @keyframes satellite-frenzy { 0% { transform: translate3d(-50%,-50%,0) rotate(-28deg) scale(.68); } 24% { transform: translate3d(calc(-50% - var(--drift-x)),calc(-50% + var(--drift-y)),0) rotate(26deg) scale(1.42); } 51% { transform: translate3d(calc(-50% + var(--drift-x)),calc(-50% - var(--drift-y)),0) rotate(var(--satellite-twist)) scale(.88); } 76% { transform: translate3d(calc(-50% - var(--drift-x)),calc(-50% - var(--drift-y)),0) rotate(-45deg) scale(1.55); } 100% { transform: translate3d(calc(-50% + var(--drift-x)),calc(-50% + var(--drift-y)),0) rotate(var(--satellite-twist)) scale(1.18); } }
     .party-laser { position: absolute; z-index: 3; left: 50%; top: 50%; width: min(85vw,900px); height: clamp(9px,2vw,22px); transform-origin: 0 50%; background: linear-gradient(90deg,white,var(--laser-color) 12%,transparent 100%); filter: drop-shadow(0 0 16px var(--laser-color)); opacity: .58; pointer-events: none; animation: laser-sweep var(--laser-time) linear var(--laser-delay) infinite alternate; }
-    @keyframes laser-sweep { 0% { transform: rotate(var(--laser-start)) scaleX(.45); } 100% { transform: rotate(var(--laser-end)) scaleX(1.15); } }
+    @keyframes laser-sweep { 0% { transform: rotate(var(--laser-start)) scaleX(.15) scaleY(.45); opacity: .2; } 35% { transform: rotate(var(--laser-end)) scaleX(1.35) scaleY(1.8); opacity: .95; } 68% { transform: rotate(var(--laser-start)) scaleX(.65) scaleY(.7); opacity: .5; } 100% { transform: rotate(var(--laser-end)) scaleX(1.6) scaleY(1.3); opacity: .9; } }
     .party-prop { position: absolute; z-index: 8; font-size: var(--prop-size); line-height: 1; pointer-events: none; filter: drop-shadow(0 0 12px #fff8); animation: prop-tumble var(--prop-time) ease-in-out var(--prop-delay) infinite alternate; }
-    @keyframes prop-tumble { 0% { transform: translate(-50%,-50%) rotate(-25deg) scale(.75); } 100% { transform: translate(calc(-50% + var(--prop-x)),calc(-50% + var(--prop-y))) rotate(35deg) scale(1.32); } }
+    @keyframes prop-tumble { 0% { transform: translate3d(-50%,-50%,0) rotate(-35deg) scale(.55); } 27% { transform: translate3d(calc(-50% + var(--prop-x)),calc(-50% - var(--prop-y)),0) rotate(110deg) scale(1.55); } 56% { transform: translate3d(calc(-50% - var(--prop-x)),calc(-50% + var(--prop-y)),0) rotate(220deg) scale(.8); } 100% { transform: translate3d(calc(-50% + var(--prop-x)),calc(-50% + var(--prop-y)),0) rotate(395deg) scale(1.38); } }
     .party-sticker { position: absolute; z-index: 9; color: white; font-weight: 1000; font-size: var(--sticker-size); white-space: nowrap; pointer-events: none; text-shadow: 3px 3px var(--sticker-color),-3px -3px #33e6ff,0 0 24px #fff; animation: sticker-bounce var(--sticker-time) ease-in-out var(--sticker-delay) infinite alternate; }
-    @keyframes sticker-bounce { 0% { transform: translate(-50%,-50%) rotate(-18deg) scale(.75); } 100% { transform: translate(-50%,-70%) rotate(18deg) scale(1.25); } }
+    @keyframes sticker-bounce { 0% { transform: translate3d(-50%,-50%,0) rotate(-22deg) scale(.55); filter: hue-rotate(0deg); } 35% { transform: translate3d(-65%,-95%,0) rotate(16deg) scale(1.6); } 68% { transform: translate3d(-30%,-35%,0) rotate(-12deg) scale(.9); filter: hue-rotate(180deg); } 100% { transform: translate3d(-50%,-85%,0) rotate(24deg) scale(1.45); filter: hue-rotate(360deg); } }
     .party-pop { position: absolute; z-index: 11; color: white; font-size: clamp(2rem,8vw,6rem); font-weight: 1000; white-space: nowrap; pointer-events: none; text-shadow: 5px 4px var(--pop-color),-4px -4px var(--cyan),0 0 35px white; animation: party-pop .8s ease-out both; }
     @keyframes party-pop { from { opacity: 0; transform: translate(-50%,-50%) rotate(-25deg) scale(.2); } 35% { opacity: 1; transform: translate(-50%,-50%) rotate(10deg) scale(1.25); } to { opacity: 0; transform: translate(-50%,-100%) rotate(-8deg) scale(1.55); } }
     .combo-party.party-maxed::before { animation-duration: 1.4s; }
     .combo-party.party-maxed .party-orbit,.combo-party.party-maxed .party-dog { animation-duration: 2.3s; }
-    .combo-party.party-maxed .party-satellite { animation-duration: .7s; }
+    .combo-party.party-maxed .party-satellite { animation-duration: .38s; }
+    .combo-party.party-maxed .party-prop { animation-duration: .32s; }
+    .combo-party.party-maxed .party-sticker { animation-duration: .42s; }
+    .combo-party.party-maxed .party-laser { animation-duration: .48s; }
     .combo-party.party-maxed .party-ball { box-shadow: 0 0 60px 25px #fff9,0 0 140px 45px #ff3ec899; }
     @keyframes party-orbit-spin { to { transform: rotate(360deg); } }
     @keyframes party-counter-spin { to { transform: rotate(-360deg); } }
@@ -1721,7 +1726,6 @@
     .party-caption { position: absolute; z-index: 6; bottom: 6%; color: white; font-weight: 900; font-size: clamp(1rem,3vw,2.2rem); text-align: center; text-shadow: 0 0 22px #ff3ec8; }
     .party-ribbon { position: absolute; z-index: 8; top: -12%; width: 8px; height: 35px; border-radius: 4px; background: var(--ribbon-color); transform: rotate(var(--ribbon-rotate)); animation: ribbon-fall var(--ribbon-time) linear var(--ribbon-delay) infinite; box-shadow: 0 0 9px var(--ribbon-color); }
     @keyframes ribbon-fall { to { translate: var(--ribbon-drift) 125vh; rotate: 900deg; } }
-    @media (prefers-reduced-motion: reduce) { .combo-party *, .combo-party::before, .combo-party::after { animation: none !important; } }
     .ticker-wrap { border-image: linear-gradient(90deg,transparent,var(--magenta),var(--cyan),transparent) 1; }
     .ticker-wrap::before { content: ''; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg,transparent,rgba(51,230,255,.06),transparent); animation: poem-shimmer 9s linear infinite; pointer-events: none; }
     @keyframes poem-shimmer { from { translate: -100% 0; } to { translate: 350% 0; } }
@@ -2541,37 +2545,34 @@
         partyInert.forEach(([el]) => { el.inert = true; });
         body.style.overflow = 'hidden';
         party.hidden = false; party.focus({preventScroll:true});
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches && !body.classList.contains('fx-manual-motion');
         let frame = 0, title = 0;
         partyDogs.forEach((dog,i) => paintFrame(dog,i*4));
         partyTitle.textContent = 'WOAH!';
-        if (!reducedMotion) {
-          buildPartyCrowd();
-          satelliteDogs.forEach((dog,i) => paintFrame(dog,i%16));
-          for (let i=0;i<(coarse ? 105 : 195);i++) {
-            const ribbon = partyDecoration('party-ribbon');
-            ribbon.style.left = random(0,100)+'%';
-            ribbon.style.setProperty('--ribbon-color',pick(COLORS));
-            ribbon.style.setProperty('--ribbon-rotate',random(-180,180)+'deg');
-            ribbon.style.setProperty('--ribbon-drift',random(-180,180)+'px');
-            ribbon.style.setProperty('--ribbon-time',random(1.3,3.5)+'s');
-            ribbon.style.setProperty('--ribbon-delay',random(-3,0)+'s');
-          }
-          partyFrameTimer = setInterval(() => {
-            frame = (frame+1)%16;
-            partyDogs.forEach((dog,i) => paintFrame(dog,(frame+i*4)%16));
-            satelliteDogs.forEach((dog,i) => paintFrame(dog,(frame+i*3)%16));
-          },100);
-          partyBurstTimer = setInterval(() => {
-            title = (title+1)%3; partyTitle.textContent = ['WOAH!','WTF!','OH MY GOSH!'][title];
-            partyReaction();
-          },coarse ? 640 : 460);
-          partyPhaseTimer = setTimeout(() => {
-            if (!partyActive) return;
-            party.classList.add('party-maxed'); partyReaction(); partyReaction();
-          },2500);
+        buildPartyCrowd();
+        satelliteDogs.forEach((dog,i) => paintFrame(dog,i%16));
+        for (let i=0;i<(coarse ? 105 : 195);i++) {
+          const ribbon = partyDecoration('party-ribbon');
+          ribbon.style.left = random(0,100)+'%';
+          ribbon.style.setProperty('--ribbon-color',pick(COLORS));
+          ribbon.style.setProperty('--ribbon-rotate',random(-180,180)+'deg');
+          ribbon.style.setProperty('--ribbon-drift',random(-180,180)+'px');
+          ribbon.style.setProperty('--ribbon-time',random(.65,1.8)+'s');
+          ribbon.style.setProperty('--ribbon-delay',random(-3,0)+'s');
         }
-        partyTimer = setTimeout(endParty,reducedMotion ? 2500 : 7000);
+        partyFrameTimer = setInterval(() => {
+          frame = (frame+1)%16;
+          partyDogs.forEach((dog,i) => paintFrame(dog,(frame+i*4)%16));
+          satelliteDogs.forEach((dog,i) => paintFrame(dog,(frame+i*3)%16));
+        },80);
+        partyBurstTimer = setInterval(() => {
+          title = (title+1)%3; partyTitle.textContent = ['WOAH!','WTF!','OH MY GOSH!'][title];
+          partyReaction();
+        },coarse ? 520 : 350);
+        partyPhaseTimer = setTimeout(() => {
+          if (!partyActive) return;
+          party.classList.add('party-maxed'); partyReaction(); partyReaction();
+        },2200);
+        partyTimer = setTimeout(endParty,7000);
       }
       function ring(x,y,power) {
         if (!enabled()) return;
