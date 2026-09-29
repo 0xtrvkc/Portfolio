@@ -177,6 +177,47 @@
       100% { transform: translateX(0)    rotate(0deg); }
     }
 
+    .mode-btn:disabled { cursor: wait; }
+
+    /* A blue-screen TTY, followed by a compact Fun Mode color break. */
+    .toggle-intro[hidden] { display: none; }
+    .toggle-intro {
+      position: fixed; inset: 0; z-index: 10000; overflow: hidden;
+      background: #071d92; color: #f5f7ff;
+      font: 500 clamp(12px, 1.4vw, 17px)/1.28 'Courier New', monospace;
+    }
+    .toggle-tty { position: absolute; inset: 18px; overflow: hidden; scrollbar-width: none; }
+    .toggle-tty pre { margin: 0; white-space: pre; font: inherit; }
+    .toggle-cursor { display: inline-block; color: #fff; }
+    .toggle-intro.active .toggle-cursor { animation: toggle-cursor-blink .55s steps(1,end) infinite; }
+    .toggle-surge {
+      position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
+      background: #05060a; opacity: 0; overflow: hidden;
+      font: 800 clamp(22px, 6vw, 82px)/1.05 'Courier New', monospace;
+    }
+    .toggle-surge small { font: 700 clamp(11px, 1.5vw, 17px)/1.4 'Courier New', monospace; color: #a8bbc7; letter-spacing: .12em; }
+    .toggle-surge strong { position: relative; z-index: 1; color: #d8ff3e; letter-spacing: -.05em; }
+    .toggle-surge-bars { position: absolute; inset: 0; display: grid; grid-template-rows: repeat(4, 1fr); }
+    .toggle-surge-bars i { opacity: .22; transform: translate3d(-105%,0,0); }
+    .toggle-surge-bars i:nth-child(1) { background: #d8ff3e; }
+    .toggle-surge-bars i:nth-child(2) { background: #38edff; }
+    .toggle-surge-bars i:nth-child(3) { background: #f650d9; }
+    .toggle-surge-bars i:nth-child(4) { background: #ffba46; }
+    .toggle-intro.active .toggle-surge { animation: toggle-surge-life 10s steps(1,end) both; }
+    .toggle-intro.active .toggle-surge-bars i { animation: toggle-surge-bar .75s cubic-bezier(.2,.75,.2,1) 9s both; }
+    .toggle-intro.active .toggle-surge-bars i:nth-child(even) { animation-name: toggle-surge-bar-right; }
+    .toggle-intro.active .toggle-surge strong { animation: toggle-surge-jolt .75s steps(3,end) 9s both; }
+    @keyframes toggle-cursor-blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+    @keyframes toggle-surge-life { 0%,79% { opacity: 0; } 80%,100% { opacity: 1; } }
+    @keyframes toggle-surge-bar { from { transform: translate3d(-105%,0,0); } to { transform: translate3d(0,0,0); } }
+    @keyframes toggle-surge-bar-right { from { transform: translate3d(105%,0,0); } to { transform: translate3d(0,0,0); } }
+    @keyframes toggle-surge-jolt {
+      0% { transform: translate3d(0,0,0); color: #d8ff3e; }
+      33% { transform: translate3d(8px,-4px,0); color: #38edff; }
+      66% { transform: translate3d(-6px,3px,0); color: #f650d9; }
+      100% { transform: translate3d(0,0,0); color: #d8ff3e; }
+    }
+
     /* ════════════════════════════════════════════════
        SHELL — editorial two-column grid (desktop)
        sidebar (hero/dossier header) + main log
@@ -597,6 +638,13 @@
     </button>
   </div>
 
+  <section class="toggle-intro" id="toggleIntro" hidden aria-hidden="true">
+    <div class="toggle-tty"><pre><span id="toggleTyped"></span><span class="toggle-cursor">_</span></pre></div>
+    <div class="toggle-surge"><small>TTY1 // PERSONALITY SWITCH</small><strong>FUN MODE<br>UNLOCKED</strong>
+      <div class="toggle-surge-bars"><i></i><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
   <!-- ══ CONTENT ══ -->
   <div class="shell">
 
@@ -863,14 +911,7 @@
   }
 
   renderNormalPortfolio(portfolioData);
-  /* ═══════════════════════════════════════════════════════════════
-     TOGGLE LOGIC
-     The button cycles through 3 phases before redirecting:
-       Phase 0 — formal    "[ TOGGLE VIEW ]"   — still, dignified
-       Phase 1 — uneasy    "[ WARNING... ]"    — gentle tremor
-       Phase 2 — chaos     "[ 🤪 LET ME OUT ]" — full meltdown
-       Phase 3 — redirect  → original funny portfolio
-  ═══════════════════════════════════════════════════════════════ */
+  /* The mode button launches the ten-second TTY before Fun Mode loads. */
 
   /* ═══════════════════════════════════════════════════════════════
      AUTO-NUMBERING
@@ -1447,19 +1488,101 @@
     loopTimer = setTimeout(step, phase.duration);
   }
 
+  let introFrame = 0;
+  let introTimer = 0;
+  let introRunning = false;
+  const intro = document.getElementById('toggleIntro');
+  const introTyped = document.getElementById('toggleTyped');
+  const introWindow = intro.querySelector('.toggle-tty');
+
+  function makeIntroSource() {
+    const lines = [
+      'TRVKC Linux 1.0 (tty1)',
+      'portfolio login: visitor',
+      'Password: ********',
+      'Last login: local console',
+      'visitor@trvkc:~$ uname -a',
+      'TRVKC Linux localhost 1.0 #FUN SMP',
+      'visitor@trvkc:~$ cat /etc/portfolio/mode.conf',
+      'MODE=normal',
+      'VISUALS=restrained',
+      'visitor@trvkc:~$ systemctl status personality.service',
+      '● personality.service - dual interface controller',
+      '   Active: waiting for toggle event',
+      'visitor@trvkc:~$ journalctl -u personality.service -n 12'
+    ];
+    const units = ['tty', 'palette', 'canvas', 'motion', 'cards', 'layout', 'fonts', 'cursor', 'effects', 'shapes'];
+    const tasks = ['probe', 'read', 'map', 'verify', 'load', 'bind', 'scan', 'index'];
+    for (let n = 0; n < 106; n++) {
+      const unit = units[n % units.length];
+      const task = tasks[(n * 3) % tasks.length];
+      const time = ((n * 39 + 21) / 1000).toFixed(3);
+      if (n % 8 === 0) lines.push('visitor@trvkc:~$ ' + task + ' /opt/fun/' + unit + ' --local');
+      else if (n % 8 === 1) lines.push('[ ' + time + '] ' + unit + ': init channel 0x' + (n * 7919 % 65536).toString(16).padStart(4, '0'));
+      else if (n % 8 === 2) lines.push('[ ' + time + '] ' + unit + ': ' + task + ' slot=' + String(n * 17).padStart(5, '0') + ' status=OK');
+      else if (n % 8 === 3) lines.push('visitor@trvkc:~$ stat /opt/fun/' + unit + '/' + String(n).padStart(4, '0'));
+      else if (n % 8 === 4) lines.push('  File: /opt/fun/' + unit + '  Blocks: ' + (n * 4 + 8));
+      else if (n % 8 === 5) lines.push('[ ' + time + '] render: ' + task + ' accent=' + ['volt', 'cyan', 'magenta', 'amber'][n % 4]);
+      else if (n % 8 === 6) lines.push('visitor@trvkc:~$ printf "%08x\n" ' + (n * 4093));
+      else lines.push((n * 4093).toString(16).padStart(8, '0'));
+    }
+    return lines.join('\n');
+  }
+  const introSource = makeIntroSource();
+
+  function stopIntro() {
+    cancelAnimationFrame(introFrame); introFrame = 0;
+    clearTimeout(introTimer); introTimer = 0;
+    introRunning = false;
+    intro.classList.remove('active'); intro.hidden = true;
+    introTyped.textContent = ''; introWindow.scrollTop = 0;
+    btn.disabled = false; label.textContent = '[ TOGGLE VIEW ]';
+  }
+
+  function typeIntro() {
+    const typed = introTyped.appendChild(document.createTextNode(''));
+    const started = performance.now();
+    let shown = 0;
+    function frame(now) {
+      const seconds = Math.min(8, (now - started) / 1000);
+      const portion = seconds <= 5 ? .37 * (seconds / 5) ** 3 : .37 + .21 * (seconds - 5);
+      const next = seconds >= 8 ? introSource.length : Math.floor(introSource.length * portion);
+      if (next > shown) {
+        const chunk = introSource.slice(shown, next);
+        typed.appendData(chunk); shown = next;
+        if (chunk.includes('\n')) introWindow.scrollTop = introWindow.scrollHeight;
+      }
+      introFrame = seconds < 8 && introRunning ? requestAnimationFrame(frame) : 0;
+    }
+    introFrame = requestAnimationFrame(frame);
+  }
+
   window.__trvkcDispose = function () {
     clearTimeout(loopTimer);
+    stopIntro();
     clearTimeout(unlockTimer);
     clearTimeout(secretTapTimer);
     normalEvents.abort();
     if (cardsObserver) cardsObserver.disconnect();
   };
+
   runLoop();
 
   window.activateFunMode = function () {
+    if (introRunning) return;
     clearTimeout(loopTimer);
-    loadFunPortfolio();
-  }
+    btn.classList.remove('phase-uneasy', 'phase-chaos');
+    btn.classList.add('phase-formal');
+    introRunning = true;
+    btn.disabled = true; label.textContent = '[ EXECUTING... ]';
+    intro.hidden = false;
+    requestAnimationFrame(function () {
+      if (!introRunning) return;
+      intro.classList.add('active');
+      typeIntro();
+      introTimer = setTimeout(loadFunPortfolio, 10000);
+    });
+  };
 
   function loadFunPortfolio() {
     window.__trvkcDispose();
