@@ -17,7 +17,7 @@ The portfolio has two personalities in one `index.html`:
 
 Both personalities render from one normalized content model. `portfolio-data.js` provides the repository fallback, while Cloud Firestore is the live source of truth. Changes made with the hidden editor are reflected in Normal and Fun mode without duplicate editing and persist across browsers and devices.
 
-The Normal-mode toggle keeps its repeating button joke. Clicking it starts a ten-second blue Linux-style terminal: white code types character by character beside a blinking cursor, accelerating for five seconds and staying fast through second eight. The final two seconds break into oversized Fun Mode typography, four angled color panels, a growing ring, and a brief volt flash before the existing Fun Mode loads. The terminal text is theatrical and runs no commands.
+The Normal-mode toggle keeps its repeating button joke. Clicking it starts a six-second transition: four seconds of blue Linux-style terminal code typing beside a blinking cursor, accelerating for the first 2.5 seconds, followed by two seconds of Fun Mode color panels, a readable high-contrast title, a growing ring, and a brief volt flash before the existing Fun Mode loads. The terminal text is theatrical and runs no commands.
 
 ## Featured tools
 

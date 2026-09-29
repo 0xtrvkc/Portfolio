@@ -211,47 +211,40 @@
       border: clamp(8px,2vw,26px) solid #fff; border-radius: 50%; opacity: 0;
     }
     .surge-title {
-      position: absolute; z-index: 4; inset: 0; display: grid; place-content: center;
-      text-align: center; color: #07080b;
-      font: 1000 clamp(64px,18vw,300px)/.73 'Arial Black', Impact, sans-serif;
-      letter-spacing: -.12em; opacity: 0; white-space: nowrap;
+      position: absolute; z-index: 4; top: 50%; left: 50%; box-sizing: border-box;
+      width: min(88vw, 820px); padding: clamp(18px,3vw,40px);
+      border: 4px solid #fff; background: #060913; box-shadow: 12px 12px 0 #d8ff3e;
+      color: #fff; text-align: center; opacity: 0;
     }
-    .surge-title span { display: block; }
-    .surge-title span:last-child { margin-left: .24em; }
-    .surge-echo { z-index: 3; color: #fff; }
-    .surge-echo.cyan { color: #38edff; }
-    .surge-echo.magenta { color: #f650d9; }
+    .surge-title small { display: block; margin-bottom: 16px; color: #38edff; font: 700 clamp(12px,1.5vw,17px)/1.2 'Courier New', monospace; letter-spacing: .14em; }
+    .surge-title strong { display: block; font: 1000 clamp(42px,min(10vw,14vh),140px)/1.02 'Arial Black', Impact, sans-serif; letter-spacing: -.055em; }
+    .surge-title strong span { display: block; }
     .surge-flash { position: absolute; z-index: 7; inset: 0; background: #d8ff3e; opacity: 0; }
-    .toggle-intro.active .toggle-surge { animation: surge-life 10s steps(1,end) both; }
-    .toggle-intro.active .surge-error { animation: surge-error 10s steps(1,end) both; }
-    .toggle-intro.active .surge-shards i:nth-child(1) { animation: shard-one 10s cubic-bezier(.16,.8,.2,1) both; }
-    .toggle-intro.active .surge-shards i:nth-child(2) { animation: shard-two 10s cubic-bezier(.16,.8,.2,1) both; }
-    .toggle-intro.active .surge-shards i:nth-child(3) { animation: shard-three 10s cubic-bezier(.16,.8,.2,1) both; }
-    .toggle-intro.active .surge-shards i:nth-child(4) { animation: shard-four 10s cubic-bezier(.16,.8,.2,1) both; }
-    .toggle-intro.active .surge-orbit { animation: surge-orbit 10s ease-out both; }
-    .toggle-intro.active .surge-title.main { animation: surge-title 10s cubic-bezier(.2,.8,.2,1) both; }
-    .toggle-intro.active .surge-echo.cyan { animation: surge-echo-left 10s steps(1,end) both; }
-    .toggle-intro.active .surge-echo.magenta { animation: surge-echo-right 10s steps(1,end) both; }
-    .toggle-intro.active .surge-flash { animation: surge-flash 10s steps(1,end) both; }
+    .toggle-intro.active .toggle-surge { animation: surge-life 6s steps(1,end) both; }
+    .toggle-intro.active .surge-error { animation: surge-error 6s steps(1,end) both; }
+    .toggle-intro.active .surge-shards i:nth-child(1) { animation: shard-one 6s cubic-bezier(.16,.8,.2,1) both; }
+    .toggle-intro.active .surge-shards i:nth-child(2) { animation: shard-two 6s cubic-bezier(.16,.8,.2,1) both; }
+    .toggle-intro.active .surge-shards i:nth-child(3) { animation: shard-three 6s cubic-bezier(.16,.8,.2,1) both; }
+    .toggle-intro.active .surge-shards i:nth-child(4) { animation: shard-four 6s cubic-bezier(.16,.8,.2,1) both; }
+    .toggle-intro.active .surge-orbit { animation: surge-orbit 6s ease-out both; }
+    .toggle-intro.active .surge-title { animation: surge-title 6s cubic-bezier(.2,.8,.2,1) both; }
+    .toggle-intro.active .surge-flash { animation: surge-flash 6s steps(1,end) both; }
     @keyframes toggle-cursor-blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
-    @keyframes surge-life { 0%,79% { opacity: 0; } 80%,100% { opacity: 1; } }
-    @keyframes surge-error { 0%,80% { opacity: 0; } 81%,86% { opacity: 1; } 87%,100% { opacity: 0; } }
-    @keyframes shard-one { 0%,81% { transform: translate3d(-110vw,-50vh,0) rotate(-18deg); } 88% { transform: translate3d(0,0,0) rotate(-8deg); } 100% { transform: translate3d(-12vw,14vh,0) rotate(-17deg) scale(1.18); } }
-    @keyframes shard-two { 0%,82% { transform: translate3d(110vw,-60vh,0) rotate(18deg); } 89% { transform: translate3d(0,0,0) rotate(7deg); } 100% { transform: translate3d(15vw,9vh,0) rotate(18deg) scale(1.2); } }
-    @keyframes shard-three { 0%,82% { transform: translate3d(-110vw,60vh,0) rotate(15deg); } 90% { transform: translate3d(0,0,0) rotate(4deg); } 100% { transform: translate3d(-13vw,-10vh,0) rotate(14deg) scale(1.2); } }
-    @keyframes shard-four { 0%,83% { transform: translate3d(110vw,70vh,0) rotate(-15deg); } 91% { transform: translate3d(0,0,0) rotate(-5deg); } 100% { transform: translate3d(15vw,-13vh,0) rotate(-15deg) scale(1.2); } }
-    @keyframes surge-orbit { 0%,84% { opacity: 0; transform: translate3d(-50%,-50%,0) scale(.1) rotate(0); } 89% { opacity: .9; } 100% { opacity: 0; transform: translate3d(-50%,-50%,0) scale(4) rotate(80deg); } }
+    @keyframes surge-life { 0%,66% { opacity: 0; } 67%,100% { opacity: 1; } }
+    @keyframes surge-error { 0%,67% { opacity: 0; } 68%,76% { opacity: 1; } 77%,100% { opacity: 0; } }
+    @keyframes shard-one { 0%,68% { transform: translate3d(-110vw,-50vh,0) rotate(-18deg); } 82% { transform: translate3d(0,0,0) rotate(-8deg); } 100% { transform: translate3d(-12vw,14vh,0) rotate(-17deg) scale(1.18); } }
+    @keyframes shard-two { 0%,69% { transform: translate3d(110vw,-60vh,0) rotate(18deg); } 83% { transform: translate3d(0,0,0) rotate(7deg); } 100% { transform: translate3d(15vw,9vh,0) rotate(18deg) scale(1.2); } }
+    @keyframes shard-three { 0%,70% { transform: translate3d(-110vw,60vh,0) rotate(15deg); } 84% { transform: translate3d(0,0,0) rotate(4deg); } 100% { transform: translate3d(-13vw,-10vh,0) rotate(14deg) scale(1.2); } }
+    @keyframes shard-four { 0%,71% { transform: translate3d(110vw,70vh,0) rotate(-15deg); } 85% { transform: translate3d(0,0,0) rotate(-5deg); } 100% { transform: translate3d(15vw,-13vh,0) rotate(-15deg) scale(1.2); } }
+    @keyframes surge-orbit { 0%,73% { opacity: 0; transform: translate3d(-50%,-50%,0) scale(.1) rotate(0); } 82% { opacity: .9; } 100% { opacity: 0; transform: translate3d(-50%,-50%,0) scale(4) rotate(80deg); } }
     @keyframes surge-title {
-      0%,84% { opacity: 0; transform: translate3d(0,0,0) scale(.12) rotate(-13deg); }
-      89% { opacity: 1; transform: translate3d(0,0,0) scale(1.22) rotate(5deg); }
-      92% { transform: translate3d(0,0,0) scale(.92) rotate(-3deg); }
-      95% { transform: translate3d(8px,-5px,0) scale(1.05) rotate(1deg); }
-      100% { opacity: 1; transform: translate3d(0,0,0) scale(2.3) rotate(-5deg); }
+      0%,75% { opacity: 0; transform: translate3d(-50%,-50%,0) scale(.35) rotate(-8deg); }
+      81% { opacity: 1; transform: translate3d(-50%,-50%,0) scale(1.08) rotate(2deg); }
+      86%,95% { opacity: 1; transform: translate3d(-50%,-50%,0) scale(1) rotate(0); }
+      100% { opacity: 1; transform: translate3d(-50%,-50%,0) scale(1.02) rotate(0); }
     }
-    @keyframes surge-echo-left { 0%,90% { opacity: 0; transform: translate3d(0,0,0); } 91%,96% { opacity: .85; transform: translate3d(-14px,7px,0); } 97%,100% { opacity: 0; } }
-    @keyframes surge-echo-right { 0%,90% { opacity: 0; transform: translate3d(0,0,0); } 91%,96% { opacity: .85; transform: translate3d(14px,-7px,0); } 97%,100% { opacity: 0; } }
-    @keyframes surge-flash { 0%,97% { opacity: 0; } 98% { opacity: .88; } 99%,100% { opacity: 0; } }
-    @media (max-width: 600px) { .surge-title { font-size: 25vw; } .surge-shards i { width: 90vw; } }
+    @keyframes surge-flash { 0%,96% { opacity: 0; } 97% { opacity: .88; } 99%,100% { opacity: 0; } }
+    @media (max-width: 600px) { .surge-shards i { width: 90vw; } .surge-title { box-shadow: 6px 6px 0 #d8ff3e; } }
 
     /* ════════════════════════════════════════════════
        SHELL — editorial two-column grid (desktop)
@@ -679,9 +672,7 @@
       <div class="surge-error">FATAL: NORMALITY OVERFLOW<br><span>RECOVERING PERSONALITY...</span></div>
       <div class="surge-shards"><i></i><i></i><i></i><i></i></div>
       <div class="surge-orbit"></div>
-      <div class="surge-title surge-echo cyan" aria-hidden="true"><span>FUN</span><span>MODE</span></div>
-      <div class="surge-title surge-echo magenta" aria-hidden="true"><span>FUN</span><span>MODE</span></div>
-      <div class="surge-title main"><span>FUN</span><span>MODE</span></div>
+      <div class="surge-title"><small>PERSONALITY SWITCH COMPLETE</small><strong><span>FUN</span><span>MODE</span></strong></div>
       <div class="surge-flash"></div>
     </div>
   </section>
@@ -1585,15 +1576,15 @@
     const started = performance.now();
     let shown = 0;
     function frame(now) {
-      const seconds = Math.min(8, (now - started) / 1000);
-      const portion = seconds <= 5 ? .37 * (seconds / 5) ** 3 : .37 + .21 * (seconds - 5);
-      const next = seconds >= 8 ? introSource.length : Math.floor(introSource.length * portion);
+      const seconds = Math.min(4, (now - started) / 1000);
+      const portion = seconds <= 2.5 ? .37 * (seconds / 2.5) ** 3 : .37 + .42 * (seconds - 2.5);
+      const next = seconds >= 4 ? introSource.length : Math.floor(introSource.length * portion);
       if (next > shown) {
         const chunk = introSource.slice(shown, next);
         typed.appendData(chunk); shown = next;
         if (chunk.includes('\n')) introWindow.scrollTop = introWindow.scrollHeight;
       }
-      introFrame = seconds < 8 && introRunning ? requestAnimationFrame(frame) : 0;
+      introFrame = seconds < 4 && introRunning ? requestAnimationFrame(frame) : 0;
     }
     introFrame = requestAnimationFrame(frame);
   }
@@ -1621,7 +1612,7 @@
       if (!introRunning) return;
       intro.classList.add('active');
       typeIntro();
-      introTimer = setTimeout(loadFunPortfolio, 10000);
+      introTimer = setTimeout(loadFunPortfolio, 6000);
     });
   };
 
