@@ -957,17 +957,13 @@
             '</div>',
             '<div class="editor-form-grid" data-tool-field>',
               '<div class="editor-field"><label for="editAction">Fun command</label><input id="editAction" name="action" maxlength="30" placeholder="./launch"></div>',
-              '<div class="editor-field"><label for="editToolAccent">Fun card accent</label><select id="editToolAccent" name="toolAccent"><option value="volt">Volt green</option><option value="cyan">Cyan</option><option value="magenta">Magenta</option><option value="amber">Amber</option></select><small>Edits the card class accent in Fun mode.</small></div>',
             '</div>',
             '<div class="editor-field" data-creative-field hidden><label for="editSubtitle">Subtitle / handle</label><input id="editSubtitle" name="subtitle" maxlength="160" placeholder="@handle"></div>',
             '<div class="editor-form-grid" data-creative-field hidden>',
               '<div class="editor-field"><label for="editPlatform">Platform</label><input id="editPlatform" name="platform" maxlength="80" placeholder="Instagram"></div>',
               '<div class="editor-field"><label for="editLabel">Normal label</label><input id="editLabel" name="label" maxlength="60" placeholder="IG · ART"></div>',
             '</div>',
-            '<div class="editor-form-grid" data-creative-field hidden>',
-              '<div class="editor-field"><label for="editIcon">Fun icon</label><input id="editIcon" name="icon" maxlength="16" placeholder="✦"></div>',
-              '<div class="editor-field"><label for="editCreativeAccent">Fun card accent</label><select id="editCreativeAccent" name="creativeAccent"><option value="volt">Volt green</option><option value="cyan">Cyan</option><option value="magenta">Magenta</option><option value="amber">Amber</option></select></div>',
-            '</div>',
+            '<div class="editor-field" data-creative-field hidden><label for="editIcon">Fun icon</label><input id="editIcon" name="icon" maxlength="16" placeholder="✦"></div>',
           '</div>',
           '<div class="editor-form-actions"><button class="editor-btn" id="editorCancel" type="button">Cancel</button><button class="editor-btn primary" type="submit">Save item</button></div>',
         '</form>',
@@ -1177,12 +1173,10 @@
     setValue('filename', item && item.filename);
     setValue('status', item && item.status || 'LIVE');
     setValue('action', item && item.action || './launch');
-    setValue('toolAccent', item && item.accent || 'volt');
     setValue('subtitle', item && item.subtitle);
     setValue('platform', item && item.platform);
     setValue('label', item && item.label);
     setValue('icon', item && item.icon || '✦');
-    setValue('creativeAccent', item && item.accent || 'magenta');
 
     editorListView.hidden = true;
     editorFormView.hidden = false;
@@ -1272,8 +1266,7 @@
         tags: value('tags').split(/[,·\n]+/).map(function (tag) { return tag.trim(); }).filter(Boolean),
         filename: value('filename'),
         status: value('status'),
-        action: value('action'),
-        accent: value('toolAccent')
+        action: value('action')
       };
     } else {
       item = {
@@ -1283,8 +1276,7 @@
         platform: value('platform'),
         url: value('url'),
         label: value('label'),
-        icon: value('icon'),
-        accent: value('creativeAccent')
+        icon: value('icon')
       };
     }
 
@@ -2058,8 +2050,8 @@
     window.__trvkcDispose = dispose;
     listen(window,'pagehide',event => { if (!event.persisted) dispose(); });
 
-    /* One data source, two skins. Accent is normalized by portfolio-store.js
-       and applied to each Fun-mode card through its --accent custom property. */
+    /* One data source, two skins. Accent follows position in portfolio-store.js
+       and is applied to each Fun-mode card through its --accent custom property. */
     const funPortfolioStore = window.TRVKCPortfolio;
     let funPortfolioData = funPortfolioStore
       ? funPortfolioStore.get()

@@ -96,7 +96,7 @@ The editor supports:
 - drag-and-drop ordering on desktop
 - accessible up/down ordering controls on desktop and mobile
 - project title, URL, description, tags, Fun-mode filename, status, and command
-- Fun-mode card accent selection: volt green, cyan, magenta, or amber
+- automatic Fun-mode card accents, repeating every two positions: volt green, cyan, magenta, amber
 - automatic global Firestore saving, JSON backup, and JSON import
 - one shared result across Normal and Fun mode
 - a sign-out control for ending the authenticated edit session
@@ -114,7 +114,7 @@ The `iii` gesture is only the hidden entrance. Actual authorization is enforced 
 
 The Firebase web configuration in `firebase-sync.js` is intentionally public, as required for browser Firebase apps. Security comes from Authentication and Firestore Security Rules, not from hiding the API key.
 
-Every editor action writes the complete normalized portfolio to Firestore. Other browsers receive the updated data automatically. Normal mode and Fun mode both read that shared content, including each card's Fun-mode accent.
+Every editor action writes the complete normalized portfolio to Firestore. Other browsers receive the updated data automatically. Normal mode and Fun mode both read that shared content. Fun-mode accents follow the position in each list, including after reorder, add, delete, and JSON import.
 
 ## PWA / home-screen metadata
 
@@ -156,7 +156,7 @@ The workflow validates the source; GitHub Pages remains responsible for deployme
 ## Notes
 
 - The main page is responsive and includes mobile-specific performance adjustments in fun mode.
-- `portfolio-store.js` validates imported/editor data, restricts URLs to HTTP(S), normalizes Fun-mode accent values, and maintains the local fallback cache.
+- `portfolio-store.js` validates imported/editor data, restricts URLs to HTTP(S), assigns Fun-mode accents by list position, and maintains the local fallback cache.
 - `firebase-sync.js` owns authentication, real-time Firestore reads, and serialized global writes.
 - External fonts require network access; system fallbacks are used if they are unavailable.
 - Financial tools linked from this portfolio are research / informational projects, not investment advice.

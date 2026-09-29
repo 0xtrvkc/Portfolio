@@ -43,8 +43,8 @@
       .slice(0, 8);
   }
 
-  function accent(value) {
-    return ACCENTS.indexOf(value) >= 0 ? value : 'volt';
+  function accentAt(index) {
+    return ACCENTS[Math.floor(index / 2) % ACCENTS.length];
   }
 
   function uniqueId(candidate, prefix, used, index) {
@@ -71,7 +71,7 @@
         filename: text(safe.filename, 'project_' + (index + 1) + '.run', 100),
         status: text(safe.status, 'LIVE', 30).toUpperCase(),
         action: text(safe.action, './launch', 30),
-        accent: accent(safe.accent)
+        accent: accentAt(index)
       };
     });
 
@@ -85,7 +85,7 @@
         url: url(safe.url, '#'),
         label: text(safe.label, 'CREATIVE', 60).toUpperCase(),
         icon: text(safe.icon, '✦', 16),
-        accent: accent(safe.accent)
+        accent: accentAt(index)
       };
     });
 
