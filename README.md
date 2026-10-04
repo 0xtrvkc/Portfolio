@@ -166,10 +166,3 @@ The workflow validates the source; GitHub Pages remains responsible for deployme
 ## License
 
 No explicit open-source license is currently included in this repository. Unless a license is added, normal copyright rules apply to the source code and assets.
-
-
-## Optional Jev upgrade
-
-**Project finder.** Describe a problem. The finder ranks current LIVE projects from the same normalized portfolio data used by both Normal and Fun mode. BUILDING and maintenance entries are excluded. Open a selected project with its existing URL. Cloud updates invalidate old results.
-
-See [JEV.md](JEV.md) for browser-first setup, privacy, input limits, tests and live-evaluation limitations. Existing functionality works without Jev configuration.
